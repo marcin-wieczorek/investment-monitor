@@ -21,6 +21,10 @@ function resolveDatabasePath(): string {
 function createConnection(): DatabaseSync {
   const db = new DatabaseSync(resolveDatabasePath());
   db.exec("PRAGMA journal_mode = WAL");
+  // The Kotlin pipeline writes to this same file from a separate process.
+  // A busy timeout makes SQLite retry on a transient lock instead of
+  // immediately throwing SQLITE_BUSY.
+  db.exec("PRAGMA busy_timeout = 5000");
   return db;
 }
 

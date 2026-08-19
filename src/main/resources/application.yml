@@ -2,7 +2,9 @@ spring:
   application:
     name: investment-monitor
   datasource:
-    url: jdbc:sqlite:investment-monitor.db
+    # busy_timeout: the frontend (Node.js) may hold a write lock on this same
+    # file concurrently; retry on a transient lock instead of failing fast.
+    url: jdbc:sqlite:investment-monitor.db?busy_timeout=5000
     driver-class-name: org.sqlite.JDBC
     hikari:
       maximum-pool-size: 1
