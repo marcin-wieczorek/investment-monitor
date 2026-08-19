@@ -41,7 +41,10 @@
     "saveNote": "Zapisz notatkę",
     "noteSaved": "Notatka zapisana",
     "unknownLocation": "Nieznana lokalizacja",
-    "notPublished": "Nie podano"
+    "notPublished": "Nie podano",
+    "areaUpTo": "do",
+    "areaFrom": "od",
+    "units": "lokali"
   },
   "history": {
     "title": "Historia",
@@ -66,6 +69,7 @@
   "theme": {
     "light": "Jasny",
     "dark": "Ciemny",
-    "system": "Systemowy"
+    "system": "Systemowy",
+    "toggleLabel": "Przełącz motyw"
   }
 }

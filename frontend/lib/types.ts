@@ -1,5 +1,3 @@
-export type ChangeType = "NEW" | "CHANGED" | "UNCHANGED";
-
 export interface InvestmentRow {
   id: number;
   source: string;
@@ -48,6 +46,5 @@ export interface MonitoringRunRow {
 export interface InvestmentFilters {
   developer?: string;
   location?: string;
-  onlyNew?: boolean;
   includeArchived?: boolean;
 }

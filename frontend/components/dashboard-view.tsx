@@ -6,6 +6,7 @@ import { StatCard } from "@/components/stat-card";
 import { InvestmentCard } from "@/components/investment-card";
 import { ScanButton } from "@/components/scan-button";
 import { formatRelativeTime } from "@/lib/utils";
+import { STALE_THRESHOLD_MS } from "@/lib/constants";
 import type { InvestmentWithState, MonitoringRunRow, SourceSnapshotRow } from "@/lib/types";
 
 interface DashboardViewProps {
@@ -18,7 +19,7 @@ export function DashboardView({ recentInvestments, sources, latestRun }: Dashboa
   const { t, locale } = useI18n();
 
   const healthySources = sources.filter(
-    (s) => Date.now() - new Date(s.captured_at).getTime() < 24 * 60 * 60 * 1000
+    (s) => Date.now() - new Date(s.captured_at).getTime() < STALE_THRESHOLD_MS
   ).length;
 
   return (

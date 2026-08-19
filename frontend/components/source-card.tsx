@@ -4,9 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useI18n } from "@/lib/i18n";
 import { formatRelativeTime } from "@/lib/utils";
+import { STALE_THRESHOLD_MS } from "@/lib/constants";
 import type { SourceSnapshotRow } from "@/lib/types";
-
-const STALE_THRESHOLD_MS = 24 * 60 * 60 * 1000;
 
 export function SourceCard({ source }: { source: SourceSnapshotRow }) {
   const { t, locale } = useI18n();

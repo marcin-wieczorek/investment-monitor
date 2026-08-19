@@ -59,7 +59,9 @@ export function InvestmentsView({ investments }: InvestmentsViewProps) {
         />
         <Select value={developer} onValueChange={(value) => setDeveloper(value ?? ALL_DEVELOPERS)}>
           <SelectTrigger className="w-48">
-            <SelectValue />
+            <SelectValue>
+              {(value: string) => (value === ALL_DEVELOPERS ? t("investments.allDevelopers") : value)}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL_DEVELOPERS}>{t("investments.allDevelopers")}</SelectItem>

@@ -6,9 +6,8 @@ import { useI18n } from "@/lib/i18n";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { formatArea, formatRelativeTime } from "@/lib/utils";
+import { NEW_THRESHOLD_MS } from "@/lib/constants";
 import type { InvestmentWithState } from "@/lib/types";
-
-const NEW_THRESHOLD_MS = 7 * 24 * 60 * 60 * 1000;
 
 interface InvestmentCardProps {
   investment: InvestmentWithState;
@@ -18,8 +17,8 @@ export function InvestmentCard({ investment }: InvestmentCardProps) {
   const { t, locale } = useI18n();
 
   const isNew = Date.now() - new Date(investment.first_seen_at).getTime() < NEW_THRESHOLD_MS;
-  const houseArea = formatArea(investment.house_area_min, investment.house_area_max);
-  const plotArea = formatArea(investment.plot_area_min, investment.plot_area_max);
+  const houseArea = formatArea(investment.house_area_min, investment.house_area_max, t);
+  const plotArea = formatArea(investment.plot_area_min, investment.plot_area_max, t);
 
   return (
     <Link href={`/investments/${investment.id}`}>

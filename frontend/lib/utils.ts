@@ -23,13 +23,17 @@ export function formatRelativeTime(iso: string | null | undefined, locale: strin
   return rtf.format(diffDays, "day");
 }
 
-export function formatArea(min: number | null, max: number | null): string | null {
+export function formatArea(
+  min: number | null,
+  max: number | null,
+  t: (key: string) => string
+): string | null {
   if (min == null && max == null) return null;
   if (min != null && max != null) {
     return min === max ? `${formatNumber(min)} m²` : `${formatNumber(min)}–${formatNumber(max)} m²`;
   }
-  if (max != null) return `up to ${formatNumber(max)} m²`;
-  return `from ${formatNumber(min!)} m²`;
+  if (max != null) return `${t("investments.areaUpTo")} ${formatNumber(max)} m²`;
+  return `${t("investments.areaFrom")} ${formatNumber(min!)} m²`;
 }
 
 function formatNumber(value: number): string {

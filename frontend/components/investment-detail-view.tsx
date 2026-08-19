@@ -24,8 +24,8 @@ export function InvestmentDetailView({ investment }: { investment: InvestmentWit
   const [archived, setArchived] = useState(investment.archived);
   const [togglingArchive, setTogglingArchive] = useState(false);
 
-  const houseArea = formatArea(investment.house_area_min, investment.house_area_max);
-  const plotArea = formatArea(investment.plot_area_min, investment.plot_area_max);
+  const houseArea = formatArea(investment.house_area_min, investment.house_area_max, t);
+  const plotArea = formatArea(investment.plot_area_min, investment.plot_area_max, t);
 
   async function saveNote() {
     setSavingNote(true);
@@ -130,7 +130,11 @@ export function InvestmentDetailView({ investment }: { investment: InvestmentWit
                 {t("investments.plotArea")}: {plotArea}
               </Badge>
             ) : null}
-            {investment.units ? <Badge variant="secondary">{investment.units} units</Badge> : null}
+            {investment.units ? (
+              <Badge variant="secondary">
+                {investment.units} {t("investments.units")}
+              </Badge>
+            ) : null}
           </div>
 
           <Separator />
