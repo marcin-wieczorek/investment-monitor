@@ -6,6 +6,12 @@ data class SourceSnapshot(
     val source: String,
     val capturedAt: Instant,
     val investmentCount: Int,
+    /**
+     * A fingerprint of *which* canonical keys were present at capture time,
+     * not a hash of their field contents. Field-level changes are detected
+     * separately and precisely by ChangeDetector; this is a cheap identity
+     * check, not a content-staleness check.
+     */
     val contentHash: String
 )
 

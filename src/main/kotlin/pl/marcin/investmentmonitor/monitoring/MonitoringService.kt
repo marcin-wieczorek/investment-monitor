@@ -9,6 +9,7 @@ import pl.marcin.investmentmonitor.detection.InvestmentChange
 import pl.marcin.investmentmonitor.domain.Investment
 import pl.marcin.investmentmonitor.persistence.InvestmentRepository
 import pl.marcin.investmentmonitor.persistence.MonitoringRunRepository
+import pl.marcin.investmentmonitor.persistence.RunStatus
 import pl.marcin.investmentmonitor.persistence.SourceSnapshot
 import pl.marcin.investmentmonitor.persistence.SourceSnapshotRepository
 import pl.marcin.investmentmonitor.reporting.AnalyzedChange
@@ -58,7 +59,7 @@ class MonitoringService(
         }
 
         val finishedAt = Instant.now(clock)
-        val status = if (sourcesFailed == 0) "SUCCESS" else "PARTIAL_FAILURE"
+        val status = if (sourcesFailed == 0) RunStatus.SUCCESS else RunStatus.PARTIAL_FAILURE
         monitoringRunRepository.finish(runId, finishedAt, status, sources.size, sourcesFailed, newInvestments)
         logger.info(
             "Scan finished: status={} sourcesFailed={} newInvestments={} duration={}ms",
@@ -112,12 +113,18 @@ class MonitoringService(
                 source = sourceId,
                 capturedAt = seenAt,
                 investmentCount = investments.size,
-                contentHash = contentHash(investments)
+                contentHash = identityHash(investments)
             )
         )
     }
 
-    private fun contentHash(investments: List<Investment>): String {
+    /**
+     * Hashes the set of canonical keys currently known for a source - i.e.
+     * "which investments exist", not "what their fields contain". Field-level
+     * changes are already detected precisely by [ChangeDetector]; this hash
+     * is only a cheap identity fingerprint for the snapshot record.
+     */
+    private fun identityHash(investments: List<Investment>): String {
         val digest = MessageDigest.getInstance("SHA-256")
         investments.sortedBy { it.canonicalKey }.forEach { investment ->
             digest.update(investment.canonicalKey.toByteArray())

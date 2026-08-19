@@ -2,24 +2,16 @@ package pl.marcin.investmentmonitor.detection
 
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
-import pl.marcin.investmentmonitor.domain.Investment
+import pl.marcin.investmentmonitor.testsupport.testInvestment
 import java.net.URI
 
 class ChangeDetectorTest {
 
-    private val investment = Investment(
-        source = "chronos",
-        developer = "Chronos",
+    private val investment = testInvestment(
         name = "Tercja",
+        developer = "Chronos",
         url = URI("https://example.com/inwestycja/tercja"),
-        location = "Rabowice",
-        propertyType = null,
-        units = null,
-        houseArea = null,
-        plotArea = null,
-        price = null,
-        status = null,
-        imageUrl = null
+        location = "Rabowice"
     )
 
     @Test

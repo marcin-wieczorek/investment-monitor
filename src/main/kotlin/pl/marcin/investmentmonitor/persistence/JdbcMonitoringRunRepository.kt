@@ -19,7 +19,7 @@ class JdbcMonitoringRunRepository(private val jdbcTemplate: JdbcTemplate) : Moni
                 Statement.RETURN_GENERATED_KEYS
             )
             statement.setString(1, startedAt.toString())
-            statement.setString(2, "RUNNING")
+            statement.setString(2, RunStatus.RUNNING.name)
             statement
         }, keyHolder)
         return keyHolder.key!!.toLong()
@@ -28,7 +28,7 @@ class JdbcMonitoringRunRepository(private val jdbcTemplate: JdbcTemplate) : Moni
     override fun finish(
         id: Long,
         finishedAt: Instant,
-        status: String,
+        status: RunStatus,
         sourcesChecked: Int,
         sourcesFailed: Int,
         newInvestments: Int
@@ -36,7 +36,7 @@ class JdbcMonitoringRunRepository(private val jdbcTemplate: JdbcTemplate) : Moni
         jdbcTemplate.update(
             UPDATE,
             finishedAt.toString(),
-            status,
+            status.name,
             sourcesChecked,
             sourcesFailed,
             newInvestments,

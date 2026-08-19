@@ -2,7 +2,7 @@ package pl.marcin.investmentmonitor.source.detail
 
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
-import pl.marcin.investmentmonitor.domain.Investment
+import pl.marcin.investmentmonitor.testsupport.testInvestment
 import java.net.URI
 import java.nio.file.Files
 import java.nio.file.Path
@@ -15,18 +15,10 @@ class TercjaDetailParserTest {
         Files.readString(Path.of("src/test/resources/fixtures/tercja/detail-page.html"))
     }
 
-    private val listOnlyTercja = Investment(
-        source = "chronos",
-        developer = "Chronos Development",
+    private val listOnlyTercja = testInvestment(
         name = "Tercja",
         url = URI("https://www.tercja.eu"),
         location = "Swarzędz – Rabowice, ul. Swanka",
-        propertyType = null,
-        units = null,
-        houseArea = null,
-        plotArea = null,
-        price = null,
-        status = null,
         imageUrl = "https://www.chronos.poznan.pl/photo/420x320/1e181add05b87f5501a59dc4259c7cb6.jpg/1"
     )
 
