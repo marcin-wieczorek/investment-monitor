@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: investment-monitor
+  datasource:
+    url: jdbc:sqlite:investment-monitor.db
+    driver-class-name: org.sqlite.JDBC
+    hikari:
+      maximum-pool-size: 1
+  flyway:
+    locations: classpath:db/migration
+
+investment-monitor:
+  validation:
+    max-investment-drop-percentage: 50
