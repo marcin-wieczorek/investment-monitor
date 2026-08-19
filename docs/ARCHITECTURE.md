@@ -28,9 +28,29 @@ CLI -> sources -> fetcher -> parser -> validation -> deterministic diff -> optio
   explicitly reports "not analyzed" rather than fabricating a score. No local LLM
   (Ollama/Qwen) is wired in yet.
 
-## Not yet implemented (phase 3)
+## Implemented (phase 3 - hardening + frontend)
+
+- `ChangeDetector` also emits `REMOVED` for investments present in the last
+  trusted snapshot but absent from the current scrape (previously silently
+  dropped).
+- `SourceValidator` rejects an empty result outright, including on a
+  source's first-ever scrape.
+- SLF4J logging in `MonitoringService` and `InvestmentDetailEnricher`
+  (scan start/finish, fetch/validation failures, enrichment failures) -
+  previously some failures were only visible as silent no-ops.
+- `RunStatus` enum replaces a stringly-typed `monitoring_run.status`.
+- SQLite `busy_timeout` set on both the Kotlin datasource and the frontend's
+  connection, since both processes write to the same file.
+- A minimal Next.js dashboard (`frontend/`) reading the same SQLite file
+  directly via `node:sqlite` - browse/filter/search investments, notes,
+  archiving, source health, run history, and a scan trigger with an
+  in-memory concurrency guard.
+
+## Not yet implemented (phase 4)
 
 - Wiring a real `InvestmentAnalyzer` to a local LLM (Ollama + Qwen).
 - Reference-profile scoring and location-profile data.
 - Additional detail parsers for other Chronos/Greenbud investment sites.
 - Raw HTML archival.
+- Automated test coverage for `MonitoringService`, `InvestmentDetailEnricher`,
+  and `PolishAreaFormat` edge cases (currently covered indirectly or not at all).

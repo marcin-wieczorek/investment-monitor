@@ -12,11 +12,18 @@ Requires Node 22.5+ (for `node:sqlite`).
 ```bash
 npm install
 cp .env.local.example .env.local   # optional, defaults to ../investment-monitor.db
-npm run dev
+npm run dev   # http://localhost:3000
 ```
 
 Requires the pipeline to have run at least once (`../gradlew bootRun` from
 the repo root) so `investment-monitor.db` exists.
+
+For a production-style run instead of the dev server:
+
+```bash
+npm run build
+npm run start   # http://localhost:3000
+```
 
 ## What it does
 

@@ -24,7 +24,7 @@ sources -> fetch -> parse -> validate -> diff -> enrich (new only) -> analyze (n
   overwritten by a suspicious scrape (fail-closed).
 - **Diff** — investments are identified by a canonical key
   (`source:normalized-url`), and classified as `NEW` / `CHANGED` /
-  `UNCHANGED` deterministically, not by a model's judgment call.
+  `UNCHANGED` / `REMOVED` deterministically, not by a model's judgment call.
 - **Enrich** — some investments publish their own dedicated page (often on
   a completely different domain than the developer's site). A generic
   `InvestmentDetailParser` mechanism matches a parser to an investment by
@@ -77,16 +77,28 @@ full workflow of adding or fixing a parser after a site change.
 ## Frontend
 
 A minimal Next.js dashboard lives in [`frontend/`](frontend/) — it reads the
-same SQLite database directly (no separate API layer) to browse investments,
-review history, check source health, and trigger a scan from the browser.
-See [`frontend/README.md`](frontend/README.md) for setup.
+same SQLite database directly (no separate API layer, via Node's built-in
+`node:sqlite`) to browse investments, review history, check source health,
+and trigger a scan from the browser. Dark/light mode and an English/Polish
+language toggle are built in.
+
+Requires Node 22.5+.
+
+```bash
+cd frontend
+npm install
+npm run dev   # http://localhost:3000
+```
+
+See [`frontend/README.md`](frontend/README.md) for full setup and details.
 
 ## Project status
 
-- **Done** — Chronos + Greenbud parsers, deterministic diff, fail-closed
-  validation, SQLite persistence, one detail-page parser (Tercja), LLM
-  interface with a no-op placeholder, a Next.js dashboard (browse, filter,
-  archive, notes, scan trigger).
+- **Done** — Chronos + Greenbud parsers, deterministic diff (including
+  removed-investment detection), fail-closed validation, SQLite
+  persistence, one detail-page parser (Tercja), LLM interface with a
+  no-op placeholder, a Next.js dashboard (browse, filter, archive, notes,
+  scan trigger).
 - **Not yet done** — a real local LLM wired into `InvestmentAnalyzer`,
   reference-profile scoring, more detail parsers, raw HTML archival.
 
