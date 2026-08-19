@@ -1,5 +1,6 @@
 package pl.marcin.investmentmonitor.monitoring
 
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import pl.marcin.investmentmonitor.analysis.InvestmentAnalyzer
 import pl.marcin.investmentmonitor.detection.ChangeDetector
@@ -48,6 +49,7 @@ class MonitoringService(
     fun scan(): ScanReport {
         val startedAt = Instant.now(clock)
         val runId = monitoringRunRepository.start(startedAt)
+        logger.info("Scan started ({} sources)", sources.size)
 
         val sourceReports = sources.map(::scanSource)
         val sourcesFailed = sourceReports.count { !it.fetchSucceeded || !it.validation.valid }
@@ -58,6 +60,10 @@ class MonitoringService(
         val finishedAt = Instant.now(clock)
         val status = if (sourcesFailed == 0) "SUCCESS" else "PARTIAL_FAILURE"
         monitoringRunRepository.finish(runId, finishedAt, status, sources.size, sourcesFailed, newInvestments)
+        logger.info(
+            "Scan finished: status={} sourcesFailed={} newInvestments={} duration={}ms",
+            status, sourcesFailed, newInvestments, finishedAt.toEpochMilli() - startedAt.toEpochMilli()
+        )
 
         return ScanReport(startedAt, finishedAt, sourceReports)
     }
@@ -67,13 +73,21 @@ class MonitoringService(
         val previousSnapshot = sourceSnapshotRepository.find(source.id)
 
         val fetchResult = runCatching { source.fetch() }
+        fetchResult.onFailure { error ->
+            logger.warn("Fetch failed for source '{}': {}", source.id, error.message)
+        }
         val fetched = fetchResult.getOrDefault(emptyList())
 
         val validation = sourceValidator.validate(fetched, previousSnapshot?.investmentCount)
+        if (!validation.valid) {
+            logger.warn("Validation failed for source '{}': {}", source.id, validation.reason)
+        }
         val changes = changeDetector.detect(fetched, previousInvestments).map(::processIfNew)
 
         if (fetchResult.isSuccess && validation.valid) {
             commit(source.id, changes.mapNotNull { it.change.current })
+        } else {
+            logger.info("Source '{}' not committed - trusted snapshot unchanged", source.id)
         }
 
         return SourceReport(source.id, fetchResult.isSuccess, validation, changes)
@@ -109,5 +123,9 @@ class MonitoringService(
             digest.update(investment.canonicalKey.toByteArray())
         }
         return digest.digest().joinToString("") { "%02x".format(it) }
+    }
+
+    private companion object {
+        val logger = LoggerFactory.getLogger(MonitoringService::class.java)
     }
 }

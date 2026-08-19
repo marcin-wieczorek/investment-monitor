@@ -1,5 +1,6 @@
 package pl.marcin.investmentmonitor.monitoring
 
+import org.slf4j.LoggerFactory
 import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.stereotype.Component
@@ -15,6 +16,10 @@ class ScanRunner(private val monitoringService: MonitoringService) : Application
 
     override fun run(args: ApplicationArguments) {
         val report = monitoringService.scan()
-        println(ScanReportRenderer.render(report))
+        logger.info("\n{}", ScanReportRenderer.render(report))
+    }
+
+    private companion object {
+        val logger = LoggerFactory.getLogger(ScanRunner::class.java)
     }
 }

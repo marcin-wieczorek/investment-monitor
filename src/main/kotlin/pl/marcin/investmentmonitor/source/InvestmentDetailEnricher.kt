@@ -1,5 +1,6 @@
 package pl.marcin.investmentmonitor.source
 
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Component
 import pl.marcin.investmentmonitor.domain.Investment
 import pl.marcin.investmentmonitor.scraping.PageFetcher
@@ -25,6 +26,13 @@ class InvestmentDetailEnricher(
         return runCatching {
             val html = pageFetcher.fetch(investment.url)
             parser.enrich(investment, html)
-        }.getOrDefault(investment)
+        }.getOrElse { error ->
+            logger.warn("Detail enrichment failed for {} ({}): {}", investment.canonicalKey, investment.url, error.message)
+            investment
+        }
+    }
+
+    private companion object {
+        val logger = LoggerFactory.getLogger(InvestmentDetailEnricher::class.java)
     }
 }
