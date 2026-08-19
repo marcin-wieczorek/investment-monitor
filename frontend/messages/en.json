@@ -1,0 +1,71 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "investments": "Investments",
+    "history": "History",
+    "sources": "Sources"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Overview of the last monitoring scan",
+    "lastScan": "Last scan",
+    "neverRun": "Never run yet",
+    "newInvestments": "New investments",
+    "sourcesHealthy": "Sources healthy",
+    "recentlyDetected": "Recently detected",
+    "viewAll": "View all",
+    "noInvestmentsYet": "No investments detected yet. Run a scan to get started."
+  },
+  "scan": {
+    "runScan": "Run scan",
+    "scanning": "Scanning…",
+    "scanComplete": "Scan complete",
+    "scanFailed": "Scan failed"
+  },
+  "investments": {
+    "title": "Investments",
+    "subtitle": "All known investments across monitored developers",
+    "searchLocation": "Search location…",
+    "allDevelopers": "All developers",
+    "showArchived": "Show archived",
+    "new": "NEW",
+    "houseArea": "House area",
+    "plotArea": "Plot area",
+    "firstSeen": "First seen",
+    "noResults": "No investments match the current filters.",
+    "markReviewed": "Mark reviewed",
+    "archive": "Archive",
+    "unarchive": "Unarchive",
+    "visitSite": "Visit site",
+    "notePlaceholder": "Add a private note about this investment…",
+    "saveNote": "Save note",
+    "noteSaved": "Note saved",
+    "unknownLocation": "Unknown location",
+    "notPublished": "Not published"
+  },
+  "history": {
+    "title": "History",
+    "subtitle": "Timeline of every monitoring run",
+    "status": "Status",
+    "sourcesChecked": "Sources checked",
+    "sourcesFailed": "Sources failed",
+    "newInvestments": "New",
+    "started": "Started",
+    "finished": "Finished",
+    "noRuns": "No scans recorded yet."
+  },
+  "sources": {
+    "title": "Sources",
+    "subtitle": "Health of every monitored developer source",
+    "lastCaptured": "Last captured",
+    "investmentCount": "Investments",
+    "healthy": "Healthy",
+    "stale": "Stale",
+    "neverScanned": "Never scanned"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  }
+}

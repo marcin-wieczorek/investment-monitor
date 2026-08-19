@@ -74,11 +74,19 @@ schedule it with cron/systemd for recurring runs.
 See [`docs/SOURCE-VERIFICATION.md`](docs/SOURCE-VERIFICATION.md) for the
 full workflow of adding or fixing a parser after a site change.
 
+## Frontend
+
+A minimal Next.js dashboard lives in [`frontend/`](frontend/) — it reads the
+same SQLite database directly (no separate API layer) to browse investments,
+review history, check source health, and trigger a scan from the browser.
+See [`frontend/README.md`](frontend/README.md) for setup.
+
 ## Project status
 
 - **Done** — Chronos + Greenbud parsers, deterministic diff, fail-closed
   validation, SQLite persistence, one detail-page parser (Tercja), LLM
-  interface with a no-op placeholder.
+  interface with a no-op placeholder, a Next.js dashboard (browse, filter,
+  archive, notes, scan trigger).
 - **Not yet done** — a real local LLM wired into `InvestmentAnalyzer`,
   reference-profile scoring, more detail parsers, raw HTML archival.
 

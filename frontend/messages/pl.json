@@ -1,0 +1,71 @@
+{
+  "nav": {
+    "dashboard": "Pulpit",
+    "investments": "Inwestycje",
+    "history": "Historia",
+    "sources": "Źródła"
+  },
+  "dashboard": {
+    "title": "Pulpit",
+    "subtitle": "Podsumowanie ostatniego skanu",
+    "lastScan": "Ostatni skan",
+    "neverRun": "Jeszcze nie uruchomiono",
+    "newInvestments": "Nowe inwestycje",
+    "sourcesHealthy": "Zdrowe źródła",
+    "recentlyDetected": "Ostatnio wykryte",
+    "viewAll": "Zobacz wszystkie",
+    "noInvestmentsYet": "Nie wykryto jeszcze żadnych inwestycji. Uruchom skan, aby zacząć."
+  },
+  "scan": {
+    "runScan": "Uruchom skan",
+    "scanning": "Skanowanie…",
+    "scanComplete": "Skan zakończony",
+    "scanFailed": "Skan nieudany"
+  },
+  "investments": {
+    "title": "Inwestycje",
+    "subtitle": "Wszystkie znane inwestycje monitorowanych deweloperów",
+    "searchLocation": "Szukaj lokalizacji…",
+    "allDevelopers": "Wszyscy deweloperzy",
+    "showArchived": "Pokaż zarchiwizowane",
+    "new": "NOWE",
+    "houseArea": "Metraż domu",
+    "plotArea": "Powierzchnia działki",
+    "firstSeen": "Wykryto",
+    "noResults": "Brak inwestycji spełniających filtry.",
+    "markReviewed": "Oznacz jako przejrzane",
+    "archive": "Archiwizuj",
+    "unarchive": "Przywróć",
+    "visitSite": "Odwiedź stronę",
+    "notePlaceholder": "Dodaj prywatną notatkę o tej inwestycji…",
+    "saveNote": "Zapisz notatkę",
+    "noteSaved": "Notatka zapisana",
+    "unknownLocation": "Nieznana lokalizacja",
+    "notPublished": "Nie podano"
+  },
+  "history": {
+    "title": "Historia",
+    "subtitle": "Chronologia wszystkich skanów",
+    "status": "Status",
+    "sourcesChecked": "Sprawdzone źródła",
+    "sourcesFailed": "Nieudane źródła",
+    "newInvestments": "Nowe",
+    "started": "Rozpoczęto",
+    "finished": "Zakończono",
+    "noRuns": "Nie zarejestrowano jeszcze żadnych skanów."
+  },
+  "sources": {
+    "title": "Źródła",
+    "subtitle": "Stan zdrowia każdego monitorowanego dewelopera",
+    "lastCaptured": "Ostatnio pobrano",
+    "investmentCount": "Inwestycje",
+    "healthy": "Zdrowe",
+    "stale": "Nieaktualne",
+    "neverScanned": "Nigdy nie skanowano"
+  },
+  "theme": {
+    "light": "Jasny",
+    "dark": "Ciemny",
+    "system": "Systemowy"
+  }
+}
