@@ -20,7 +20,8 @@
     "runScan": "Uruchom skan",
     "scanning": "Skanowanie…",
     "scanComplete": "Skan zakończony",
-    "scanFailed": "Skan nieudany"
+    "scanFailed": "Skan nieudany",
+    "viewDetails": "Zobacz szczegóły skanu"
   },
   "investments": {
     "title": "Inwestycje",

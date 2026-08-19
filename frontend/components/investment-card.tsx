@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { Home, LandPlot, MapPin } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -21,16 +22,16 @@ export function InvestmentCard({ investment }: InvestmentCardProps) {
   const plotArea = formatArea(investment.plot_area_min, investment.plot_area_max, t);
 
   return (
-    <Link href={`/investments/${investment.id}`}>
-      <Card className="group flex flex-row items-stretch gap-0 overflow-hidden p-0 transition-colors hover:border-foreground/20">
-        <div className="relative h-24 w-32 shrink-0 bg-muted">
+    <Link href={`/investments/${investment.id}`} className="block">
+      <Card className="group flex flex-row items-stretch gap-0 overflow-hidden p-0 transition-all hover:border-foreground/20 hover:shadow-sm">
+        <div className="relative h-32 w-40 shrink-0 bg-muted sm:h-36 sm:w-48">
           {investment.image_url ? (
             <Image
               src={investment.image_url}
               alt={investment.name}
               fill
-              sizes="128px"
-              className="object-cover"
+              sizes="192px"
+              className="object-cover transition-transform duration-300 group-hover:scale-105"
               unoptimized
             />
           ) : (
@@ -39,25 +40,47 @@ export function InvestmentCard({ investment }: InvestmentCardProps) {
             </div>
           )}
           {isNew ? (
-            <Badge className="absolute left-1.5 top-1.5 bg-emerald-500 text-white hover:bg-emerald-500">
+            <Badge className="absolute left-2 top-2 gap-1 bg-emerald-500 text-white hover:bg-emerald-500">
+              <span className="size-1.5 animate-pulse rounded-full bg-white" />
               {t("investments.new")}
             </Badge>
           ) : null}
         </div>
-        <div className="flex min-w-0 flex-1 flex-col justify-center gap-1 px-4 py-3">
-          <div className="flex items-baseline justify-between gap-2">
-            <h3 className="truncate font-medium">{investment.name}</h3>
-            <span className="shrink-0 text-xs text-muted-foreground">
+
+        <div className="flex min-w-0 flex-1 flex-col justify-center gap-2.5 px-5 py-4">
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="text-base font-semibold leading-tight tracking-tight">
+              {investment.name}
+            </h3>
+            <span className="shrink-0 whitespace-nowrap text-xs text-muted-foreground">
               {formatRelativeTime(investment.first_seen_at, locale)}
             </span>
           </div>
-          <p className="truncate text-sm text-muted-foreground">
-            {investment.developer} · {investment.location ?? t("investments.unknownLocation")}
-          </p>
-          <div className="flex gap-3 text-xs text-muted-foreground">
-            {houseArea ? <span>{houseArea}</span> : null}
-            {plotArea ? <span>· {t("investments.plotArea")}: {plotArea}</span> : null}
+
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+            <span className="font-medium text-foreground/80">{investment.developer}</span>
+            <span className="inline-flex items-center gap-1">
+              <MapPin className="size-3.5 shrink-0" />
+              {investment.location ?? t("investments.unknownLocation")}
+            </span>
           </div>
+
+          {(houseArea || plotArea) ? (
+            <div className="flex flex-wrap gap-2 pt-0.5">
+              {houseArea ? (
+                <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/50 px-2 py-1 text-xs text-muted-foreground">
+                  <Home className="size-3.5" />
+                  {houseArea}
+                </span>
+              ) : null}
+              {plotArea ? (
+                <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-muted/50 px-2 py-1 text-xs text-muted-foreground">
+                  <LandPlot className="size-3.5" />
+                  {plotArea}
+                </span>
+              ) : null}
+            </div>
+          ) : null}
         </div>
       </Card>
     </Link>

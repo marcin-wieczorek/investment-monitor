@@ -20,7 +20,8 @@
     "runScan": "Run scan",
     "scanning": "Scanning…",
     "scanComplete": "Scan complete",
-    "scanFailed": "Scan failed"
+    "scanFailed": "Scan failed",
+    "viewDetails": "View scan details"
   },
   "investments": {
     "title": "Investments",

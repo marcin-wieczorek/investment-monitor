@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Archive, ArchiveRestore, ExternalLink } from "lucide-react";
+import { ArrowLeft, Archive, ArchiveRestore, Clock, ExternalLink, Home, LandPlot, MapPin } from "lucide-react";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
@@ -87,8 +87,12 @@ export function InvestmentDetailView({ investment }: { investment: InvestmentWit
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">{investment.name}</h1>
-              <p className="text-muted-foreground">
-                {investment.developer} · {investment.location ?? t("investments.unknownLocation")}
+              <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-muted-foreground">
+                <span className="font-medium text-foreground/80">{investment.developer}</span>
+                <span className="inline-flex items-center gap-1">
+                  <MapPin className="size-3.5" />
+                  {investment.location ?? t("investments.unknownLocation")}
+                </span>
               </p>
             </div>
             <div className="flex gap-2">
@@ -117,17 +121,20 @@ export function InvestmentDetailView({ investment }: { investment: InvestmentWit
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <Badge variant="secondary">
+            <Badge variant="secondary" className="gap-1">
+              <Clock className="size-3.5" />
               {t("investments.firstSeen")}: {formatRelativeTime(investment.first_seen_at, locale)}
             </Badge>
             {houseArea ? (
-              <Badge variant="secondary">
-                {t("investments.houseArea")}: {houseArea}
+              <Badge variant="secondary" className="gap-1">
+                <Home className="size-3.5" />
+                {houseArea}
               </Badge>
             ) : null}
             {plotArea ? (
-              <Badge variant="secondary">
-                {t("investments.plotArea")}: {plotArea}
+              <Badge variant="secondary" className="gap-1">
+                <LandPlot className="size-3.5" />
+                {plotArea}
               </Badge>
             ) : null}
             {investment.units ? (

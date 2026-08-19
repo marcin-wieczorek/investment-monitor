@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Search } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { Input } from "@/components/ui/input";
 import {
@@ -50,13 +51,16 @@ export function InvestmentsView({ investments }: InvestmentsViewProps) {
         <p className="text-sm text-muted-foreground">{t("investments.subtitle")}</p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3">
-        <Input
-          placeholder={t("investments.searchLocation")}
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="max-w-xs"
-        />
+      <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card/50 p-3">
+        <div className="relative max-w-xs flex-1 min-w-[180px]">
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder={t("investments.searchLocation")}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-8"
+          />
+        </div>
         <Select value={developer} onValueChange={(value) => setDeveloper(value ?? ALL_DEVELOPERS)}>
           <SelectTrigger className="w-48">
             <SelectValue>
@@ -78,12 +82,16 @@ export function InvestmentsView({ investments }: InvestmentsViewProps) {
         </label>
       </div>
 
+      <p className="text-xs text-muted-foreground">
+        {filtered.length} {t("investments.title").toLowerCase()}
+      </p>
+
       {filtered.length === 0 ? (
         <p className="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
           {t("investments.noResults")}
         </p>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-3">
           {filtered.map((investment) => (
             <InvestmentCard key={investment.id} investment={investment} />
           ))}

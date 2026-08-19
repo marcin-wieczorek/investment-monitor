@@ -2,36 +2,52 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, PlayCircle } from "lucide-react";
+import { ChevronDown, Loader2, PlayCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { useI18n } from "@/lib/i18n";
 
-export function ScanButton() {
+interface ScanResult {
+  ok: boolean;
+  output?: string;
+  error?: string;
+}
+
+interface ScanButtonProps {
+  size?: "sm" | "default";
+}
+
+export function ScanButton({ size = "default" }: ScanButtonProps) {
   const { t } = useI18n();
   const router = useRouter();
   const [isScanning, setIsScanning] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [lastResult, setLastResult] = useState<ScanResult | null>(null);
 
   async function runScan() {
     setIsScanning(true);
-    setError(null);
     try {
       const response = await fetch("/api/scan", { method: "POST" });
-      const data = await response.json();
-      if (!response.ok || !data.ok) {
-        throw new Error(data.error ?? "Scan failed");
+      const data = (await response.json()) as ScanResult;
+      setLastResult(data);
+      if (data.ok) {
+        router.refresh();
       }
-      router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      setLastResult({ ok: false, error: err instanceof Error ? err.message : String(err) });
     } finally {
       setIsScanning(false);
     }
   }
 
   return (
-    <div className="flex flex-col items-end gap-1">
-      <Button onClick={runScan} disabled={isScanning}>
+    <div className="flex items-center gap-1">
+      <Button onClick={runScan} disabled={isScanning} size={size}>
         {isScanning ? (
           <Loader2 className="size-4 animate-spin" />
         ) : (
@@ -39,7 +55,34 @@ export function ScanButton() {
         )}
         {isScanning ? t("scan.scanning") : t("scan.runScan")}
       </Button>
-      {error ? <p className="text-xs text-rose-500">{error}</p> : null}
+
+      {lastResult ? (
+        <Dialog>
+          <DialogTrigger
+            render={
+              <Button
+                variant="ghost"
+                size={size === "sm" ? "icon-sm" : "icon"}
+                aria-label={t("scan.viewDetails")}
+              >
+                <ChevronDown
+                  className={lastResult.ok ? "text-emerald-500" : "text-rose-500"}
+                />
+              </Button>
+            }
+          />
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>
+                {lastResult.ok ? t("scan.scanComplete") : t("scan.scanFailed")}
+              </DialogTitle>
+            </DialogHeader>
+            <pre className="max-h-[60vh] overflow-auto rounded-md bg-muted p-4 text-xs">
+              {JSON.stringify(lastResult, null, 2)}
+            </pre>
+          </DialogContent>
+        </Dialog>
+      ) : null}
     </div>
   );
 }

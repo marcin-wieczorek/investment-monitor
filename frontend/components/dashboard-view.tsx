@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { Clock, Sparkles, Activity } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { StatCard } from "@/components/stat-card";
 import { InvestmentCard } from "@/components/investment-card";
-import { ScanButton } from "@/components/scan-button";
 import { formatRelativeTime } from "@/lib/utils";
 import { STALE_THRESHOLD_MS } from "@/lib/constants";
 import type { InvestmentWithState, MonitoringRunRow, SourceSnapshotRow } from "@/lib/types";
@@ -24,27 +24,27 @@ export function DashboardView({ recentInvestments, sources, latestRun }: Dashboa
 
   return (
     <div className="space-y-8">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{t("dashboard.title")}</h1>
-          <p className="text-sm text-muted-foreground">{t("dashboard.subtitle")}</p>
-        </div>
-        <ScanButton />
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("dashboard.title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("dashboard.subtitle")}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
         <StatCard
+          icon={Clock}
           label={t("dashboard.lastScan")}
           value={
             latestRun ? formatRelativeTime(latestRun.started_at, locale) : t("dashboard.neverRun")
           }
         />
         <StatCard
+          icon={Sparkles}
           label={t("dashboard.newInvestments")}
           value={latestRun?.new_investments ?? 0}
           tone={latestRun && latestRun.new_investments > 0 ? "success" : "default"}
         />
         <StatCard
+          icon={Activity}
           label={t("dashboard.sourcesHealthy")}
           value={`${healthySources}/${sources.length}`}
           tone={healthySources === sources.length ? "success" : "warning"}
@@ -69,7 +69,7 @@ export function DashboardView({ recentInvestments, sources, latestRun }: Dashboa
             {t("dashboard.noInvestmentsYet")}
           </p>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-3">
             {recentInvestments.map((investment) => (
               <InvestmentCard key={investment.id} investment={investment} />
             ))}
