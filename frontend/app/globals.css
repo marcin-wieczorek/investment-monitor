@@ -128,3 +128,24 @@
     @apply font-sans;
   }
 }
+
+/* ApexCharts theming to match light/dark mode */
+.apexcharts-legend-text {
+  @apply !text-muted-foreground;
+}
+.apexcharts-text {
+  @apply !fill-muted-foreground;
+}
+.apexcharts-tooltip.apexcharts-theme-light {
+  @apply !rounded-lg !border-border !bg-popover !text-popover-foreground !shadow-md;
+}
+.apexcharts-tooltip-title {
+  @apply !border-b-border !bg-transparent;
+}
+.apexcharts-gridline {
+  @apply !stroke-border;
+}
+.apexcharts-xaxis line,
+.apexcharts-yaxis line {
+  @apply !stroke-border;
+}

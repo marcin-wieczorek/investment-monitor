@@ -5,16 +5,22 @@
     "history": "Historia",
     "sources": "Źródła"
   },
+  "common": {
+    "rawData": "Dane surowe"
+  },
   "dashboard": {
     "title": "Pulpit",
     "subtitle": "Podsumowanie ostatniego skanu",
+    "totalInvestments": "Wszystkie inwestycje",
     "lastScan": "Ostatni skan",
     "neverRun": "Jeszcze nie uruchomiono",
     "newInvestments": "Nowe inwestycje",
     "sourcesHealthy": "Zdrowe źródła",
     "recentlyDetected": "Ostatnio wykryte",
     "viewAll": "Zobacz wszystkie",
-    "noInvestmentsYet": "Nie wykryto jeszcze żadnych inwestycji. Uruchom skan, aby zacząć."
+    "noInvestmentsYet": "Nie wykryto jeszcze żadnych inwestycji. Uruchom skan, aby zacząć.",
+    "newInvestmentsChart": "Nowe inwestycje na skan",
+    "scanSuccessChart": "Skuteczność skanowania"
   },
   "scan": {
     "runScan": "Uruchom skan",
@@ -26,6 +32,7 @@
   "investments": {
     "title": "Inwestycje",
     "subtitle": "Wszystkie znane inwestycje monitorowanych deweloperów",
+    "detail": "Szczegóły",
     "searchLocation": "Szukaj lokalizacji…",
     "allDevelopers": "Wszyscy deweloperzy",
     "showArchived": "Pokaż zarchiwizowane",
@@ -65,6 +72,7 @@
     "investmentCount": "Inwestycje",
     "healthy": "Zdrowe",
     "stale": "Nieaktualne",
+    "staleWarning": "źródło/-eł nie pobrano od ponad 24 godzin.",
     "neverScanned": "Nigdy nie skanowano"
   },
   "theme": {

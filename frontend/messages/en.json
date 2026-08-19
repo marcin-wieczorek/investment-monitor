@@ -5,16 +5,22 @@
     "history": "History",
     "sources": "Sources"
   },
+  "common": {
+    "rawData": "Raw data"
+  },
   "dashboard": {
     "title": "Dashboard",
     "subtitle": "Overview of the last monitoring scan",
+    "totalInvestments": "Total investments",
     "lastScan": "Last scan",
     "neverRun": "Never run yet",
     "newInvestments": "New investments",
     "sourcesHealthy": "Sources healthy",
     "recentlyDetected": "Recently detected",
     "viewAll": "View all",
-    "noInvestmentsYet": "No investments detected yet. Run a scan to get started."
+    "noInvestmentsYet": "No investments detected yet. Run a scan to get started.",
+    "newInvestmentsChart": "New investments per scan",
+    "scanSuccessChart": "Scan success rate"
   },
   "scan": {
     "runScan": "Run scan",
@@ -26,6 +32,7 @@
   "investments": {
     "title": "Investments",
     "subtitle": "All known investments across monitored developers",
+    "detail": "Details",
     "searchLocation": "Search location…",
     "allDevelopers": "All developers",
     "showArchived": "Show archived",
@@ -65,6 +72,7 @@
     "investmentCount": "Investments",
     "healthy": "Healthy",
     "stale": "Stale",
+    "staleWarning": "source(s) haven't been captured in over 24 hours.",
     "neverScanned": "Never scanned"
   },
   "theme": {

@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Clock, Sparkles, Activity } from "lucide-react";
+import { Clock, Sparkles, Activity, Building2 } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { StatCard } from "@/components/stat-card";
-import { InvestmentCard } from "@/components/investment-card";
+import { RecentInvestmentsTable } from "@/components/recent-investments-table";
+import { NewInvestmentsChart } from "@/components/charts/new-investments-chart";
+import { ScanSuccessChart } from "@/components/charts/scan-success-chart";
 import { formatRelativeTime } from "@/lib/utils";
 import { STALE_THRESHOLD_MS } from "@/lib/constants";
 import type { InvestmentWithState, MonitoringRunRow, SourceSnapshotRow } from "@/lib/types";
@@ -12,11 +14,18 @@ import type { InvestmentWithState, MonitoringRunRow, SourceSnapshotRow } from "@
 interface DashboardViewProps {
   recentInvestments: InvestmentWithState[];
   sources: SourceSnapshotRow[];
-  latestRun: MonitoringRunRow | undefined;
+  runs: MonitoringRunRow[];
+  totalInvestments: number;
 }
 
-export function DashboardView({ recentInvestments, sources, latestRun }: DashboardViewProps) {
+export function DashboardView({
+  recentInvestments,
+  sources,
+  runs,
+  totalInvestments,
+}: DashboardViewProps) {
   const { t, locale } = useI18n();
+  const latestRun = runs[0];
 
   const healthySources = sources.filter(
     (s) => Date.now() - new Date(s.captured_at).getTime() < STALE_THRESHOLD_MS
@@ -29,7 +38,12 @@ export function DashboardView({ recentInvestments, sources, latestRun }: Dashboa
         <p className="text-sm text-muted-foreground">{t("dashboard.subtitle")}</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StatCard
+          icon={Building2}
+          label={t("dashboard.totalInvestments")}
+          value={totalInvestments}
+        />
         <StatCard
           icon={Clock}
           label={t("dashboard.lastScan")}
@@ -51,8 +65,23 @@ export function DashboardView({ recentInvestments, sources, latestRun }: Dashboa
         />
       </div>
 
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className="rounded-2xl border border-border bg-card p-5 md:p-6">
+          <h2 className="mb-4 text-sm font-medium text-muted-foreground">
+            {t("dashboard.newInvestmentsChart")}
+          </h2>
+          <NewInvestmentsChart runs={runs} />
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-5 md:p-6">
+          <h2 className="mb-4 text-sm font-medium text-muted-foreground">
+            {t("dashboard.scanSuccessChart")}
+          </h2>
+          <ScanSuccessChart runs={runs} />
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-card p-5 md:p-6">
+        <div className="mb-4 flex items-center justify-between">
           <h2 className="text-sm font-medium text-muted-foreground">
             {t("dashboard.recentlyDetected")}
           </h2>
@@ -63,18 +92,7 @@ export function DashboardView({ recentInvestments, sources, latestRun }: Dashboa
             {t("dashboard.viewAll")}
           </Link>
         </div>
-
-        {recentInvestments.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-            {t("dashboard.noInvestmentsYet")}
-          </p>
-        ) : (
-          <div className="space-y-3">
-            {recentInvestments.map((investment) => (
-              <InvestmentCard key={investment.id} investment={investment} />
-            ))}
-          </div>
-        )}
+        <RecentInvestmentsTable investments={recentInvestments} />
       </div>
     </div>
   );

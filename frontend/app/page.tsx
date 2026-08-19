@@ -1,4 +1,4 @@
-import { listRecentInvestments, listRuns, listSources } from "@/lib/queries";
+import { countAllInvestments, listRecentInvestments, listRuns, listSources } from "@/lib/queries";
 import { DashboardView } from "@/components/dashboard-view";
 
 export const dynamic = "force-dynamic";
@@ -6,13 +6,15 @@ export const dynamic = "force-dynamic";
 export default function DashboardPage() {
   const recentInvestments = listRecentInvestments(6);
   const sources = listSources();
-  const runs = listRuns(1);
+  const runs = listRuns(30);
+  const totalInvestments = countAllInvestments();
 
   return (
     <DashboardView
       recentInvestments={recentInvestments}
       sources={sources}
-      latestRun={runs[0]}
+      runs={runs}
+      totalInvestments={totalInvestments}
     />
   );
 }

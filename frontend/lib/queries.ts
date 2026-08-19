@@ -50,6 +50,14 @@ export function getInvestment(id: number): InvestmentWithState | undefined {
   return row ? normalizeRow(row) : undefined;
 }
 
+export function countAllInvestments(): number {
+  const db = getDb();
+  const result = db.prepare("SELECT COUNT(*) AS count FROM investment").get() as unknown as {
+    count: number;
+  };
+  return result.count;
+}
+
 export function countNewSince(sinceIso: string): number {
   const db = getDb();
   const result = db

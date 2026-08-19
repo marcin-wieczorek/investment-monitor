@@ -12,6 +12,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useI18n } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 
 interface ScanResult {
   ok: boolean;
@@ -20,10 +21,12 @@ interface ScanResult {
 }
 
 interface ScanButtonProps {
-  size?: "sm" | "default";
+  size?: "sm" | "default" | "icon";
+  className?: string;
+  iconOnly?: boolean;
 }
 
-export function ScanButton({ size = "default" }: ScanButtonProps) {
+export function ScanButton({ size = "default", className, iconOnly = false }: ScanButtonProps) {
   const { t } = useI18n();
   const router = useRouter();
   const [isScanning, setIsScanning] = useState(false);
@@ -45,9 +48,28 @@ export function ScanButton({ size = "default" }: ScanButtonProps) {
     }
   }
 
+  if (iconOnly) {
+    return (
+      <Button
+        onClick={runScan}
+        disabled={isScanning}
+        size="icon"
+        className={className}
+        aria-label={t("scan.runScan")}
+        title={t("scan.runScan")}
+      >
+        {isScanning ? (
+          <Loader2 className="size-4 animate-spin" />
+        ) : (
+          <PlayCircle className="size-4" />
+        )}
+      </Button>
+    );
+  }
+
   return (
-    <div className="flex items-center gap-1">
-      <Button onClick={runScan} disabled={isScanning} size={size}>
+    <div className={cn("flex items-center gap-1", className)}>
+      <Button onClick={runScan} disabled={isScanning} size={size} className="flex-1">
         {isScanning ? (
           <Loader2 className="size-4 animate-spin" />
         ) : (
