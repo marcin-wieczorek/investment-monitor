@@ -28,6 +28,7 @@ class ChronosParserTest {
         tercja.developer shouldBe "Chronos Development"
         tercja.url.toString() shouldBe "https://www.tercja.eu"
         tercja.location shouldBe "Swarzędz – Rabowice, ul. Swanka"
+        tercja.imageUrl shouldBe "https://www.chronos.poznan.pl/photo/420x320/1e181add05b87f5501a59dc4259c7cb6.jpg/1"
     }
 
     @Test
@@ -36,6 +37,7 @@ class ChronosParserTest {
 
         gardenia.url.toString() shouldBe "https://www.osiedle-gardenia.pl"
         gardenia.location shouldBe "Rokietnica ul. Szkolna"
+        gardenia.imageUrl shouldBe "https://www.chronos.poznan.pl/tinyfinder/assets/uploads/img/gardenia-video.jpg"
     }
 
     @Test

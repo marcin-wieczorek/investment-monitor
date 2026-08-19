@@ -40,6 +40,7 @@ class JdbcInvestmentRepository(private val jdbcTemplate: JdbcTemplate) : Investm
         investment.price?.min,
         investment.price?.max,
         investment.status?.name,
+        investment.imageUrl,
         seenAt.toString(),
         investment.canonicalKey
     )
@@ -60,6 +61,7 @@ class JdbcInvestmentRepository(private val jdbcTemplate: JdbcTemplate) : Investm
         investment.price?.min,
         investment.price?.max,
         investment.status?.name,
+        investment.imageUrl,
         seenAt.toString(),
         seenAt.toString()
     )
@@ -72,7 +74,7 @@ class JdbcInvestmentRepository(private val jdbcTemplate: JdbcTemplate) : Investm
                 developer = ?, name = ?, url = ?, location = ?, property_type = ?,
                 units = ?, house_area_min = ?, house_area_max = ?,
                 plot_area_min = ?, plot_area_max = ?, price_min = ?, price_max = ?,
-                status = ?, last_seen_at = ?
+                status = ?, image_url = ?, last_seen_at = ?
             WHERE canonical_key = ?
         """
 
@@ -80,8 +82,8 @@ class JdbcInvestmentRepository(private val jdbcTemplate: JdbcTemplate) : Investm
             INSERT INTO investment (
                 source, canonical_key, developer, name, url, location, property_type,
                 units, house_area_min, house_area_max, plot_area_min, plot_area_max,
-                price_min, price_max, status, first_seen_at, last_seen_at
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                price_min, price_max, status, image_url, first_seen_at, last_seen_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
     }
 }
@@ -99,7 +101,8 @@ private object InvestmentRowMapper : RowMapper<Investment> {
         houseArea = areaRange(rs, "house_area_min", "house_area_max"),
         plotArea = areaRange(rs, "plot_area_min", "plot_area_max"),
         price = priceRange(rs),
-        status = rs.getString("status")?.let(InvestmentStatus::valueOf)
+        status = rs.getString("status")?.let(InvestmentStatus::valueOf),
+        imageUrl = rs.getString("image_url")
     )
 
     private fun areaRange(rs: ResultSet, minColumn: String, maxColumn: String): AreaRange? {

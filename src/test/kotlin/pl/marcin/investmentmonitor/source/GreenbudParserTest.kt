@@ -32,6 +32,7 @@ class GreenbudParserTest {
         rabowice2.houseArea?.max shouldBe 87.43
         rabowice2.plotArea?.min shouldBe null
         rabowice2.plotArea?.max shouldBe 363.0
+        rabowice2.imageUrl shouldBe "https://www.greenbud.com.pl/wp-content/uploads/2024/05/camera_03_front1.jpg"
     }
 
     @Test

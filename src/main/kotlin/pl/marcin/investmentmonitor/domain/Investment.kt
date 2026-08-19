@@ -14,7 +14,8 @@ data class Investment(
     val houseArea: AreaRange?,
     val plotArea: AreaRange?,
     val price: PriceRange?,
-    val status: InvestmentStatus?
+    val status: InvestmentStatus?,
+    val imageUrl: String?
 ) {
     val canonicalKey: String
         get() {

@@ -18,7 +18,8 @@ class ChangeDetectorTest {
         houseArea = null,
         plotArea = null,
         price = null,
-        status = null
+        status = null,
+        imageUrl = null
     )
 
     @Test

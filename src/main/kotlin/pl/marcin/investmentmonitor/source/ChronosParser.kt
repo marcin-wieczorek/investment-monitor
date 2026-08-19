@@ -20,6 +20,8 @@ import java.util.Locale
  * The list page does not publish property type, unit count, house/plot area,
  * price or status - those live on each investment's own external site and are
  * out of scope for this parser (see docs/SOURCES.md two-stage scraping note).
+ * The media card's `div.investment-img` background-image is used as the
+ * investment's thumbnail.
  */
 class ChronosParser {
 
@@ -48,8 +50,14 @@ class ChronosParser {
             houseArea = null,
             plotArea = null,
             price = null,
-            status = null
+            status = null,
+            imageUrl = extractImageUrl(card)
         )
+    }
+
+    private fun extractImageUrl(card: Element): String? {
+        val style = card.selectFirst("div.investment-img")?.attr("style") ?: return null
+        return IMAGE_URL.find(style)?.groupValues?.get(1)?.takeIf(String::isNotBlank)
     }
 
     private fun extractName(card: Element): String? {
@@ -68,5 +76,6 @@ class ChronosParser {
         const val SOURCE_ID = "chronos"
         const val DEVELOPER_NAME = "Chronos Development"
         private val WHITESPACE = Regex("\\s+")
+        private val IMAGE_URL = Regex("url\\(['\"]?([^'\"()]+)['\"]?\\)")
     }
 }

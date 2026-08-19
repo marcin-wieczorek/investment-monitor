@@ -61,9 +61,15 @@ class GreenbudParser {
             houseArea = houseAreaText?.let(PolishAreaFormat::parse),
             plotArea = plotAreaText?.let(PolishAreaFormat::parse),
             price = null,
-            status = null
+            status = null,
+            imageUrl = extractImageUrl(card)
         )
     }
+
+    private fun extractImageUrl(card: Element): String? =
+        card.selectFirst("div.elementor-widget-image img")
+            ?.absUrl("src")
+            ?.takeIf(String::isNotBlank)
 
     /** Splits a `<p>` containing `<br>`-separated fields into plain-text lines. */
     private fun detailLines(paragraph: Element): List<String> =

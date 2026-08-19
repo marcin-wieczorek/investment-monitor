@@ -26,7 +26,8 @@ class TercjaDetailParserTest {
         houseArea = null,
         plotArea = null,
         price = null,
-        status = null
+        status = null,
+        imageUrl = "https://www.chronos.poznan.pl/photo/420x320/1e181add05b87f5501a59dc4259c7cb6.jpg/1"
     )
 
     @Test
