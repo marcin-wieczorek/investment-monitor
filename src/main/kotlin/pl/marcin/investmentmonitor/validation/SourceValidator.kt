@@ -12,6 +12,9 @@ class SourceValidator(
     private val maxInvestmentDropPercentage: Int = 50
 ) {
     fun validate(current: List<Investment>, previousCount: Int?): ValidationResult {
+        if (current.isEmpty()) {
+            return ValidationResult(false, "Source returned zero investments.")
+        }
         if (current.any { it.name.isBlank() || it.url.toString().isBlank() }) {
             return ValidationResult(false, "At least one investment has an invalid identity.")
         }

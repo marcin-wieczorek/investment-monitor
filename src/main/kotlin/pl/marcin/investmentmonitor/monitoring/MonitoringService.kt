@@ -73,16 +73,19 @@ class MonitoringService(
         val changes = changeDetector.detect(fetched, previousInvestments).map(::processIfNew)
 
         if (fetchResult.isSuccess && validation.valid) {
-            commit(source.id, changes.map { it.change.current })
+            commit(source.id, changes.mapNotNull { it.change.current })
         }
 
         return SourceReport(source.id, fetchResult.isSuccess, validation, changes)
     }
 
     private fun processIfNew(change: InvestmentChange): AnalyzedChange {
-        if (change.type != ChangeType.NEW) return AnalyzedChange(change, analysis = null)
+        val current = change.current
+        if (change.type != ChangeType.NEW || current == null) {
+            return AnalyzedChange(change, analysis = null)
+        }
 
-        val enriched = detailEnricher.enrich(change.current)
+        val enriched = detailEnricher.enrich(current)
         val analysis = investmentAnalyzer.analyze(enriched)
         return AnalyzedChange(change.copy(current = enriched), analysis)
     }

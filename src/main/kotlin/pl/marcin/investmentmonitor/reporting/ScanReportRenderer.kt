@@ -5,7 +5,7 @@ import pl.marcin.investmentmonitor.detection.ChangeType
 object ScanReportRenderer {
 
     fun render(report: ScanReport): String = buildString {
-        appendLine("DAILY SCAN")
+        appendLine("SCAN REPORT")
         appendLine(SEPARATOR)
 
         report.sources.forEach { source -> appendSource(source) }
@@ -16,7 +16,8 @@ object ScanReportRenderer {
 
     private fun StringBuilder.appendSource(source: SourceReport) {
         val status = if (source.fetchSucceeded && source.validation.valid) "OK" else "FAIL"
-        appendLine("${source.sourceId.padEnd(12)} $status  ${source.changes.size} investments")
+        val presentCount = source.changes.count { it.change.type != ChangeType.REMOVED }
+        appendLine("${source.sourceId.padEnd(12)} $status  $presentCount investments")
 
         source.changes
             .filter { it.change.type != ChangeType.UNCHANGED }
@@ -28,9 +29,12 @@ object ScanReportRenderer {
     }
 
     private fun StringBuilder.appendChange(analyzed: AnalyzedChange) {
-        val current = analyzed.change.current
-        val location = current.location ?: "unknown location"
-        appendLine("  [${analyzed.change.type}] ${current.name} ($location)")
+        val change = analyzed.change
+        // current is null only for REMOVED; fall back to previous so we can
+        // still report the name/location of what disappeared.
+        val investment = change.current ?: change.previous ?: return
+        val location = investment.location ?: "unknown location"
+        appendLine("  [${change.type}] ${investment.name} ($location)")
 
         val analysis = analyzed.analysis ?: return
         appendLine("    priority: ${analysis.priority} - ${analysis.reason}")
