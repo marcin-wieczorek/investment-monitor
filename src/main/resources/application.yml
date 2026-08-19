@@ -14,3 +14,14 @@ spring:
 investment-monitor:
   validation:
     max-investment-drop-percentage: 50
+  llm:
+    # Disabled by default: a scan must never depend on a local LLM being
+    # installed/running. Set to true once Ollama is set up (see docs/LLM.md).
+    enabled: false
+    base-url: http://localhost:11434
+    model: qwen2.5:7b
+    timeout-seconds: 60
+  archival:
+    enabled: true
+    path: raw
+    retention-days: 30

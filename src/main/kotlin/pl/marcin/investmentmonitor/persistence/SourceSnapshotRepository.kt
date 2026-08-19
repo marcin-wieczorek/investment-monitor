@@ -1,5 +1,6 @@
 package pl.marcin.investmentmonitor.persistence
 
+import pl.marcin.investmentmonitor.domain.SourceCategory
 import java.time.Instant
 
 data class SourceSnapshot(
@@ -12,7 +13,8 @@ data class SourceSnapshot(
      * separately and precisely by ChangeDetector; this is a cheap identity
      * check, not a content-staleness check.
      */
-    val contentHash: String
+    val contentHash: String,
+    val sourceCategory: SourceCategory = SourceCategory.DEVELOPER
 )
 
 interface SourceSnapshotRepository {

@@ -10,11 +10,11 @@ Fixture tests are deterministic and run without network access:
 ./gradlew test
 ```
 
-Fixtures live under `src/test/resources/fixtures/<source>/`. They are reviewed snapshots of real developer pages. Parser tests assert normalized domain fields, especially location, property type, house area, **plot area**, price, unit count and status.
+Fixtures live under `src/test/resources/fixtures/<source>/`. They are reviewed snapshots of real pages across all three source categories (developer, discovery, aggregator). Parser tests assert normalized domain fields, especially location, property type, house area, **plot area**, price, unit count and status for investments; municipality, signal type, reference and detected date for discovery signals.
 
 ## Live verification
 
-Live verification contacts configured developer sites and validates parser output against source-health rules:
+Live verification contacts every configured source (developer, discovery, aggregator) and validates parser output against source-health rules:
 
 ```bash
 ./gradlew verifySources

@@ -19,12 +19,18 @@ class JdbcInvestmentRepository(private val jdbcTemplate: JdbcTemplate) : Investm
         jdbcTemplate.query(SELECT_BY_SOURCE, InvestmentRowMapper, source)
             .associateBy { it.canonicalKey }
 
+    override fun findAll(): List<Investment> =
+        jdbcTemplate.query(SELECT_ALL, InvestmentRowMapper)
+
     override fun upsert(investment: Investment, seenAt: Instant) {
         val updatedRows = jdbcTemplate.update(UPDATE, *updateArgs(investment, seenAt))
         if (updatedRows == 0) {
             jdbcTemplate.update(INSERT, *insertArgs(investment, seenAt))
         }
     }
+
+    override fun findIdByCanonicalKey(canonicalKey: String): Long? =
+        jdbcTemplate.query(SELECT_ID, { rs, _ -> rs.getLong("id") }, canonicalKey).firstOrNull()
 
     private fun updateArgs(investment: Investment, seenAt: Instant): Array<Any?> = arrayOf(
         investment.developer,
@@ -68,6 +74,8 @@ class JdbcInvestmentRepository(private val jdbcTemplate: JdbcTemplate) : Investm
 
     private companion object {
         const val SELECT_BY_SOURCE = "SELECT * FROM investment WHERE source = ?"
+        const val SELECT_ALL = "SELECT * FROM investment"
+        const val SELECT_ID = "SELECT id FROM investment WHERE canonical_key = ?"
 
         const val UPDATE = """
             UPDATE investment SET

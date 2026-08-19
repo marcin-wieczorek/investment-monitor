@@ -3,6 +3,7 @@ package pl.marcin.investmentmonitor.persistence
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Repository
+import pl.marcin.investmentmonitor.domain.SourceCategory
 import java.sql.ResultSet
 import java.time.Instant
 
@@ -18,6 +19,7 @@ class JdbcSourceSnapshotRepository(private val jdbcTemplate: JdbcTemplate) : Sou
             snapshot.capturedAt.toString(),
             snapshot.investmentCount,
             snapshot.contentHash,
+            snapshot.sourceCategory.name,
             snapshot.source
         )
         if (updatedRows == 0) {
@@ -26,7 +28,8 @@ class JdbcSourceSnapshotRepository(private val jdbcTemplate: JdbcTemplate) : Sou
                 snapshot.source,
                 snapshot.capturedAt.toString(),
                 snapshot.investmentCount,
-                snapshot.contentHash
+                snapshot.contentHash,
+                snapshot.sourceCategory.name
             )
         }
     }
@@ -34,9 +37,9 @@ class JdbcSourceSnapshotRepository(private val jdbcTemplate: JdbcTemplate) : Sou
     private companion object {
         const val SELECT = "SELECT * FROM source_snapshot WHERE source = ?"
         const val UPDATE =
-            "UPDATE source_snapshot SET captured_at = ?, investment_count = ?, content_hash = ? WHERE source = ?"
+            "UPDATE source_snapshot SET captured_at = ?, investment_count = ?, content_hash = ?, source_category = ? WHERE source = ?"
         const val INSERT =
-            "INSERT INTO source_snapshot (source, captured_at, investment_count, content_hash) VALUES (?, ?, ?, ?)"
+            "INSERT INTO source_snapshot (source, captured_at, investment_count, content_hash, source_category) VALUES (?, ?, ?, ?, ?)"
     }
 }
 
@@ -45,6 +48,7 @@ private object SourceSnapshotRowMapper : RowMapper<SourceSnapshot> {
         source = rs.getString("source"),
         capturedAt = Instant.parse(rs.getString("captured_at")),
         investmentCount = rs.getInt("investment_count"),
-        contentHash = rs.getString("content_hash")
+        contentHash = rs.getString("content_hash"),
+        sourceCategory = rs.getString("source_category")?.let(SourceCategory::valueOf) ?: SourceCategory.DEVELOPER
     )
 }
