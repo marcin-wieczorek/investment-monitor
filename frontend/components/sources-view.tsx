@@ -1,24 +1,44 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AlertTriangle } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ExpandableTableRow, ExpandChevron } from "@/components/expandable-table-row";
+import { cn } from "@/lib/utils";
 import { formatRelativeTime } from "@/lib/utils";
 import { STALE_THRESHOLD_MS } from "@/lib/constants";
 import type { SourceSnapshotRow } from "@/lib/types";
 
 const COLUMNS_COUNT = 4;
+const ALL_CATEGORIES = "__all__";
+
+const CATEGORY_LABEL_KEY: Record<string, "sources.developer" | "sources.discovery" | "sources.aggregator"> = {
+  DEVELOPER: "sources.developer",
+  DISCOVERY: "sources.discovery",
+  AGGREGATOR: "sources.aggregator",
+};
 
 export function SourcesView({ sources }: { sources: SourceSnapshotRow[] }) {
   const { t, locale } = useI18n();
   const [expandedSource, setExpandedSource] = useState<string | null>(null);
+  const [category, setCategory] = useState<string>(ALL_CATEGORIES);
 
   const staleCount = sources.filter(
     (s) => Date.now() - new Date(s.captured_at).getTime() >= STALE_THRESHOLD_MS
   ).length;
+
+  const categories = useMemo(
+    () => Array.from(new Set(sources.map((s) => s.source_category))),
+    [sources]
+  );
+
+  const filtered = useMemo(
+    () => (category === ALL_CATEGORIES ? sources : sources.filter((s) => s.source_category === category)),
+    [sources, category]
+  );
 
   return (
     <div className="space-y-6">
@@ -36,7 +56,27 @@ export function SourcesView({ sources }: { sources: SourceSnapshotRow[] }) {
         </div>
       ) : null}
 
-      {sources.length === 0 ? (
+      <div className="flex flex-wrap gap-2">
+        <Button
+          size="sm"
+          variant={category === ALL_CATEGORIES ? "default" : "outline"}
+          onClick={() => setCategory(ALL_CATEGORIES)}
+        >
+          {t("sources.title")}
+        </Button>
+        {categories.map((cat) => (
+          <Button
+            key={cat}
+            size="sm"
+            variant={category === cat ? "default" : "outline"}
+            onClick={() => setCategory(cat)}
+          >
+            {t(CATEGORY_LABEL_KEY[cat] ?? "sources.developer")}
+          </Button>
+        ))}
+      </div>
+
+      {filtered.length === 0 ? (
         <p className="rounded-lg border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
           {t("sources.neverScanned")}
         </p>
@@ -52,7 +92,7 @@ export function SourcesView({ sources }: { sources: SourceSnapshotRow[] }) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sources.map((source) => {
+              {filtered.map((source) => {
                 const isHealthy =
                   Date.now() - new Date(source.captured_at).getTime() < STALE_THRESHOLD_MS;
                 const isOpen = expandedSource === source.source;
@@ -68,13 +108,16 @@ export function SourcesView({ sources }: { sources: SourceSnapshotRow[] }) {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <span className="font-mono font-medium">{source.source}</span>
+                        <Badge variant="secondary" className="text-[10px] uppercase tracking-wide">
+                          {t(CATEGORY_LABEL_KEY[source.source_category] ?? "sources.developer")}
+                        </Badge>
                         <Badge
                           variant="outline"
-                          className={
+                          className={cn(
                             isHealthy
                               ? "border-emerald-500/30 text-emerald-500 dark:text-emerald-400"
                               : "border-amber-500/30 text-amber-500 dark:text-amber-400"
-                          }
+                          )}
                         >
                           {isHealthy ? t("sources.healthy") : t("sources.stale")}
                         </Badge>

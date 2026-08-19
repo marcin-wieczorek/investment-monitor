@@ -1,8 +1,11 @@
 import { getDb } from "@/lib/db";
 import type {
+  CorrelationRow,
   InvestmentFilters,
+  InvestmentSignalRow,
   InvestmentWithState,
   MonitoringRunRow,
+  SourceEvidenceRow,
   SourceSnapshotRow,
 } from "@/lib/types";
 
@@ -113,4 +116,70 @@ export function setArchived(investmentId: number, archived: boolean): void {
 }
 function normalizeRow(row: InvestmentWithState): InvestmentWithState {
   return { ...row, archived: Boolean(row.archived) };
+}
+
+export function listSignals(limit = 200): InvestmentSignalRow[] {
+  const db = getDb();
+  const rows = db
+    .prepare("SELECT * FROM investment_signal ORDER BY detected_at DESC LIMIT ?")
+    .all(limit) as unknown as InvestmentSignalRow[];
+  return rows.map((row) => ({ ...row }));
+}
+
+export function getSignal(id: number): InvestmentSignalRow | undefined {
+  const db = getDb();
+  const row = db.prepare("SELECT * FROM investment_signal WHERE id = ?").get(id) as unknown as
+    | InvestmentSignalRow
+    | undefined;
+  return row ? { ...row } : undefined;
+}
+
+export function countAllSignals(): number {
+  const db = getDb();
+  const result = db.prepare("SELECT COUNT(*) AS count FROM investment_signal").get() as unknown as {
+    count: number;
+  };
+  return result.count;
+}
+
+export function listEvidenceForInvestment(investmentId: number): SourceEvidenceRow[] {
+  const db = getDb();
+  const rows = db
+    .prepare("SELECT * FROM source_evidence WHERE investment_id = ? ORDER BY captured_at DESC")
+    .all(investmentId) as unknown as SourceEvidenceRow[];
+  return rows.map((row) => ({ ...row }));
+}
+
+export function listEvidenceForSignal(signalId: number): SourceEvidenceRow[] {
+  const db = getDb();
+  const rows = db
+    .prepare("SELECT * FROM source_evidence WHERE signal_id = ? ORDER BY captured_at DESC")
+    .all(signalId) as unknown as SourceEvidenceRow[];
+  return rows.map((row) => ({ ...row }));
+}
+
+const CORRELATION_SELECT = `
+  SELECT
+    c.*,
+    i.name AS investment_name,
+    s.title AS signal_title
+  FROM correlation c
+  JOIN investment i ON i.id = c.investment_id
+  JOIN investment_signal s ON s.id = c.signal_id
+`;
+
+export function listCorrelations(limit = 200): CorrelationRow[] {
+  const db = getDb();
+  const rows = db
+    .prepare(`${CORRELATION_SELECT} ORDER BY c.created_at DESC LIMIT ?`)
+    .all(limit) as unknown as CorrelationRow[];
+  return rows.map((row) => ({ ...row }));
+}
+
+export function listCorrelationsForInvestment(investmentId: number): CorrelationRow[] {
+  const db = getDb();
+  const rows = db
+    .prepare(`${CORRELATION_SELECT} WHERE c.investment_id = ? ORDER BY c.created_at DESC`)
+    .all(investmentId) as unknown as CorrelationRow[];
+  return rows.map((row) => ({ ...row }));
 }

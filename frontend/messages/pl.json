@@ -2,6 +2,8 @@
   "nav": {
     "dashboard": "Pulpit",
     "investments": "Inwestycje",
+    "signals": "Sygnały",
+    "correlations": "Korelacje",
     "history": "Historia",
     "sources": "Źródła"
   },
@@ -12,6 +14,7 @@
     "title": "Pulpit",
     "subtitle": "Podsumowanie ostatniego skanu",
     "totalInvestments": "Wszystkie inwestycje",
+    "totalSignals": "Sygnały discovery",
     "lastScan": "Ostatni skan",
     "neverRun": "Jeszcze nie uruchomiono",
     "newInvestments": "Nowe inwestycje",
@@ -52,7 +55,31 @@
     "notPublished": "Nie podano",
     "areaUpTo": "do",
     "areaFrom": "od",
-    "units": "lokali"
+    "units": "lokali",
+    "evidence": "Źródła danych",
+    "noEvidence": "Brak zarejestrowanej proweniencji.",
+    "correlatedSignals": "Powiązane sygnały discovery",
+    "noCorrelations": "Brak powiązanych sygnałów discovery."
+  },
+  "signals": {
+    "title": "Sygnały Discovery",
+    "subtitle": "Oficjalne/publiczne dowody planowanej zabudowy mieszkaniowej, zanim staną się realną inwestycją rynkową",
+    "municipality": "Gmina",
+    "location": "Lokalizacja",
+    "type": "Typ",
+    "detected": "Wykryto",
+    "reference": "Sygnatura",
+    "source": "Źródło",
+    "noResults": "Nie zarejestrowano jeszcze żadnych sygnałów discovery."
+  },
+  "correlations": {
+    "title": "Korelacje",
+    "subtitle": "Deterministyczne powiązania między sygnałami discovery a inwestycjami opisującymi prawdopodobnie ten sam projekt",
+    "confidence": "Pewność",
+    "investment": "Inwestycja",
+    "signal": "Sygnał",
+    "reason": "Powód",
+    "noResults": "Nie znaleziono jeszcze żadnych korelacji."
   },
   "history": {
     "title": "Historia",
@@ -67,13 +94,16 @@
   },
   "sources": {
     "title": "Źródła",
-    "subtitle": "Stan zdrowia każdego monitorowanego dewelopera",
+    "subtitle": "Stan zdrowia każdego monitorowanego źródła we wszystkich kategoriach",
     "lastCaptured": "Ostatnio pobrano",
-    "investmentCount": "Inwestycje",
+    "investmentCount": "Pozycje",
     "healthy": "Zdrowe",
     "stale": "Nieaktualne",
     "staleWarning": "źródło/-eł nie pobrano od ponad 24 godzin.",
-    "neverScanned": "Nigdy nie skanowano"
+    "neverScanned": "Nigdy nie skanowano",
+    "developer": "Deweloper",
+    "discovery": "Discovery",
+    "aggregator": "Agregator"
   },
   "theme": {
     "light": "Jasny",

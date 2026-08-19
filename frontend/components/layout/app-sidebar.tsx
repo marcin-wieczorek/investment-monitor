@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, LayoutDashboard, History, Radio } from "lucide-react";
+import { Building2, LayoutDashboard, History, Radio, Radar, Link2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
 import { useSidebar } from "@/lib/sidebar-context";
@@ -11,6 +11,8 @@ import { ScanButton } from "@/components/scan-button";
 const navItems = [
   { href: "/", key: "nav.dashboard" as const, icon: LayoutDashboard },
   { href: "/investments", key: "nav.investments" as const, icon: Building2 },
+  { href: "/signals", key: "nav.signals" as const, icon: Radar },
+  { href: "/correlations", key: "nav.correlations" as const, icon: Link2 },
   { href: "/sources", key: "nav.sources" as const, icon: Radio },
   { href: "/history", key: "nav.history" as const, icon: History },
 ];

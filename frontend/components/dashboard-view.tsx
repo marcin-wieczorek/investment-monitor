@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Clock, Sparkles, Activity, Building2 } from "lucide-react";
+import { Clock, Sparkles, Activity, Building2, Radar } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { StatCard } from "@/components/stat-card";
 import { RecentInvestmentsTable } from "@/components/recent-investments-table";
@@ -16,6 +16,7 @@ interface DashboardViewProps {
   sources: SourceSnapshotRow[];
   runs: MonitoringRunRow[];
   totalInvestments: number;
+  totalSignals: number;
 }
 
 export function DashboardView({
@@ -23,6 +24,7 @@ export function DashboardView({
   sources,
   runs,
   totalInvestments,
+  totalSignals,
 }: DashboardViewProps) {
   const { t, locale } = useI18n();
   const latestRun = runs[0];
@@ -38,11 +40,16 @@ export function DashboardView({
         <p className="text-sm text-muted-foreground">{t("dashboard.subtitle")}</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <StatCard
           icon={Building2}
           label={t("dashboard.totalInvestments")}
           value={totalInvestments}
+        />
+        <StatCard
+          icon={Radar}
+          label={t("dashboard.totalSignals")}
+          value={totalSignals}
         />
         <StatCard
           icon={Clock}

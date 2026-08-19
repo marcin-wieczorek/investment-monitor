@@ -13,9 +13,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { JsonAccordion } from "@/components/json-accordion";
 import { formatArea, formatRelativeTime } from "@/lib/utils";
-import type { InvestmentWithState } from "@/lib/types";
+import type { CorrelationRow, InvestmentWithState, SourceEvidenceRow } from "@/lib/types";
 
-export function InvestmentDetailView({ investment }: { investment: InvestmentWithState }) {
+interface InvestmentDetailViewProps {
+  investment: InvestmentWithState;
+  evidence: SourceEvidenceRow[];
+  correlations: CorrelationRow[];
+}
+
+export function InvestmentDetailView({ investment, evidence, correlations }: InvestmentDetailViewProps) {
   const { t, locale } = useI18n();
   const router = useRouter();
 
@@ -166,6 +172,67 @@ export function InvestmentDetailView({ investment }: { investment: InvestmentWit
               ) : null}
             </div>
           </div>
+
+          <Separator />
+
+          {evidence.length > 0 ? (
+            <div className="space-y-2">
+              <h2 className="text-sm font-medium text-muted-foreground">{t("investments.evidence")}</h2>
+              <div className="space-y-1.5">
+                {evidence.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border border-border bg-muted/30 px-3 py-2 text-xs"
+                  >
+                    <Badge variant="outline" className="text-[10px] uppercase">
+                      {item.source_category}
+                    </Badge>
+                    <span className="font-mono text-muted-foreground">{item.source_id}</span>
+                    <span className="text-muted-foreground">{formatRelativeTime(item.captured_at, locale)}</span>
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="ml-auto inline-flex items-center gap-1 text-muted-foreground hover:text-foreground hover:underline"
+                    >
+                      <ExternalLink className="size-3" />
+                      {item.field_name}
+                    </a>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">{t("investments.noEvidence")}</p>
+          )}
+
+          {correlations.length > 0 ? (
+            <div className="space-y-2">
+              <h2 className="text-sm font-medium text-muted-foreground">{t("investments.correlatedSignals")}</h2>
+              <div className="space-y-1.5">
+                {correlations.map((correlation) => (
+                  <div
+                    key={correlation.id}
+                    className="flex flex-wrap items-start gap-x-3 gap-y-1 rounded-md border border-border bg-muted/30 px-3 py-2 text-xs"
+                  >
+                    <Badge
+                      variant="outline"
+                      className={
+                        correlation.confidence === "HIGH"
+                          ? "border-emerald-500/30 text-emerald-500 dark:text-emerald-400"
+                          : "border-amber-500/30 text-amber-500 dark:text-amber-400"
+                      }
+                    >
+                      {correlation.confidence}
+                    </Badge>
+                    <span className="min-w-0 flex-1">{correlation.signal_title}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">{t("investments.noCorrelations")}</p>
+          )}
 
           <Separator />
 

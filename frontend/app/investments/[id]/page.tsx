@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getInvestment } from "@/lib/queries";
+import { getInvestment, listCorrelationsForInvestment, listEvidenceForInvestment } from "@/lib/queries";
 import { InvestmentDetailView } from "@/components/investment-detail-view";
 
 export const dynamic = "force-dynamic";
@@ -16,5 +16,8 @@ export default async function InvestmentDetailPage({
     notFound();
   }
 
-  return <InvestmentDetailView investment={investment} />;
+  const evidence = listEvidenceForInvestment(investment.id);
+  const correlations = listCorrelationsForInvestment(investment.id);
+
+  return <InvestmentDetailView investment={investment} evidence={evidence} correlations={correlations} />;
 }

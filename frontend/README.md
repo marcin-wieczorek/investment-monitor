@@ -27,10 +27,12 @@ npm run start   # http://localhost:3000
 
 ## What it does
 
-- **Dashboard** — last scan summary, source health, recently detected investments.
-- **Investments** — searchable/filterable list with thumbnails, detail view with notes and archiving.
+- **Dashboard** — last scan summary, source health, discovery signal count, recently detected investments.
+- **Investments** — searchable/filterable list with thumbnails, detail view with notes, archiving, provenance (evidence) and correlated discovery signals.
+- **Signals** — discovery signals (municipal zoning/planning evidence) from all discovery sources, filterable by type.
+- **Correlations** — deterministic links between discovery signals and investments that likely describe the same project.
 - **History** — timeline of every monitoring run.
-- **Sources** — health status per monitored developer.
+- **Sources** — health status per monitored source, grouped by category (developer/discovery/aggregator).
 
 Triggering a scan from the UI runs `./gradlew bootRun` in the repo root as a
 subprocess and refreshes the page once it completes.
