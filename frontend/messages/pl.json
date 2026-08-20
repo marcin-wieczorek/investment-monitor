@@ -14,6 +14,16 @@
   "common": {
     "rawData": "Dane surowe"
   },
+  "error": {
+    "title": "Coś poszło nie tak",
+    "description": "Nie udało się załadować tej strony. Źródło danych może być niedostępne lub wystąpił nieoczekiwany błąd.",
+    "retry": "Spróbuj ponownie",
+    "goHome": "Przejdź do pulpitu",
+    "detailsLabel": "Szczegóły błędu",
+    "criticalTitle": "Błąd aplikacji",
+    "criticalDescription": "Wystąpił krytyczny błąd i aplikacja nie mogła się zregenerować. Odświeżenie strony może pomóc.",
+    "actionFailed": "Coś poszło nie tak. Spróbuj ponownie."
+  },
   "dashboard": {
     "title": "Pulpit",
     "subtitle": "Podsumowanie ostatniego skanu",
@@ -63,6 +73,7 @@
   "investments": {
     "title": "Inwestycje",
     "subtitle": "Wszystkie znane inwestycje monitorowanych deweloperów",
+    "truncatedNotice": "Wyświetlane {count} najnowszych inwestycji. Starsze wyniki są ukryte - zawęź filtry, jeśli ich potrzebujesz.",
     "detail": "Szczegóły",
     "searchLocation": "Szukaj lokalizacji…",
     "allDevelopers": "Wszyscy deweloperzy",
@@ -81,8 +92,8 @@
     "noteSaved": "Notatka zapisana",
     "unknownLocation": "Nieznana lokalizacja",
     "notPublished": "Nie podano",
-    "areaUpTo": "do",
-    "areaFrom": "od",
+    "rangeUpTo": "do",
+    "rangeFrom": "od",
     "units": "lokali",
     "evidence": "Źródła danych",
     "noEvidence": "Brak zarejestrowanej proweniencji.",

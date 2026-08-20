@@ -16,6 +16,9 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     );
   }
 
-  setDeveloperCandidateStatus(parsed.id, status);
+  const updated = setDeveloperCandidateStatus(parsed.id, status);
+  if (!updated) {
+    return NextResponse.json({ error: `Developer candidate ${parsed.id} not found` }, { status: 404 });
+  }
   return NextResponse.json({ ok: true, status });
 }

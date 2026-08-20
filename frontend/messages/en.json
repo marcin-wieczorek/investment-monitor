@@ -14,6 +14,16 @@
   "common": {
     "rawData": "Raw data"
   },
+  "error": {
+    "title": "Something went wrong",
+    "description": "This page failed to load. The underlying data source may be unavailable or the request hit an unexpected error.",
+    "retry": "Try again",
+    "goHome": "Go to dashboard",
+    "detailsLabel": "Error details",
+    "criticalTitle": "Application error",
+    "criticalDescription": "A critical error occurred and the application could not recover. Reloading may fix this.",
+    "actionFailed": "Something went wrong. Please try again."
+  },
   "dashboard": {
     "title": "Dashboard",
     "subtitle": "Overview of the last monitoring scan",
@@ -63,6 +73,7 @@
   "investments": {
     "title": "Investments",
     "subtitle": "All known investments across monitored developers",
+    "truncatedNotice": "Showing the most recent {count} investments. Older results are hidden - refine filters if you need them.",
     "detail": "Details",
     "searchLocation": "Search location…",
     "allDevelopers": "All developers",
@@ -81,8 +92,8 @@
     "noteSaved": "Note saved",
     "unknownLocation": "Unknown location",
     "notPublished": "Not published",
-    "areaUpTo": "up to",
-    "areaFrom": "from",
+    "rangeUpTo": "up to",
+    "rangeFrom": "from",
     "units": "units",
     "evidence": "Evidence",
     "noEvidence": "No provenance recorded yet.",

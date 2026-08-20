@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { useI18n } from "@/lib/i18n";
 import { Switch } from "@/components/ui/switch";
 import { coordinatesFor } from "@/lib/location-coordinates";
+import { SOURCE_CATEGORY_DOT_CLASS } from "@/lib/badge-styles";
 import type { InvestmentWithState } from "@/lib/types";
 import type { LocationGroup, MapInvestment } from "@/components/map/investment-map";
 
@@ -26,12 +27,6 @@ interface MapViewProps {
 
 const CATEGORIES = ["DEVELOPER", "DISCOVERY", "AGGREGATOR"] as const;
 type Category = (typeof CATEGORIES)[number];
-
-const LEGEND_DOT: Record<Category, string> = {
-  DEVELOPER: "bg-blue-500",
-  DISCOVERY: "bg-purple-500",
-  AGGREGATOR: "bg-orange-500",
-};
 
 export function MapView({ investments }: MapViewProps) {
   const { t } = useI18n();
@@ -94,7 +89,7 @@ export function MapView({ investments }: MapViewProps) {
               }
             />
             <span className="inline-flex items-center gap-1.5">
-              <span className={`size-2.5 rounded-full ${LEGEND_DOT[category]}`} />
+              <span className={`size-2.5 rounded-full ${SOURCE_CATEGORY_DOT_CLASS[category]}`} />
               {t(`sources.${category.toLowerCase()}` as "sources.developer")}
             </span>
           </label>

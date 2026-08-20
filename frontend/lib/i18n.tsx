@@ -18,16 +18,34 @@ const dictionaries: Record<Locale, Record<string, unknown>> = { en, pl };
 
 const STORAGE_KEY = "investment-monitor-locale";
 
+/**
+ * Recursively builds a union of every dot-separated path through the
+ * message dictionary (e.g. `"investments.title"`, `"filters.sort.price_min"`).
+ * Only descends into plain objects - leaf values (the translated strings
+ * themselves) terminate the recursion. This makes `t()` reject a typo'd or
+ * renamed key at compile time instead of silently falling back to the raw
+ * key string at runtime.
+ */
+type MessagePath<T> = T extends string
+  ? never
+  : {
+      [K in keyof T & string]: T[K] extends string ? K : `${K}.${MessagePath<T[K]>}`;
+    }[keyof T & string];
+
+export type MessageKey = MessagePath<typeof en>;
+
 interface I18nContextValue {
   locale: Locale;
   setLocale: (locale: Locale) => void;
-  t: (key: string) => string;
+  t: (key: MessageKey) => string;
   /**
    * Translates a raw backend enum value (e.g. `signal_type: "WZ_DECISION"`,
    * `status: "READY_FOR_HANDOVER"`) via `enum.<category>.<value>` - falls
    * back to the raw value itself (not the dotted key) if no translation
    * exists yet, so a newly-added Kotlin enum constant never regresses to
-   * showing a literal i18n key in the UI.
+   * showing a literal i18n key in the UI. `category`/`value` are plain
+   * `string` (not `MessageKey`) because they come from the database at
+   * runtime, not from the static message dictionary.
    */
   tEnum: (category: string, value: string) => string;
 }
@@ -65,7 +83,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const t = useCallback(
-    (key: string) => resolve(dictionaries[locale], key) ?? resolve(dictionaries.en, key) ?? key,
+    (key: MessageKey) => resolve(dictionaries[locale], key) ?? resolve(dictionaries.en, key) ?? key,
     [locale]
   );
 

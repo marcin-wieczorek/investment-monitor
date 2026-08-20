@@ -25,6 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { JsonAccordion } from "@/components/json-accordion";
 import { cn, dataCompleteness, formatArea, formatPrice, formatRelativeTime, LOW_COMPLETENESS_THRESHOLD } from "@/lib/utils";
+import { CONFIDENCE_BADGE_CLASS } from "@/lib/badge-styles";
 import type { CorrelationRow, InvestmentDuplicateRow, InvestmentWithState, SourceEvidenceRow } from "@/lib/types";
 
 interface InvestmentDetailViewProps {
@@ -74,10 +75,13 @@ export function InvestmentDetailView({ investment, evidence, correlations, dupli
   const [note, setNote] = useState(investment.note ?? "");
   const [savingNote, setSavingNote] = useState(false);
   const [noteSaved, setNoteSaved] = useState(false);
+  const [noteError, setNoteError] = useState<string | null>(null);
   const [archived, setArchived] = useState(investment.archived);
   const [togglingArchive, setTogglingArchive] = useState(false);
+  const [archiveError, setArchiveError] = useState<string | null>(null);
   const [watched, setWatched] = useState(investment.watched);
   const [togglingWatch, setTogglingWatch] = useState(false);
+  const [watchError, setWatchError] = useState<string | null>(null);
 
   const houseArea = formatArea(investment.house_area_min, investment.house_area_max, t);
   const plotArea = formatArea(investment.plot_area_min, investment.plot_area_max, t);
@@ -87,14 +91,21 @@ export function InvestmentDetailView({ investment, evidence, correlations, dupli
   async function saveNote() {
     setSavingNote(true);
     setNoteSaved(false);
+    setNoteError(null);
     try {
-      await fetch(`/api/investments/${investment.id}/note`, {
+      const response = await fetch(`/api/investments/${investment.id}/note`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ note }),
       });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error ?? `HTTP ${response.status}`);
+      }
       setNoteSaved(true);
       router.refresh();
+    } catch (err) {
+      setNoteError(err instanceof Error ? err.message : t("error.actionFailed"));
     } finally {
       setSavingNote(false);
     }
@@ -102,15 +113,22 @@ export function InvestmentDetailView({ investment, evidence, correlations, dupli
 
   async function toggleArchive() {
     setTogglingArchive(true);
+    setArchiveError(null);
+    const next = !archived;
     try {
-      const next = !archived;
-      await fetch(`/api/investments/${investment.id}/archive`, {
-        method: "POST",
+      const response = await fetch(`/api/investments/${investment.id}/archive`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ archived: next }),
       });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error ?? `HTTP ${response.status}`);
+      }
       setArchived(next);
       router.refresh();
+    } catch (err) {
+      setArchiveError(err instanceof Error ? err.message : t("error.actionFailed"));
     } finally {
       setTogglingArchive(false);
     }
@@ -118,15 +136,22 @@ export function InvestmentDetailView({ investment, evidence, correlations, dupli
 
   async function toggleWatch() {
     setTogglingWatch(true);
+    setWatchError(null);
+    const next = !watched;
     try {
-      const next = !watched;
-      await fetch(`/api/investments/${investment.id}/watch`, {
+      const response = await fetch(`/api/investments/${investment.id}/watch`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ watched: next }),
       });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error ?? `HTTP ${response.status}`);
+      }
       setWatched(next);
       router.refresh();
+    } catch (err) {
+      setWatchError(err instanceof Error ? err.message : t("error.actionFailed"));
     } finally {
       setTogglingWatch(false);
     }
@@ -202,6 +227,10 @@ export function InvestmentDetailView({ investment, evidence, correlations, dupli
               </Button>
             </div>
           </div>
+
+          {archiveError || watchError ? (
+            <p className="text-xs text-rose-500">{archiveError ?? watchError}</p>
+          ) : null}
 
           <div className="flex flex-wrap gap-2">
             <Badge variant="secondary" className="gap-1">
@@ -291,6 +320,7 @@ export function InvestmentDetailView({ investment, evidence, correlations, dupli
               onChange={(e) => {
                 setNote(e.target.value);
                 setNoteSaved(false);
+                setNoteError(null);
               }}
               placeholder={t("investments.notePlaceholder")}
               rows={4}
@@ -302,6 +332,7 @@ export function InvestmentDetailView({ investment, evidence, correlations, dupli
               {noteSaved ? (
                 <span className="text-xs text-emerald-500">{t("investments.noteSaved")}</span>
               ) : null}
+              {noteError ? <span className="text-xs text-rose-500">{noteError}</span> : null}
             </div>
           </div>
 
@@ -363,14 +394,7 @@ export function InvestmentDetailView({ investment, evidence, correlations, dupli
                     key={correlation.id}
                     className="flex flex-wrap items-start gap-x-3 gap-y-1 rounded-md border border-border bg-muted/30 px-3 py-2 text-xs"
                   >
-                    <Badge
-                      variant="outline"
-                      className={
-                        correlation.confidence === "HIGH"
-                          ? "border-emerald-500/30 text-emerald-500 dark:text-emerald-400"
-                          : "border-amber-500/30 text-amber-500 dark:text-amber-400"
-                      }
-                    >
+                    <Badge variant="outline" className={CONFIDENCE_BADGE_CLASS[correlation.confidence]}>
                       {tEnum("confidence", correlation.confidence)}
                     </Badge>
                     <span className="min-w-0 flex-1">{correlation.signal_title}</span>
@@ -397,16 +421,7 @@ export function InvestmentDetailView({ investment, evidence, correlations, dupli
                       key={duplicate.id}
                       className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border border-border bg-muted/30 px-3 py-2 text-xs"
                     >
-                      <Badge
-                        variant="outline"
-                        className={
-                          duplicate.confidence === "HIGH"
-                            ? "border-emerald-500/30 text-emerald-500 dark:text-emerald-400"
-                            : duplicate.confidence === "MEDIUM"
-                              ? "border-amber-500/30 text-amber-500 dark:text-amber-400"
-                              : "border-border text-muted-foreground"
-                        }
-                      >
+                      <Badge variant="outline" className={CONFIDENCE_BADGE_CLASS[duplicate.confidence]}>
                         {tEnum("confidence", duplicate.confidence)}
                       </Badge>
                       <span className="font-mono text-muted-foreground">{otherSource}</span>

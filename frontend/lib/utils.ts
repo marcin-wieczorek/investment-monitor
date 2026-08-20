@@ -1,8 +1,23 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
+import type { MessageKey } from "@/lib/i18n"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
+}
+
+// Intl.RelativeTimeFormat construction is non-trivial - cache one instance
+// per locale instead of allocating a new one on every call (tables can call
+// this hundreds of times per render).
+const relativeTimeFormatters = new Map<string, Intl.RelativeTimeFormat>();
+
+function getRelativeTimeFormatter(locale: string): Intl.RelativeTimeFormat {
+  let rtf = relativeTimeFormatters.get(locale);
+  if (!rtf) {
+    rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
+    relativeTimeFormatters.set(locale, rtf);
+  }
+  return rtf;
 }
 
 export function formatRelativeTime(iso: string | null | undefined, locale: string): string {
@@ -11,7 +26,7 @@ export function formatRelativeTime(iso: string | null | undefined, locale: strin
   const diffMs = date.getTime() - Date.now();
   const diffMinutes = Math.round(diffMs / 60_000);
 
-  const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
+  const rtf = getRelativeTimeFormatter(locale);
 
   const absMinutes = Math.abs(diffMinutes);
   if (absMinutes < 60) return rtf.format(diffMinutes, "minute");
@@ -26,33 +41,42 @@ export function formatRelativeTime(iso: string | null | undefined, locale: strin
 export function formatArea(
   min: number | null,
   max: number | null,
-  t: (key: string) => string
+  t: (key: MessageKey) => string,
+  locale = "pl-PL"
 ): string | null {
   if (min == null && max == null) return null;
   if (min != null && max != null) {
-    return min === max ? `${formatNumber(min)} m²` : `${formatNumber(min)}–${formatNumber(max)} m²`;
+    return min === max
+      ? `${formatNumber(min, locale)} m²`
+      : `${formatNumber(min, locale)}–${formatNumber(max, locale)} m²`;
   }
-  if (max != null) return `${t("investments.areaUpTo")} ${formatNumber(max)} m²`;
-  return `${t("investments.areaFrom")} ${formatNumber(min!)} m²`;
+  if (max != null) return `${t("investments.rangeUpTo")} ${formatNumber(max, locale)} m²`;
+  return `${t("investments.rangeFrom")} ${formatNumber(min!, locale)} m²`;
 }
 
 export function formatPrice(
   min: number | null,
   max: number | null,
-  t: (key: string) => string
+  t: (key: MessageKey) => string,
+  locale = "pl-PL"
 ): string | null {
   if (min == null && max == null) return null;
   if (min != null && max != null) {
     return min === max
-      ? `${formatNumber(min)} zł`
-      : `${formatNumber(min)}–${formatNumber(max)} zł`;
+      ? `${formatNumber(min, locale)} zł`
+      : `${formatNumber(min, locale)}–${formatNumber(max, locale)} zł`;
   }
-  if (max != null) return `${t("investments.areaUpTo")} ${formatNumber(max)} zł`;
-  return `${t("investments.areaFrom")} ${formatNumber(min!)} zł`;
+  if (max != null) return `${t("investments.rangeUpTo")} ${formatNumber(max, locale)} zł`;
+  return `${t("investments.rangeFrom")} ${formatNumber(min!, locale)} zł`;
 }
 
-function formatNumber(value: number): string {
-  return Number.isInteger(value) ? value.toLocaleString("pl-PL") : value.toFixed(2).replace(/\.?0+$/, "");
+/**
+ * Formats a number for display. Defaults to `pl-PL` grouping (the domain
+ * is Polish real estate - prices are in zł regardless of UI language) but
+ * accepts an explicit locale so callers with a known UI locale can opt in.
+ */
+function formatNumber(value: number, locale = "pl-PL"): string {
+  return Number.isInteger(value) ? value.toLocaleString(locale) : value.toFixed(2).replace(/\.?0+$/, "");
 }
 
 /** The 6 fields whose presence determines how trustworthy `overall_score` actually is (see DeterministicScorer). */

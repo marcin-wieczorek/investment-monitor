@@ -4,12 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, ChevronRight } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import type { MessageKey } from "@/lib/i18n";
 import { useSidebar } from "@/lib/sidebar-context";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LocaleToggle } from "@/components/locale-toggle";
 
-const breadcrumbKeys: Record<string, string> = {
+const breadcrumbKeys: Record<string, MessageKey> = {
   "/": "nav.dashboard",
   "/investments": "nav.investments",
   "/map": "nav.map",

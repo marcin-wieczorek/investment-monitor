@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { setNote } from "@/lib/queries";
+import { investmentExists, setNote } from "@/lib/queries";
 import { parseId } from "@/lib/api-utils";
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -11,6 +11,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
 
   if (!body || typeof body.note !== "string") {
     return NextResponse.json({ error: "Expected { note: string }" }, { status: 400 });
+  }
+
+  if (!investmentExists(parsed.id)) {
+    return NextResponse.json({ error: `Investment ${parsed.id} not found` }, { status: 404 });
   }
 
   setNote(parsed.id, body.note);

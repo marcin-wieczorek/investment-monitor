@@ -1,5 +1,6 @@
 import { getDb } from "@/lib/db";
 import { DEFAULT_SCORING_PROFILE } from "@/lib/types";
+import { checkRowShape } from "@/lib/query-runtime-check";
 import type {
   CorrelationRow,
   DeveloperCandidateRow,
@@ -38,10 +39,50 @@ const BASE_SELECT = `
   LEFT JOIN investment_score sc ON sc.investment_canonical_key = i.canonical_key
 `;
 
+/** Mirrors the columns `BASE_SELECT` is expected to produce - see `checkRowShape` in lib/query-runtime-check.ts. */
+const EXPECTED_INVESTMENT_KEYS: readonly (keyof InvestmentWithState)[] = [
+  "id",
+  "source",
+  "canonical_key",
+  "developer",
+  "name",
+  "url",
+  "location",
+  "property_type",
+  "units",
+  "house_area_min",
+  "house_area_max",
+  "plot_area_min",
+  "plot_area_max",
+  "price_min",
+  "price_max",
+  "status",
+  "image_url",
+  "first_seen_at",
+  "last_seen_at",
+  "archived",
+  "watched",
+  "source_category",
+  "overall_score",
+];
+
+/**
+ * Safety cap for `listInvestments` when no explicit `limit` filter is
+ * given. The investments page currently renders everything client-side
+ * (search/sort/range-filter all happen in the browser, see
+ * `useInvestmentFilters`), which is fine at the current Poznan-metro scale
+ * (low hundreds of rows) but would silently balloon the RSC payload as the
+ * dataset grows over months/years of scanning. This bounds that growth
+ * without needing full server-side pagination (which would conflict with
+ * the current all-client-side filter/sort UX) - if the dataset ever
+ * regularly exceeds this, that's the signal to build real pagination.
+ */
+export const DEFAULT_INVESTMENT_LIMIT = 2000;
+
 export function listInvestments(filters: InvestmentFilters = {}): InvestmentWithState[] {
   const db = getDb();
   const clauses: string[] = [];
-  const params: Record<string, string> = {};
+  const params: Record<string, string | number> = {};
 
   if (filters.developer) {
     clauses.push("i.developer = @developer");
@@ -59,10 +100,12 @@ export function listInvestments(filters: InvestmentFilters = {}): InvestmentWith
   }
 
   const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
+  const limit = filters.limit ?? DEFAULT_INVESTMENT_LIMIT;
   const rows = db
-    .prepare(`${BASE_SELECT} ${where} ORDER BY i.first_seen_at DESC`)
-    .all(params) as unknown as InvestmentWithState[];
+    .prepare(`${BASE_SELECT} ${where} ORDER BY i.first_seen_at DESC LIMIT @limit`)
+    .all({ ...params, limit }) as unknown as InvestmentWithState[];
 
+  checkRowShape(rows, EXPECTED_INVESTMENT_KEYS, "listInvestments");
   return rows.map(normalizeRow);
 }
 
@@ -71,7 +114,22 @@ export function getInvestment(id: number): InvestmentWithState | undefined {
   const row = db.prepare(`${BASE_SELECT} WHERE i.id = ?`).get(id) as unknown as
     | InvestmentWithState
     | undefined;
+  if (row) checkRowShape([row], EXPECTED_INVESTMENT_KEYS, "getInvestment");
   return row ? normalizeRow(row) : undefined;
+}
+
+/**
+ * Cheap existence check used by mutation API routes before writing to
+ * `user_note`/`investment_state` - those tables declare a `REFERENCES
+ * investment(id)` foreign key, but SQLite does not enforce it unless
+ * `PRAGMA foreign_keys = ON` is set (it isn't, see `lib/db.ts`), so an
+ * unchecked write for a non-existent investment id would otherwise
+ * silently create an orphan row instead of failing.
+ */
+export function investmentExists(id: number): boolean {
+  const db = getDb();
+  const row = db.prepare("SELECT 1 FROM investment WHERE id = ? LIMIT 1").get(id);
+  return row !== undefined;
 }
 
 export function countAllInvestments(): number {
@@ -103,6 +161,7 @@ export function listRecentInvestments(limit = 5): InvestmentWithState[] {
   const rows = db
     .prepare(`${BASE_SELECT} ORDER BY i.first_seen_at DESC LIMIT ?`)
     .all(limit) as unknown as InvestmentWithState[];
+  checkRowShape(rows, EXPECTED_INVESTMENT_KEYS, "listRecentInvestments");
   return rows.map(normalizeRow);
 }
 
@@ -221,11 +280,26 @@ const CORRELATION_SELECT = `
   JOIN investment_signal s ON s.id = c.signal_id
 `;
 
+/** Mirrors the columns `CORRELATION_SELECT` is expected to produce - see `checkRowShape` in lib/query-runtime-check.ts. */
+const EXPECTED_CORRELATION_KEYS: readonly (keyof CorrelationRow)[] = [
+  "id",
+  "investment_id",
+  "signal_id",
+  "confidence",
+  "matched_features",
+  "reason",
+  "created_at",
+  "investment_name",
+  "signal_title",
+  "lead_time_days",
+];
+
 export function listCorrelations(limit = 200): CorrelationRow[] {
   const db = getDb();
   const rows = db
     .prepare(`${CORRELATION_SELECT} ORDER BY c.created_at DESC LIMIT ?`)
     .all(limit) as unknown as CorrelationRow[];
+  checkRowShape(rows, EXPECTED_CORRELATION_KEYS, "listCorrelations");
   return rows.map((row) => ({ ...row }));
 }
 
@@ -234,6 +308,7 @@ export function listCorrelationsForInvestment(investmentId: number): Correlation
   const rows = db
     .prepare(`${CORRELATION_SELECT} WHERE c.investment_id = ? ORDER BY c.created_at DESC`)
     .all(investmentId) as unknown as CorrelationRow[];
+  checkRowShape(rows, EXPECTED_CORRELATION_KEYS, "listCorrelationsForInvestment");
   return rows.map((row) => ({ ...row }));
 }
 
@@ -279,10 +354,15 @@ export function isDeveloperCandidateMutableStatus(value: unknown): value is Deve
  * `DeveloperCandidateRepository.updateStatus` on the Kotlin side, which
  * this mirrors). `NEW`/`REVIEW_REQUIRED` are scan-assigned only - a human
  * reviewer can only move a candidate to one of `CANDIDATE_STATUSES`.
+ * Returns `false` (instead of silently no-op'ing) if no candidate with
+ * this id exists, so the API route can respond with 404.
  */
-export function setDeveloperCandidateStatus(id: number, status: DeveloperCandidateMutableStatus): void {
+export function setDeveloperCandidateStatus(id: number, status: DeveloperCandidateMutableStatus): boolean {
   const db = getDb();
-  db.prepare("UPDATE developer_candidate SET status = @status WHERE id = @id").run({ id, status });
+  const result = db
+    .prepare("UPDATE developer_candidate SET status = @status WHERE id = @id")
+    .run({ id, status });
+  return result.changes > 0;
 }
 
 export function listMunicipalities(): MunicipalityRegistryRow[] {

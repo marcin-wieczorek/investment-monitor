@@ -8,15 +8,10 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ExpandableTableRow, ExpandChevron } from "@/components/expandable-table-row";
 import { formatRelativeTime } from "@/lib/utils";
+import { CONFIDENCE_BADGE_CLASS } from "@/lib/badge-styles";
 import type { CorrelationRow } from "@/lib/types";
 
 const COLUMNS_COUNT = 6;
-
-const CONFIDENCE_STYLES: Record<string, string> = {
-  HIGH: "border-emerald-500/30 text-emerald-500 dark:text-emerald-400",
-  MEDIUM: "border-amber-500/30 text-amber-500 dark:text-amber-400",
-  LOW: "border-muted-foreground/30 text-muted-foreground",
-};
 
 function LeadTimeBadge({ days }: { days: number | null | undefined }) {
   const { t } = useI18n();
@@ -94,7 +89,7 @@ export function CorrelationsView({ correlations }: { correlations: CorrelationRo
                       </Link>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className={CONFIDENCE_STYLES[correlation.confidence]}>
+                      <Badge variant="outline" className={CONFIDENCE_BADGE_CLASS[correlation.confidence]}>
                         {tEnum("confidence", correlation.confidence)}
                       </Badge>
                     </TableCell>

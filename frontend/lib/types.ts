@@ -106,6 +106,8 @@ export interface InvestmentFilters {
   location?: string;
   includeArchived?: boolean;
   aggregatorOnly?: boolean;
+  /** Caps how many rows are returned - see `DEFAULT_INVESTMENT_LIMIT` in `lib/queries.ts`. */
+  limit?: number;
 }
 
 /**

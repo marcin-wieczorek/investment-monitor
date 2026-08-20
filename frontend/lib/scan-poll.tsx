@@ -1,19 +1,23 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import type { ScanState } from "@/lib/scan-state";
 
 const POLL_INTERVAL_MS = 1500;
 
+const ScanPollContext = createContext<ScanState | null>(null);
+
 /**
- * Polls the scan progress endpoint on its own independent interval.
- * Multiple components can call this hook simultaneously (each runs its own
- * poll loop) - deliberately simple for a single-user, localhost-only tool,
- * and keeps the scan button and the progress indicator fully decoupled:
- * neither needs to know the other exists, and either can be removed
- * without breaking the other.
+ * Single shared poll loop for `/api/scan/progress`, mounted once at the
+ * app root (see `components/providers.tsx`). `ScanButton` and
+ * `ScanProgress` are always mounted together in `AppSidebar` - previously
+ * each called its own `useScanPoll()` and ran an independent interval,
+ * doubling the request rate for no benefit since they read the exact same
+ * server state. A single provider fixes that while keeping the two
+ * components fully decoupled from each other (neither needs to know the
+ * other exists).
  */
-export function useScanPoll(): ScanState | null {
+export function ScanPollProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<ScanState | null>(null);
 
   useEffect(() => {
@@ -40,7 +44,12 @@ export function useScanPoll(): ScanState | null {
     };
   }, []);
 
-  return state;
+  return <ScanPollContext.Provider value={state}>{children}</ScanPollContext.Provider>;
+}
+
+/** Reads the shared scan progress state polled by `ScanPollProvider`. */
+export function useScanPoll(): ScanState | null {
+  return useContext(ScanPollContext);
 }
 
 /** Fires `onFinish` exactly once per transition from in-progress to finished. */

@@ -2,7 +2,7 @@
 
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import { useScanPoll } from "@/lib/use-scan-poll";
+import { useScanPoll } from "@/lib/scan-poll";
 
 interface ScanProgressProps {
   /** Compact rendering for the collapsed sidebar (icon-only width, no text). */

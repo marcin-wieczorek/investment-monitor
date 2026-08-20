@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
-import { useScanFinishEffect, useScanPoll } from "@/lib/use-scan-poll";
+import { useScanFinishEffect, useScanPoll } from "@/lib/scan-poll";
 
 interface ScanButtonProps {
   size?: "sm" | "default" | "icon";

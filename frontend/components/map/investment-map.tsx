@@ -20,7 +20,7 @@ export interface LocationGroup {
   investments: MapInvestment[];
 }
 
-/** Same category-authority colors as SOURCE_CATEGORY_BADGE in investments-view.tsx (blue/purple/orange), as plain hex since Leaflet marker HTML is not JSX. */
+/** Same category-authority colors as SOURCE_CATEGORY_BADGE_CLASS in lib/badge-styles.ts (blue/purple/orange), as plain hex since Leaflet marker HTML is not JSX. */
 const CATEGORY_COLOR: Record<string, string> = {
   DEVELOPER: "#3b82f6",
   DISCOVERY: "#a855f7",
