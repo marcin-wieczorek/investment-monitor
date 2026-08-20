@@ -5,11 +5,11 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
 }
 
-group = "pl.marcin"
+group = "pl.marcinwieczorek"
 version = "0.1.0"
 
 springBoot {
-    mainClass.set("pl.marcin.investmentmonitor.InvestmentMonitorApplicationKt")
+    mainClass.set("pl.marcinwieczorek.investmentmonitor.InvestmentMonitorApplicationKt")
 }
 
 java {
@@ -47,12 +47,12 @@ tasks.register<JavaExec>("verifySources") {
     group = "verification"
     description = "Runs live developer source verification without updating trusted snapshots."
     classpath = sourceSets["main"].runtimeClasspath
-    mainClass.set("pl.marcin.investmentmonitor.tools.SourceVerificationCliKt")
+    mainClass.set("pl.marcinwieczorek.investmentmonitor.tools.SourceVerificationCliKt")
 }
 
 tasks.register<JavaExec>("captureFixtures") {
     group = "verification"
     description = "Captures configured developer pages as reviewed parser fixtures."
     classpath = sourceSets["main"].runtimeClasspath
-    mainClass.set("pl.marcin.investmentmonitor.tools.FixtureCaptureCliKt")
+    mainClass.set("pl.marcinwieczorek.investmentmonitor.tools.FixtureCaptureCliKt")
 }

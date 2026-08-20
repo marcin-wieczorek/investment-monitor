@@ -54,7 +54,7 @@ on both sides for exactly this reason. Don't remove it.
 ## Repo layout
 
 ```
-src/main/kotlin/pl/marcin/investmentmonitor/
+src/main/kotlin/pl/marcinwieczorek/investmentmonitor/
   domain/          Investment, InvestmentSignal, SourceEvidence, Correlation,
                    LocationProfile, LocationCatalog, ReferenceInvestmentProfile,
                    SourceCategory — pure data classes/enums, no framework deps
