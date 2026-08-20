@@ -194,7 +194,6 @@ real fixture before writing (or not writing) any selector.
 
 ## Implemented discovery sources
 
-
 Beyond `swarzedz-wz`, eleven more municipal discovery sources are
 implemented: `czerwonak-obwieszczenia` and `tarnowo-podgorne-wz` (identical
 "Rekord BIP" CMS, share `RekordBipParser`), `suchy-las-npp` (Logonet CMS),

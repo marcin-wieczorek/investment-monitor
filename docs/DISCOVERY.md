@@ -60,8 +60,9 @@ diverge from the project's established canonical-key identity model.
 ## Implemented: Gmina Śrem zoning-conditions register (year-paginated)
 
 `SremWzSource` + `SremWzParser` (`http://bip.srem.pl/public/?id=73563`)
-are the only discovery source implemented so far whose register is split
-one page per calendar year rather than a single evergreen feed. A single
+were the first discovery source whose register is split
+one page per calendar year rather than a single evergreen feed (Buk,
+Kórnik and Dopiewo later followed the same pattern). A single
 hardcoded `LIST_URL` would silently start returning nothing every January,
 so `SremWzSource.fetch()` does a two-step fetch instead: parse the index
 page to find the current (highest) year's URL, then fetch and parse that

@@ -1,4 +1,4 @@
-# Investment Monitor — Frontend
+# Investment Monitor - Frontend
 
 A minimal Next.js dashboard over the SQLite database written by the Kotlin
 monitoring pipeline. Reads the database directly via Node's built-in
@@ -27,30 +27,30 @@ npm run start   # http://localhost:3000
 
 ## What it does
 
-- **Dashboard** — last scan summary, source health, discovery signal count, recently detected investments.
-- **Investments** — searchable/filterable list with thumbnails, cross-source duplicate grouping, an always-visible sort control, detail view with notes, archiving, provenance (evidence) and correlated discovery signals.
-- **Map** — every currently known investment plotted across the Poznań metro area (Leaflet + OpenStreetMap tiles, no API key), colour-coded by source category.
-- **Signals** — discovery signals (municipal zoning/planning evidence) from all discovery sources, filterable by type.
-- **Correlations** — deterministic links between discovery signals and investments that likely describe the same project.
-- **History** — timeline of every monitoring run.
-- **Sources** — health status per monitored source, grouped by category (developer/discovery/aggregator).
-- **Settings** — configure the scoring reference profile (property types, location tiers, house/plot area and price ranges, large-plot preference); saving triggers an immediate rescore of every investment (no live-source scan needed).
+- **Dashboard** - last scan summary, source health, discovery signal count, recently detected investments.
+- **Investments** - searchable/filterable list with thumbnails, cross-source duplicate grouping, an always-visible sort control, detail view with notes, archiving, provenance (evidence) and correlated discovery signals.
+- **Map** - every currently known investment plotted across the Poznań metro area (Leaflet + OpenStreetMap tiles, no API key), colour-coded by source category.
+- **Signals** - discovery signals (municipal zoning/planning evidence) from all discovery sources, filterable by type.
+- **Correlations** - deterministic links between discovery signals and investments that likely describe the same project.
+- **History** - timeline of every monitoring run.
+- **Sources** - health status per monitored source, grouped by category (developer/discovery/aggregator).
+- **Settings** - configure the scoring reference profile (property types, location tiers, house/plot area and price ranges, large-plot preference); saving triggers an immediate rescore of every investment (no live-source scan needed).
 
 Triggering a scan from the UI runs `./gradlew bootRun` in the repo root as a
 subprocess and refreshes the page once it completes.
 
 ## Notes
 
-- Reads/writes SQLite directly via Node's built-in `node:sqlite` — see `lib/db.ts`.
+- Reads/writes SQLite directly via Node's built-in `node:sqlite` - see `lib/db.ts`.
 - `user_note` / `investment_state` tables (notes, archiving) are Flyway-managed
   by the Kotlin project (`V3__user_state.sql`) but only ever used by this frontend.
-- No authentication — designed to run on `localhost` for a single user.
+- No authentication - designed to run on `localhost` for a single user.
 - UI language (EN/PL) is a client-side toggle stored in `localStorage`, not
   URL-based routing; raw backend enum values (signal type, investment
   status, confidence, ...) are translated via `useI18n().tEnum()`.
 - Map pin coordinates are a static, curated lookup
   (`lib/location-coordinates.ts`) covering every location name the backend
-  knows about — no live geocoding API call.
+  knows about - no live geocoding API call.
 - The scoring reference profile is stored in the generic `user_preferences`
   key-value table (`GET/PUT /api/preferences`), read at scan/rescore time
   by `UserPreferencesRepository` on the Kotlin side. `POST /api/rescore`

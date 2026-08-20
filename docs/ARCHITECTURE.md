@@ -14,15 +14,15 @@ Three independent source categories, each with its own contract (see
 `source/InvestmentSource.kt`, `source/DiscoverySource.kt`,
 `source/AggregatorSource.kt`), collected by `SourceRegistry`:
 
-- **Developer** (`InvestmentSource`) — a developer's own site. Ground
+- **Developer** (`InvestmentSource`) - a developer's own site. Ground
   truth for its own investments.
-- **Discovery** (`DiscoverySource`) — official/public sources that reveal
+- **Discovery** (`DiscoverySource`) - official/public sources that reveal
   planned residential development before a marketable investment
   necessarily exists (municipal zoning-conditions registers, planning
-  decisions, ...). Returns `InvestmentSignal`, not `Investment` — a
+  decisions, ...). Returns `InvestmentSignal`, not `Investment` - a
   signal is evidence, not a claim that a specific project exists (see
   `docs/DISCOVERY.md`).
-- **Aggregator** (`AggregatorSource`) — third-party portals (RynekPierwotny,
+- **Aggregator** (`AggregatorSource`) - third-party portals (RynekPierwotny,
   Otodom, ...). A completeness/cross-check layer only.
 
 **Source precedence for factual authority**: developer > discovery >
@@ -44,7 +44,7 @@ source already covers it.
 - **`SourceRegistry`** groups all `InvestmentSource`/`DiscoverySource`/
   `AggregatorSource` beans by category (`source/SourceRegistry.kt`).
 - **Discovery**: `SwarzedzWzSource` + `SwarzedzWzParser` parse Gmina
-  Swarzędz's real "warunki zabudowy" (zoning conditions) register —
+  Swarzędz's real "warunki zabudowy" (zoning conditions) register -
   verified against live HTML, ~280 real decision documents, including
   genuine large-scale residential cases (e.g. a 224-house development in
   Kruszewnia). See `docs/DISCOVERY.md` for what else was investigated and
@@ -62,11 +62,11 @@ source already covers it.
 - **`SourceEvidence`** (`domain/SourceEvidence.kt`) is an append-only
   provenance record: which source produced a fact, when, from which URL,
   and how (`PARSER`/`LLM`/`MANUAL`). Recorded per investment/signal at
-  commit time (not yet per individual field — see "Known scope
+  commit time (not yet per individual field - see "Known scope
   limitations" below).
 - **`InvestmentCorrelator`** (`correlation/InvestmentCorrelator.kt`)
   deterministically links discovery signals to investments: same
-  recognized location (never the signal's own municipality — too coarse
+  recognized location (never the signal's own municipality - too coarse
   to be meaningful) plus a residential-construction keyword filter (to
   exclude unrelated permits like retaining walls or transformer
   stations), with confidence raised to `HIGH` when the developer's name
@@ -77,7 +77,7 @@ source already covers it.
   aggregator-only discoveries (new aggregator listings whose location
   isn't covered by any developer source yet).
 - **Raw HTML archival**: `ArchivingPageFetcher` transparently wraps every
-  page fetch (via the existing `PageFetcher` interface — no source code
+  page fetch (via the existing `PageFetcher` interface - no source code
   changed) and archives it under `raw/<date>/<host>/<hash>.html`, with
   configurable retention (`RawHtmlArchiver.cleanup()`, called once per
   scan).
@@ -92,12 +92,12 @@ source already covers it.
   compares an investment against a reference profile and location
   profile: property-type match, location-tier match, house/plot area fit
   (range-overlap scoring), price fit, and an explicit **large-plot
-  bonus** — a plot larger than the reference profile's preferred range
+  bonus** - a plot larger than the reference profile's preferred range
   is rewarded, never penalized (see "Large plots" below).
 - **Local LLM (Ollama)**: `OllamaClient` (plain JDK `HttpClient`, no
   Spring MVC dependency) + `OllamaInvestmentAnalyzer`
   (`ConditionalOnProperty`-gated on `investment-monitor.llm.enabled`,
-  default `false`). The LLM only supplies `priority`/`reason` — the
+  default `false`). The LLM only supplies `priority`/`reason` - the
   deterministic score always comes from `DeterministicScorer`. Any
   failure (unreachable, timeout, malformed JSON) falls back to a
   deterministic priority derived purely from the numeric score, so a
@@ -128,7 +128,7 @@ filter criterion:
 `domain/LocationCatalog.kt` holds the explicit, extensible list of
 municipalities/villages in scope (the Poznań metropolitan area, plus
 villages within Gmina Swarzędz observed directly via discovery signals).
-This is domain data, not hard-coded parsing logic — new locations are
+This is domain data, not hard-coded parsing logic - new locations are
 added to the catalog, not scattered across parsers.
 
 ## Known scope limitations (deliberately not built yet)
@@ -141,7 +141,7 @@ scan-time matching, unlike deterministic investment<->signal correlation.
 
 ## Not yet implemented
 
-- Additional discovery sources beyond the seven municipalities implemented
+- Additional discovery sources beyond the twelve municipalities implemented
   so far - see `registry/DiscoverySourceRegistry.kt` for the full,
   per-municipality investigation record (which BIPs are `BLOCKED`/
   `NOT_IMPLEMENTED` and why; Dopiewo and Skoki are the closest to real -
@@ -164,6 +164,48 @@ scan-time matching, unlike deterministic investment<->signal correlation.
   location-name -> centroid lookup (`frontend/lib/location-coordinates.ts`),
   good enough for a metro-area overview but not precise per-address
   placement.
+
+## Implemented (phase 5, developer/municipality registries + broader coverage)
+
+- **`Developer`/`DeveloperCandidate`/`Municipality`** (`domain/`) make the
+  developer and geographic-coverage concepts first-class, independent of
+  whether a working source adapter exists yet - see [`DeveloperStatus`]
+  and [`MunicipalitySourceStatus`] for the explicit lifecycle states that
+  keep a developer/municipality visible instead of silently disappearing
+  when unimplemented.
+- **`registry.DeveloperRegistry`** (`registry/DeveloperRegistry.kt`) lists
+  every Tier A/B developer from AGENTS.md sections 3/4 with a manually
+  verified website (or `null` + `BLOCKED`/`CANDIDATE` status when no
+  working URL could be found - never an invented one). Mirrored into the
+  `developer_registry` table by `V5__developer_municipality_registry.sql`
+  so the frontend can read it directly.
+- **`registry.MunicipalityRegistry`** lists all 22 target Metropolia
+  Poznań municipalities (`domain/LocationCatalog.kt` gained the 8 that
+  were previously missing: Buk, Oborniki, Pobiedziska, Puszczykowo, Skoki,
+  Stęszew, Szamotuły, Śrem) with per-category (`developer`/`discovery`/
+  `aggregator`) coverage status.
+- **`registry.DiscoverySourceRegistry`** records the detailed municipal
+  BIP (Biuletyn Informacji Publicznej) investigation outcome (URL looked at, status, and - when blocked - a
+  specific documented reason), which is more detail than
+  `MunicipalityRegistry`'s coverage status alone and is essential context
+  for continuing discovery-source work later.
+- **17 new developer adapters** and **4 new discovery adapters** - see
+  `docs/SOURCES.md` "Implemented developer sources"/"Implemented discovery
+  sources" for the full list, and `registry/DeveloperRegistry.kt`/
+  `registry/DiscoverySourceRegistry.kt` for which developers/municipalities
+  were investigated and found unimplementable (JS SPA, anti-bot, no
+  register, ...).
+- **`DeveloperCandidateRepository`**: `MonitoringService` now records a
+  `DeveloperCandidate` whenever an aggregator-only discovery names a
+  developer not present in `DeveloperRegistry` - the feedback loop
+  described in AGENTS.md sections 6/33, always requiring human review
+  before a candidate becomes a real adapter.
+- **Frontend**: `/developers` (Tier A/B registry + discovered candidates)
+  and `/coverage` (per-municipality source coverage matrix) pages; the
+  investments list now shows a source-category badge per row and a
+  collapsible "advanced filters" panel (source category, property type,
+  status, location, plus range sliders for house area/plot area/price
+  built on Base UI's `Slider` primitive).
 
 ## Implemented (phase 6, deterministic scoring pipeline + discovery lead time + watchlist)
 
@@ -203,48 +245,6 @@ scan-time matching, unlike deterministic investment<->signal correlation.
   ("+N days before developer"); the dashboard gained an average discovery
   lead time stat card.
 
-## Implemented (phase 5, developer/municipality registries + broader coverage)
-
-- **`Developer`/`DeveloperCandidate`/`Municipality`** (`domain/`) make the
-  developer and geographic-coverage concepts first-class, independent of
-  whether a working source adapter exists yet - see [`DeveloperStatus`]
-  and [`MunicipalitySourceStatus`] for the explicit lifecycle states that
-  keep a developer/municipality visible instead of silently disappearing
-  when unimplemented.
-- **`registry.DeveloperRegistry`** (`registry/DeveloperRegistry.kt`) lists
-  every Tier A/B developer from AGENTS.md sections 3/4 with a manually
-  verified website (or `null` + `BLOCKED`/`CANDIDATE` status when no
-  working URL could be found - never an invented one). Mirrored into the
-  `developer_registry` table by `V5__developer_municipality_registry.sql`
-  so the frontend can read it directly.
-- **`registry.MunicipalityRegistry`** lists all 22 target Metropolia
-  Poznań municipalities (`domain/LocationCatalog.kt` gained the 8 that
-  were previously missing: Buk, Oborniki, Pobiedziska, Puszczykowo, Skoki,
-  Stęszew, Szamotuły, Śrem) with per-category (`developer`/`discovery`/
-  `aggregator`) coverage status.
-- **`registry.DiscoverySourceRegistry`** records the detailed municipal
-  BIP investigation outcome (URL looked at, status, and - when blocked - a
-  specific documented reason), which is more detail than
-  `MunicipalityRegistry`'s coverage status alone and is essential context
-  for continuing discovery-source work later.
-- **16 new developer adapters** and **4 new discovery adapters** - see
-  `docs/SOURCES.md` "Implemented developer sources"/"Implemented discovery
-  sources" for the full list, and `registry/DeveloperRegistry.kt`/
-  `registry/DiscoverySourceRegistry.kt` for which developers/municipalities
-  were investigated and found unimplementable (JS SPA, anti-bot, no
-  register, ...).
-- **`DeveloperCandidateRepository`**: `MonitoringService` now records a
-  `DeveloperCandidate` whenever an aggregator-only discovery names a
-  developer not present in `DeveloperRegistry` - the feedback loop
-  described in AGENTS.md sections 6/33, always requiring human review
-  before a candidate becomes a real adapter.
-- **Frontend**: `/developers` (Tier A/B registry + discovered candidates)
-  and `/coverage` (per-municipality source coverage matrix) pages; the
-  investments list now shows a source-category badge per row and a
-  collapsible "advanced filters" panel (source category, property type,
-  status, location, plus range sliders for house area/plot area/price
-  built on Base UI's `Slider` primitive).
-
 ## Implemented (phase 7, per-field provenance + remaining Tier B developers + candidate review workflow + dashboard enhancements)
 
 - **Per-field provenance**: `SourceEvidence` is now recorded once per
@@ -256,7 +256,7 @@ scan-time matching, unlike deterministic investment<->signal correlation.
   `investment-detail-view.tsx` groups evidence by `field_name` and shows a
   "confirmed by N sources" badge when 2+ distinct `source_id`s independently
   publish the same fact.
-- **25 developer adapters total**: the 7 remaining Tier B `CANDIDATE`
+- **26 developer adapters total**: the 7 remaining Tier B `CANDIDATE`
   developers with a verified URL (Cordia, Ronson, SIVANET, MJ Deweloper,
   Area Development, Inwestycje Wielkopolski, Vastbouw) are now `MONITORED`
   (`V7__promote_tier_b_candidates.sql`) - see `docs/SOURCES.md`

@@ -13,7 +13,7 @@ growing list of BIP registers and developer sites marked `BLOCKED` or
 1. **JS SPA / client-side rendering** (~10 sources) - the server returns
    HTTP 200 with an empty or shell HTML body; all real content is
    injected by JavaScript after page load. Affects: Buk, Oborniki,
-   Pobiedziska, Szamotuly (same BIP platform), Kornik (Drupal 11
+   Pobiedziska, Szamotuły (same BIP platform), Kórnik (Drupal 11
    JS-hydrated), Dopiewo (Next.js, content fetched client-side from
    `bip-api.dopiewo.pl`), Archicom (React PWA), Nickel Development
    (Yii AJAX), Otodom (aggregator SPA).
@@ -152,7 +152,7 @@ into `ArchivingPageFetcher` as a `@Bean` (e.g. from a small
 `@Configuration` class), rather than hardcoded.
 
 Sources whose `status` flipped from `BLOCKED`/`NOT_IMPLEMENTED` to
-`IMPLEMENTED` once a parser was built: Buk, Pobiedziska, Szamotuly, Kornik,
+`IMPLEMENTED` once a parser was built: Buk, Pobiedziska, Szamotuły, Kórnik,
 Dopiewo (discovery); Archicom, Nickel Development, PWD Deweloper
 (developer) - all now have verified parsers (see `docs/SOURCES.md`).
 Nickel turned out not to need `PlaywrightPageFetcher` at all - its search
@@ -185,12 +185,12 @@ developer/discovery source" workflow in `AGENTS.md` - Playwright only
 solves *fetching*, not *parsing*. All items originally suggested here
 have since been completed, except where noted:
 
-1. ~~Buk / Pobiedziska / Szamotuly~~ - done (one parser per BIP platform
+1. ~~Buk / Pobiedziska / Szamotuły~~ - done (one parser per BIP platform
    variant, not a single shared one as originally guessed). Oborniki was
    attempted but remains `BLOCKED` (PDF-only register).
 2. ~~Dopiewo~~ - done.
 3. ~~Archicom, Nickel Development~~ - done.
-4. ~~Kornik~~ - done.
+4. ~~Kórnik~~ - done.
 5. ~~PWD Deweloper~~ - done; FingerprintJS did not end up blocking
    headless Chromium.
 6. Otodom - still open; would follow the same fixture-verification
