@@ -176,6 +176,9 @@ See [`frontend/README.md`](frontend/README.md) for full setup and details.
   remaining Tier B candidate developers with a verified URL but no
   adapter yet (see `registry/DeveloperRegistry.kt`).
 
+See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the concrete, prioritized
+plan for what's next.
+
 ## License
 
 [MIT](LICENSE)
