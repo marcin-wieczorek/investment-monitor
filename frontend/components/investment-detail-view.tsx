@@ -24,12 +24,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { JsonAccordion } from "@/components/json-accordion";
 import { cn, formatArea, formatPrice, formatRelativeTime } from "@/lib/utils";
-import type { CorrelationRow, InvestmentWithState, SourceEvidenceRow } from "@/lib/types";
+import type { CorrelationRow, InvestmentDuplicateRow, InvestmentWithState, SourceEvidenceRow } from "@/lib/types";
 
 interface InvestmentDetailViewProps {
   investment: InvestmentWithState;
   evidence: SourceEvidenceRow[];
   correlations: CorrelationRow[];
+  duplicates: InvestmentDuplicateRow[];
 }
 
 function ScoreBar({ label, value }: { label: string; value: number | null }) {
@@ -65,7 +66,7 @@ function groupEvidenceByField(evidence: SourceEvidenceRow[]): Map<string, Source
   return groups;
 }
 
-export function InvestmentDetailView({ investment, evidence, correlations }: InvestmentDetailViewProps) {
+export function InvestmentDetailView({ investment, evidence, correlations, duplicates }: InvestmentDetailViewProps) {
   const { t, locale } = useI18n();
   const router = useRouter();
 
@@ -365,6 +366,46 @@ export function InvestmentDetailView({ investment, evidence, correlations }: Inv
             </div>
           ) : (
             <p className="text-xs text-muted-foreground">{t("investments.noCorrelations")}</p>
+          )}
+
+          <Separator />
+
+          {duplicates.length > 0 ? (
+            <div className="space-y-2">
+              <h2 className="text-sm font-medium text-muted-foreground">{t("investments.relatedListings")}</h2>
+              <div className="space-y-1.5">
+                {duplicates.map((duplicate) => {
+                  const otherId = duplicate.investment_id_a === investment.id ? duplicate.investment_id_b : duplicate.investment_id_a;
+                  const otherName = duplicate.investment_id_a === investment.id ? duplicate.investment_name_b : duplicate.investment_name_a;
+                  const otherSource = duplicate.investment_id_a === investment.id ? duplicate.investment_source_b : duplicate.investment_source_a;
+                  return (
+                    <div
+                      key={duplicate.id}
+                      className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border border-border bg-muted/30 px-3 py-2 text-xs"
+                    >
+                      <Badge
+                        variant="outline"
+                        className={
+                          duplicate.confidence === "HIGH"
+                            ? "border-emerald-500/30 text-emerald-500 dark:text-emerald-400"
+                            : duplicate.confidence === "MEDIUM"
+                              ? "border-amber-500/30 text-amber-500 dark:text-amber-400"
+                              : "border-border text-muted-foreground"
+                        }
+                      >
+                        {duplicate.confidence}
+                      </Badge>
+                      <span className="font-mono text-muted-foreground">{otherSource}</span>
+                      <Link href={`/investments/${otherId}`} className="min-w-0 flex-1 truncate hover:underline">
+                        {otherName}
+                      </Link>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground">{t("investments.noRelatedListings")}</p>
           )}
 
           <Separator />

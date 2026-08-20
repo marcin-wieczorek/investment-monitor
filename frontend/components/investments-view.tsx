@@ -22,10 +22,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ExpandableTableRow, ExpandChevron } from "@/components/expandable-table-row";
 import { cn, formatArea, formatPrice, formatRelativeTime } from "@/lib/utils";
 import { NEW_THRESHOLD_MS } from "@/lib/constants";
-import type { InvestmentWithState } from "@/lib/types";
+import type { InvestmentDuplicateRow, InvestmentWithState } from "@/lib/types";
 
 interface InvestmentsViewProps {
   investments: InvestmentWithState[];
+  duplicates?: InvestmentDuplicateRow[];
 }
 
 const ALL = "__all__";
@@ -38,6 +39,50 @@ const SOURCE_CATEGORY_BADGE: Record<string, string> = {
   DISCOVERY: "border-purple-500/30 text-purple-500 dark:text-purple-400",
   AGGREGATOR: "border-orange-500/30 text-orange-500 dark:text-orange-400",
 };
+
+/** Lower = more authoritative (see SourceCategory.kt: DEVELOPER > DISCOVERY > AGGREGATOR). */
+const CATEGORY_PRIORITY: Record<string, number> = { DEVELOPER: 0, DISCOVERY: 1, AGGREGATOR: 2 };
+
+function categoryPriority(investment: InvestmentWithState): number {
+  return investment.source_category ? CATEGORY_PRIORITY[investment.source_category] ?? 3 : 3;
+}
+
+/** Deterministic tie-break for picking which side of a duplicate pair is shown as the representative row. */
+function isMoreAuthoritative(a: InvestmentWithState, b: InvestmentWithState): boolean {
+  const pa = categoryPriority(a);
+  const pb = categoryPriority(b);
+  if (pa !== pb) return pa < pb;
+  if (a.first_seen_at !== b.first_seen_at) return a.first_seen_at < b.first_seen_at;
+  return a.id < b.id;
+}
+
+interface DuplicateLink {
+  investmentId: number;
+  confidence: "HIGH" | "MEDIUM" | "LOW";
+}
+
+/**
+ * Direct (non-transitive) duplicate links per investment id, HIGH/MEDIUM
+ * confidence only - LOW-confidence pairs are surfaced nowhere in this
+ * view, matching InvestmentDeduplicator's conservative, fail-closed
+ * design (a weak name-overlap-only match should never silently merge two
+ * rows that might really be different projects).
+ */
+function buildDuplicateLinks(duplicates: InvestmentDuplicateRow[]): Map<number, DuplicateLink[]> {
+  const map = new Map<number, DuplicateLink[]>();
+  const add = (id: number, otherId: number, confidence: DuplicateLink["confidence"]) => {
+    const list = map.get(id) ?? [];
+    list.push({ investmentId: otherId, confidence });
+    map.set(id, list);
+  };
+  duplicates
+    .filter((d) => d.confidence !== "LOW")
+    .forEach((d) => {
+      add(d.investment_id_a, d.investment_id_b, d.confidence);
+      add(d.investment_id_b, d.investment_id_a, d.confidence);
+    });
+  return map;
+}
 
 function scoreBadgeClass(score: number): string {
   if (score >= 0.66) return "border-emerald-500/30 text-emerald-500 dark:text-emerald-400";
@@ -62,7 +107,7 @@ function numericBounds(values: Array<number | null>): [number, number] {
   return [Math.floor(Math.min(...known)), Math.ceil(Math.max(...known))];
 }
 
-export function InvestmentsView({ investments }: InvestmentsViewProps) {
+export function InvestmentsView({ investments, duplicates = [] }: InvestmentsViewProps) {
   const { t, locale } = useI18n();
   const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
@@ -114,6 +159,23 @@ export function InvestmentsView({ investments }: InvestmentsViewProps) {
     [investments]
   );
 
+  const investmentById = useMemo(() => new Map(investments.map((i) => [i.id, i])), [investments]);
+  const duplicateLinks = useMemo(() => buildDuplicateLinks(duplicates), [duplicates]);
+
+  /** The id of the most authoritative investment among this row and its direct duplicate links - itself if it has none, or isn't beaten by any of them. */
+  const representativeIdFor = useMemo(
+    () => (investment: InvestmentWithState): number => {
+      const links = duplicateLinks.get(investment.id) ?? [];
+      let best = investment;
+      links.forEach((link) => {
+        const other = investmentById.get(link.investmentId);
+        if (other && isMoreAuthoritative(other, best)) best = other;
+      });
+      return best.id;
+    },
+    [duplicateLinks, investmentById]
+  );
+
   const filtered = useMemo(() => {
     const result = investments.filter((investment) => {
       if (!showArchived && investment.archived) return false;
@@ -158,6 +220,14 @@ export function InvestmentsView({ investments }: InvestmentsViewProps) {
     sortField,
     sortDesc,
   ]);
+
+  const visibleCount = useMemo(() => {
+    const filteredIds = new Set(filtered.map((i) => i.id));
+    return filtered.filter((investment) => {
+      const representativeId = representativeIdFor(investment);
+      return representativeId === investment.id || !filteredIds.has(representativeId);
+    }).length;
+  }, [filtered, representativeIdFor]);
 
   return (
     <div className="space-y-6">
@@ -213,7 +283,7 @@ export function InvestmentsView({ investments }: InvestmentsViewProps) {
             {filtersOpen ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
           </Button>
           <span className="text-xs text-muted-foreground">
-            {filtered.length} / {investments.length}
+            {visibleCount} / {investments.length}
           </span>
         </div>
 
@@ -360,108 +430,161 @@ export function InvestmentsView({ investments }: InvestmentsViewProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((investment) => {
-                const isNew =
-                  Date.now() - new Date(investment.first_seen_at).getTime() < NEW_THRESHOLD_MS;
-                const houseArea = formatArea(investment.house_area_min, investment.house_area_max, t);
-                const plotArea = formatArea(investment.plot_area_min, investment.plot_area_max, t);
-                const price = formatPrice(investment.price_min, investment.price_max, t);
-                const isOpen = expandedId === investment.id;
+              {(() => {
+                const filteredIds = new Set(filtered.map((i) => i.id));
+                return filtered.map((investment) => {
+                  const isNew =
+                    Date.now() - new Date(investment.first_seen_at).getTime() < NEW_THRESHOLD_MS;
+                  const houseArea = formatArea(investment.house_area_min, investment.house_area_max, t);
+                  const plotArea = formatArea(investment.plot_area_min, investment.plot_area_max, t);
+                  const price = formatPrice(investment.price_min, investment.price_max, t);
+                  const isOpen = expandedId === investment.id;
 
-                return (
-                  <ExpandableTableRow
-                    key={investment.id}
-                    isOpen={isOpen}
-                    onToggle={() => setExpandedId(isOpen ? null : investment.id)}
-                    columnsCount={COLUMNS_COUNT}
-                    data={investment}
-                  >
-                    <TableCell>
-                      <Link
-                        href={`/investments/${investment.id}`}
-                        onClick={(e) => e.stopPropagation()}
-                        className="flex items-center gap-3 whitespace-normal"
-                      >
-                        <div className="relative size-10 shrink-0 overflow-hidden rounded-lg bg-muted">
-                          {investment.image_url ? (
-                            <Image
-                              src={investment.image_url}
-                              alt={investment.name}
-                              fill
-                              sizes="40px"
-                              className="object-cover"
-                              unoptimized
-                            />
-                          ) : (
-                            <div className="flex h-full items-center justify-center">
-                              <Building2 className="size-4 text-muted-foreground" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="truncate font-medium hover:underline">
-                              {investment.name}
-                            </span>
-                            {isNew ? (
-                              <Badge className="bg-emerald-500 text-white hover:bg-emerald-500">
-                                {t("investments.new")}
-                              </Badge>
-                            ) : null}
-                            {investment.archived ? (
-                              <Badge variant="secondary">{t("investments.archive")}</Badge>
-                            ) : null}
-                            {investment.watched ? (
-                              <Badge variant="secondary" className="border-amber-500/30 text-amber-500 dark:text-amber-400">
-                                {t("investments.watched")}
-                              </Badge>
-                            ) : null}
-                            {investment.aggregator_only_discovery ? (
-                              <Badge variant="outline" className="border-orange-500/30 text-orange-500 dark:text-orange-400">
-                                {t("investments.aggregatorOnly")}
-                              </Badge>
-                            ) : null}
+                  const representativeId = representativeIdFor(investment);
+                  if (representativeId !== investment.id && filteredIds.has(representativeId)) {
+                    // A more authoritative duplicate of this row is also visible - suppress this row,
+                    // its data still surfaces in the representative row's expanded "other sources" panel.
+                    return null;
+                  }
+
+                  const links = duplicateLinks.get(investment.id) ?? [];
+                  const siblings = links
+                    .map((link) => ({ investment: investmentById.get(link.investmentId), confidence: link.confidence }))
+                    .filter((s): s is { investment: InvestmentWithState; confidence: DuplicateLink["confidence"] } => s.investment != null);
+
+                  return (
+                    <ExpandableTableRow
+                      key={investment.id}
+                      isOpen={isOpen}
+                      onToggle={() => setExpandedId(isOpen ? null : investment.id)}
+                      columnsCount={COLUMNS_COUNT}
+                      data={investment}
+                      expandedExtra={
+                        siblings.length > 0 ? (
+                          <div className="border-b border-border px-4 py-3">
+                            <h3 className="mb-2 text-xs font-medium text-muted-foreground">
+                              {t("investments.otherSources")}
+                            </h3>
+                            <ul className="space-y-1.5">
+                              {siblings.map(({ investment: sibling, confidence }) => (
+                                <li key={sibling.id} className="flex items-center gap-2 text-xs">
+                                  <Badge
+                                    variant="outline"
+                                    className={cn(
+                                      "shrink-0 text-[10px]",
+                                      confidence === "HIGH"
+                                        ? "border-emerald-500/30 text-emerald-500 dark:text-emerald-400"
+                                        : "border-amber-500/30 text-amber-500 dark:text-amber-400"
+                                    )}
+                                  >
+                                    {confidence}
+                                  </Badge>
+                                  <span className="font-mono text-muted-foreground">{sibling.source}</span>
+                                  <Link
+                                    href={`/investments/${sibling.id}`}
+                                    className="truncate hover:underline"
+                                  >
+                                    {sibling.name}
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
                           </div>
-                          <span className="text-xs text-muted-foreground">
-                            {investment.location ?? t("investments.unknownLocation")}
-                          </span>
+                        ) : undefined
+                      }
+                    >
+                      <TableCell>
+                        <Link
+                          href={`/investments/${investment.id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="flex items-center gap-3 whitespace-normal"
+                        >
+                          <div className="relative size-10 shrink-0 overflow-hidden rounded-lg bg-muted">
+                            {investment.image_url ? (
+                              <Image
+                                src={investment.image_url}
+                                alt={investment.name}
+                                fill
+                                sizes="40px"
+                                className="object-cover"
+                                unoptimized
+                              />
+                            ) : (
+                              <div className="flex h-full items-center justify-center">
+                                <Building2 className="size-4 text-muted-foreground" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="truncate font-medium hover:underline">
+                                {investment.name}
+                              </span>
+                              {isNew ? (
+                                <Badge className="bg-emerald-500 text-white hover:bg-emerald-500">
+                                  {t("investments.new")}
+                                </Badge>
+                              ) : null}
+                              {investment.archived ? (
+                                <Badge variant="secondary">{t("investments.archive")}</Badge>
+                              ) : null}
+                              {investment.watched ? (
+                                <Badge variant="secondary" className="border-amber-500/30 text-amber-500 dark:text-amber-400">
+                                  {t("investments.watched")}
+                                </Badge>
+                              ) : null}
+                              {investment.aggregator_only_discovery ? (
+                                <Badge variant="outline" className="border-orange-500/30 text-orange-500 dark:text-orange-400">
+                                  {t("investments.aggregatorOnly")}
+                                </Badge>
+                              ) : null}
+                              {siblings.length > 0 ? (
+                                <Badge variant="secondary" className="w-fit text-[10px]">
+                                  {t("investments.confirmedBySources").replace("{count}", String(siblings.length + 1))}
+                                </Badge>
+                              ) : null}
+                            </div>
+                            <span className="text-xs text-muted-foreground">
+                              {investment.location ?? t("investments.unknownLocation")}
+                            </span>
+                          </div>
+                        </Link>
+                      </TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        <div className="flex flex-col gap-1">
+                          <span className="font-mono text-xs text-muted-foreground">{investment.source}</span>
+                          {investment.source_category ? (
+                            <Badge
+                              variant="outline"
+                              className={cn("w-fit text-[10px] uppercase", SOURCE_CATEGORY_BADGE[investment.source_category])}
+                            >
+                              {t(`sources.${investment.source_category.toLowerCase()}` as "sources.developer")}
+                            </Badge>
+                          ) : null}
                         </div>
-                      </Link>
-                    </TableCell>
-                    <TableCell className="hidden md:table-cell">
-                      <div className="flex flex-col gap-1">
-                        <span className="font-mono text-xs text-muted-foreground">{investment.source}</span>
-                        {investment.source_category ? (
-                          <Badge
-                            variant="outline"
-                            className={cn("w-fit text-[10px] uppercase", SOURCE_CATEGORY_BADGE[investment.source_category])}
-                          >
-                            {t(`sources.${investment.source_category.toLowerCase()}` as "sources.developer")}
-                          </Badge>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell className="hidden text-muted-foreground md:table-cell">
-                      {investment.developer}
-                    </TableCell>
-                    <TableCell className="hidden text-muted-foreground lg:table-cell">
-                      {houseArea ?? plotArea ?? "—"}
-                    </TableCell>
-                    <TableCell className="hidden text-muted-foreground lg:table-cell">
-                      {price ?? "—"}
-                    </TableCell>
-                    <TableCell>
-                      <ScoreBadge score={investment.overall_score} />
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {formatRelativeTime(investment.first_seen_at, locale)}
-                    </TableCell>
-                    <TableCell>
-                      <ExpandChevron open={isOpen} />
-                    </TableCell>
-                  </ExpandableTableRow>
-                );
-              })}
+                      </TableCell>
+                      <TableCell className="hidden text-muted-foreground md:table-cell">
+                        {investment.developer}
+                      </TableCell>
+                      <TableCell className="hidden text-muted-foreground lg:table-cell">
+                        {houseArea ?? plotArea ?? "—"}
+                      </TableCell>
+                      <TableCell className="hidden text-muted-foreground lg:table-cell">
+                        {price ?? "—"}
+                      </TableCell>
+                      <TableCell>
+                        <ScoreBadge score={investment.overall_score} />
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {formatRelativeTime(investment.first_seen_at, locale)}
+                      </TableCell>
+                      <TableCell>
+                        <ExpandChevron open={isOpen} />
+                      </TableCell>
+                    </ExpandableTableRow>
+                  );
+                });
+              })()}
             </TableBody>
           </Table>
         </div>

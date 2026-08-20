@@ -108,6 +108,27 @@ export interface InvestmentFilters {
   aggregatorOnly?: boolean;
 }
 
+/**
+ * A deterministic cross-source duplicate link between two investments from
+ * different sources that likely describe the same project (see
+ * InvestmentDeduplicator on the Kotlin side). `investment_id_a` is always
+ * the smaller database id of the pair.
+ */
+export interface InvestmentDuplicateRow {
+  id: number;
+  investment_id_a: number;
+  investment_id_b: number;
+  confidence: "HIGH" | "MEDIUM" | "LOW";
+  matched_features: string;
+  reason: string;
+  created_at: string;
+  // Joined for display convenience.
+  investment_name_a?: string;
+  investment_name_b?: string;
+  investment_source_a?: string;
+  investment_source_b?: string;
+}
+
 export interface DeveloperRegistryRow {
   id: string;
   name: string;

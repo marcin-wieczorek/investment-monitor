@@ -2,6 +2,7 @@ package pl.marcin.investmentmonitor.reporting
 
 import pl.marcin.investmentmonitor.analysis.InvestmentAnalysis
 import pl.marcin.investmentmonitor.correlation.CorrelationCandidate
+import pl.marcin.investmentmonitor.correlation.DuplicateCandidate
 import pl.marcin.investmentmonitor.detection.ChangeType
 import pl.marcin.investmentmonitor.detection.InvestmentChange
 import pl.marcin.investmentmonitor.domain.Investment
@@ -56,7 +57,9 @@ data class ScanReport(
     /** Aggregator-sourced investments newly seen this run with no matching developer-sourced investment. */
     val aggregatorOnlyDiscoveries: List<Investment>,
     /** Discovery lead time for every persisted correlation, not just this run's new ones (see AGENTS.md section 28). */
-    val leadTimes: List<CorrelationLeadTime> = emptyList()
+    val leadTimes: List<CorrelationLeadTime> = emptyList(),
+    /** Cross-source duplicate pairs found over the full current investment set, not just this run's new ones. */
+    val duplicates: List<DuplicateCandidate> = emptyList()
 ) {
     val newInvestmentCount: Int
         get() = developerReports.sumOf { source -> source.changes.count { it.change.type == ChangeType.NEW } }

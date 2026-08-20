@@ -10,12 +10,14 @@ import pl.marcin.investmentmonitor.analysis.DeterministicScorer
 import pl.marcin.investmentmonitor.analysis.ScoringResult
 import pl.marcin.investmentmonitor.archival.RawHtmlArchiver
 import pl.marcin.investmentmonitor.correlation.InvestmentCorrelator
+import pl.marcin.investmentmonitor.correlation.InvestmentDeduplicator
 import pl.marcin.investmentmonitor.detection.ChangeDetector
 import pl.marcin.investmentmonitor.domain.AreaRange
 import pl.marcin.investmentmonitor.domain.Correlation
 import pl.marcin.investmentmonitor.domain.DeveloperCandidate
 import pl.marcin.investmentmonitor.domain.DeveloperCandidateStatus
 import pl.marcin.investmentmonitor.domain.Investment
+import pl.marcin.investmentmonitor.domain.InvestmentDuplicate
 import pl.marcin.investmentmonitor.domain.InvestmentSignal
 import pl.marcin.investmentmonitor.domain.PriceRange
 import pl.marcin.investmentmonitor.domain.PropertyType
@@ -23,6 +25,7 @@ import pl.marcin.investmentmonitor.domain.SourceEvidence
 import pl.marcin.investmentmonitor.persistence.CorrelationRepository
 import pl.marcin.investmentmonitor.persistence.DeveloperCandidateRepository
 import pl.marcin.investmentmonitor.persistence.EvidenceRepository
+import pl.marcin.investmentmonitor.persistence.InvestmentDuplicateRepository
 import pl.marcin.investmentmonitor.persistence.InvestmentRepository
 import pl.marcin.investmentmonitor.persistence.InvestmentScoreRepository
 import pl.marcin.investmentmonitor.persistence.MonitoringRunRepository
@@ -97,6 +100,20 @@ private class InMemoryCorrelationRepository : CorrelationRepository {
     override fun findAllWithLeadTime(): List<pl.marcin.investmentmonitor.persistence.CorrelationLeadTime> = emptyList()
 }
 
+private class InMemoryInvestmentDuplicateRepository : InvestmentDuplicateRepository {
+    val saved = mutableListOf<InvestmentDuplicate>()
+    override fun save(duplicate: InvestmentDuplicate) {
+        if (exists(duplicate.investmentIdA, duplicate.investmentIdB)) return
+        saved += duplicate
+    }
+    override fun findByInvestment(investmentId: Long) =
+        saved.filter { it.investmentIdA == investmentId || it.investmentIdB == investmentId }
+    override fun exists(investmentIdA: Long, investmentIdB: Long) = saved.any {
+        (it.investmentIdA == investmentIdA && it.investmentIdB == investmentIdB) ||
+            (it.investmentIdA == investmentIdB && it.investmentIdB == investmentIdA)
+    }
+}
+
 private class InMemoryDeveloperCandidateRepository : DeveloperCandidateRepository {
     val saved = mutableListOf<DeveloperCandidate>()
     override fun save(candidate: DeveloperCandidate): Long {
@@ -144,6 +161,7 @@ class MonitoringServiceTest {
         aggregatorSources: List<AggregatorSource> = emptyList(),
         evidenceRepository: InMemoryEvidenceRepository = InMemoryEvidenceRepository(),
         correlationRepository: InMemoryCorrelationRepository = InMemoryCorrelationRepository(),
+        duplicateRepository: InMemoryInvestmentDuplicateRepository = InMemoryInvestmentDuplicateRepository(),
         developerCandidateRepository: InMemoryDeveloperCandidateRepository = InMemoryDeveloperCandidateRepository(),
         investmentScoreRepository: InMemoryInvestmentScoreRepository = InMemoryInvestmentScoreRepository(),
         investmentRepository: InMemoryInvestmentRepository = InMemoryInvestmentRepository()
@@ -160,6 +178,8 @@ class MonitoringServiceTest {
         evidenceRepository = evidenceRepository,
         correlationRepository = correlationRepository,
         correlator = InvestmentCorrelator(),
+        duplicateRepository = duplicateRepository,
+        deduplicator = InvestmentDeduplicator(),
         rawHtmlArchiver = RawHtmlArchiver(enabled = false, basePath = "unused", retentionDays = 1),
         developerCandidateRepository = developerCandidateRepository,
         scorer = DeterministicScorer(),
@@ -365,5 +385,49 @@ class MonitoringServiceTest {
 
         val score = scoreRepository.saved[investment.canonicalKey]
         score shouldNotBe null
+    }
+
+    @Test
+    fun `flags a cross-source duplicate between a developer investment and an aggregator listing of the same project`() {
+        val duplicateRepository = InMemoryInvestmentDuplicateRepository()
+        val developerSource = FakeInvestmentSource(
+            "chronos",
+            listOf(testInvestment(name = "Tercja", source = "chronos", developer = "Chronos Development", location = "Kruszewnia"))
+        )
+        val aggregatorSource = FakeAggregatorSource(
+            "rynekpierwotny",
+            listOf(testInvestment(name = "Osiedle Tercja", source = "rynekpierwotny", developer = "Chronos Development", location = "Kruszewnia", url = java.net.URI("https://rynekpierwotny.pl/osiedle-tercja")))
+        )
+
+        val report = buildService(
+            developerSources = listOf(developerSource),
+            aggregatorSources = listOf(aggregatorSource),
+            duplicateRepository = duplicateRepository
+        ).scan()
+
+        report.duplicates shouldHaveSize 1
+        duplicateRepository.saved shouldHaveSize 1
+    }
+
+    @Test
+    fun `does not flag two unrelated investments from different sources as duplicates`() {
+        val duplicateRepository = InMemoryInvestmentDuplicateRepository()
+        val developerSource = FakeInvestmentSource(
+            "chronos",
+            listOf(testInvestment(name = "Aura", source = "chronos", developer = "Chronos Development", location = "Kruszewnia"))
+        )
+        val aggregatorSource = FakeAggregatorSource(
+            "rynekpierwotny",
+            listOf(testInvestment(name = "Zielona Dolina", source = "rynekpierwotny", developer = "Unknown (RynekPierwotny)", location = "Mosina", url = java.net.URI("https://rynekpierwotny.pl/zielona-dolina")))
+        )
+
+        val report = buildService(
+            developerSources = listOf(developerSource),
+            aggregatorSources = listOf(aggregatorSource),
+            duplicateRepository = duplicateRepository
+        ).scan()
+
+        report.duplicates.isEmpty() shouldBe true
+        duplicateRepository.saved.isEmpty() shouldBe true
     }
 }

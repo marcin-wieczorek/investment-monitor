@@ -3,6 +3,7 @@ import type {
   CorrelationRow,
   DeveloperCandidateRow,
   DeveloperRegistryRow,
+  InvestmentDuplicateRow,
   InvestmentFilters,
   InvestmentSignalRow,
   InvestmentWithState,
@@ -287,5 +288,39 @@ export function listMunicipalities(): MunicipalityRegistryRow[] {
   const rows = db
     .prepare("SELECT * FROM municipality_registry ORDER BY name")
     .all() as unknown as MunicipalityRegistryRow[];
+  return rows.map((row) => ({ ...row }));
+}
+
+const DUPLICATE_SELECT = `
+  SELECT
+    d.*,
+    a.name AS investment_name_a,
+    a.source AS investment_source_a,
+    b.name AS investment_name_b,
+    b.source AS investment_source_b
+  FROM investment_duplicate d
+  JOIN investment a ON a.id = d.investment_id_a
+  JOIN investment b ON b.id = d.investment_id_b
+`;
+
+/**
+ * All deterministic cross-source duplicate links (see
+ * InvestmentDeduplicator on the Kotlin side). Consumers group investments
+ * client-side using HIGH/MEDIUM confidence pairs, the same pattern
+ * `signals-view.tsx` uses to group signal case history by
+ * `source:reference` - see `groupInvestmentClusters` in
+ * `components/investments-view.tsx`.
+ */
+export function listInvestmentDuplicates(): InvestmentDuplicateRow[] {
+  const db = getDb();
+  const rows = db.prepare(DUPLICATE_SELECT).all() as unknown as InvestmentDuplicateRow[];
+  return rows.map((row) => ({ ...row }));
+}
+
+export function listDuplicatesForInvestment(investmentId: number): InvestmentDuplicateRow[] {
+  const db = getDb();
+  const rows = db
+    .prepare(`${DUPLICATE_SELECT} WHERE d.investment_id_a = ? OR d.investment_id_b = ?`)
+    .all(investmentId, investmentId) as unknown as InvestmentDuplicateRow[];
   return rows.map((row) => ({ ...row }));
 }

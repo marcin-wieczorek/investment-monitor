@@ -28,6 +28,7 @@ object ScanReportRenderer {
         appendCorrelatedSignals(report)
         appendDiscoveryLeadTime(report)
         appendAggregatorOnlyDiscoveries(report)
+        appendDuplicates(report)
         appendFailures(report)
 
         appendLine(SEPARATOR)
@@ -150,6 +151,23 @@ object ScanReportRenderer {
         } else {
             report.aggregatorOnlyDiscoveries.forEach { investment ->
                 appendLine("  ${investment.name} (${investment.location ?: "unknown location"}) - source: ${investment.source}")
+            }
+        }
+        appendLine()
+    }
+
+    private fun StringBuilder.appendDuplicates(report: ScanReport) {
+        appendLine("CROSS-SOURCE DUPLICATES")
+        appendLine(SEPARATOR)
+        if (report.duplicates.isEmpty()) {
+            appendLine("(none)")
+        } else {
+            report.duplicates.forEach { candidate ->
+                appendLine(
+                    "  ${candidate.investmentA.name} (${candidate.investmentA.source}) <-> " +
+                        "${candidate.investmentB.name} (${candidate.investmentB.source}) " +
+                        "(${candidate.confidence}: ${candidate.reason})"
+                )
             }
         }
         appendLine()

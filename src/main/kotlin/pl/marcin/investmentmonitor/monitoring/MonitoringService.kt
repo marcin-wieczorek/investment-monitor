@@ -8,7 +8,9 @@ import pl.marcin.investmentmonitor.analysis.LocationProfiles
 import pl.marcin.investmentmonitor.analysis.ReferenceProfiles
 import pl.marcin.investmentmonitor.archival.RawHtmlArchiver
 import pl.marcin.investmentmonitor.correlation.CorrelationCandidate
+import pl.marcin.investmentmonitor.correlation.DuplicateCandidate
 import pl.marcin.investmentmonitor.correlation.InvestmentCorrelator
+import pl.marcin.investmentmonitor.correlation.InvestmentDeduplicator
 import pl.marcin.investmentmonitor.detection.ChangeDetector
 import pl.marcin.investmentmonitor.detection.ChangeType
 import pl.marcin.investmentmonitor.detection.InvestmentChange
@@ -17,6 +19,7 @@ import pl.marcin.investmentmonitor.domain.Correlation
 import pl.marcin.investmentmonitor.domain.DeveloperCandidate
 import pl.marcin.investmentmonitor.domain.ExtractionMethod
 import pl.marcin.investmentmonitor.domain.Investment
+import pl.marcin.investmentmonitor.domain.InvestmentDuplicate
 import pl.marcin.investmentmonitor.domain.InvestmentSignal
 import pl.marcin.investmentmonitor.domain.LocationCatalog
 import pl.marcin.investmentmonitor.domain.LocationProfile
@@ -26,6 +29,7 @@ import pl.marcin.investmentmonitor.domain.SourceEvidence
 import pl.marcin.investmentmonitor.persistence.CorrelationRepository
 import pl.marcin.investmentmonitor.persistence.DeveloperCandidateRepository
 import pl.marcin.investmentmonitor.persistence.EvidenceRepository
+import pl.marcin.investmentmonitor.persistence.InvestmentDuplicateRepository
 import pl.marcin.investmentmonitor.persistence.InvestmentRepository
 import pl.marcin.investmentmonitor.persistence.InvestmentScoreRepository
 import pl.marcin.investmentmonitor.persistence.MonitoringRunRepository
@@ -79,6 +83,8 @@ class MonitoringService(
     private val evidenceRepository: EvidenceRepository,
     private val correlationRepository: CorrelationRepository,
     private val correlator: InvestmentCorrelator,
+    private val duplicateRepository: InvestmentDuplicateRepository,
+    private val deduplicator: InvestmentDeduplicator,
     private val rawHtmlArchiver: RawHtmlArchiver,
     private val developerCandidateRepository: DeveloperCandidateRepository,
     private val scorer: DeterministicScorer,
@@ -101,6 +107,7 @@ class MonitoringService(
         val discoveryReports = sourceRegistry.discoverySources().map(::scanDiscoverySource)
 
         val correlations = runCorrelation()
+        val duplicates = runDeduplication()
         val aggregatorOnlyDiscoveries = findAggregatorOnlyDiscoveries(aggregatorReports)
         recordUnknownDeveloperCandidates(aggregatorOnlyDiscoveries)
         updateAggregatorOnlyDiscoveryFlags()
@@ -131,7 +138,8 @@ class MonitoringService(
             discoveryReports = discoveryReports,
             correlations = correlations,
             aggregatorOnlyDiscoveries = aggregatorOnlyDiscoveries,
-            leadTimes = correlationRepository.findAllWithLeadTime()
+            leadTimes = correlationRepository.findAllWithLeadTime(),
+            duplicates = duplicates
         )
     }
 
@@ -344,6 +352,38 @@ class MonitoringService(
                     Correlation(
                         investmentId = investmentId,
                         signalId = signalId,
+                        confidence = candidate.confidence,
+                        matchedFeatures = candidate.matchedFeatures,
+                        reason = candidate.reason,
+                        createdAt = now
+                    )
+                )
+            }
+        }
+        return candidates
+    }
+
+    // ---------------------------------------------------------------- deduplication
+
+    /**
+     * Finds cross-source duplicate investments over the FULL current
+     * investment set (not just this run's new ones - same rationale as
+     * [runCorrelation]), so a duplicate is detected as soon as both sides
+     * exist, regardless of which scan first discovered which side.
+     */
+    private fun runDeduplication(): List<DuplicateCandidate> {
+        val allInvestments = investmentRepository.findAll()
+        val candidates = deduplicator.findDuplicates(allInvestments)
+
+        val now = Instant.now(clock)
+        candidates.forEach { candidate ->
+            val idA = investmentRepository.findIdByCanonicalKey(candidate.investmentA.canonicalKey)
+            val idB = investmentRepository.findIdByCanonicalKey(candidate.investmentB.canonicalKey)
+            if (idA != null && idB != null) {
+                duplicateRepository.save(
+                    InvestmentDuplicate(
+                        investmentIdA = idA,
+                        investmentIdB = idB,
                         confidence = candidate.confidence,
                         matchedFeatures = candidate.matchedFeatures,
                         reason = candidate.reason,
