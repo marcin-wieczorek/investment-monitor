@@ -46,8 +46,50 @@ object LocationCatalog {
         "Wojnowo", "Białężyn", "Głębocko", "Długa Goślina", "Łopuchowo"
     )
 
+    /**
+     * Villages within Gmina Buk observed directly in its BIP "Obwieszczenia
+     * i komunikaty" register (zoning-conditions and public-purpose siting
+     * decisions) - see `BukObwieszczeniaParser`.
+     */
+    val BUK_GMINA_VILLAGES: Set<String> = setOf(
+        "Wielka Wieś", "Niepruszewo", "Dobieżyn", "Kalwy", "Otusz", "Szewce", "Cieśle"
+    )
+
+    /**
+     * Villages within Gmina Szamotuły observed directly in its BIP
+     * public-purpose siting ("ustalenie lokalizacji inwestycji celu
+     * publicznego") register - see `SzamotulyUlicpParser`.
+     */
+    val SZAMOTULY_GMINA_VILLAGES: Set<String> = setOf("Lulinek", "Gąsawy", "Mutowo")
+
+    /**
+     * Villages within Gmina Pobiedziska observed directly in its BIP
+     * "Komunikaty" (planning announcements) register - see
+     * `PobiedziskaKomunikatyParser`.
+     */
+    val POBIEDZISKA_GMINA_VILLAGES: Set<String> = setOf("Główna", "Kowalskie")
+
+    /**
+     * Villages within Gmina Kórnik observed directly in its BIP
+     * "Obwieszczenia i ogłoszenia" (Wydział Planowania Przestrzennego)
+     * register - see `KornikObwieszczeniaParser`.
+     */
+    val KORNIK_GMINA_VILLAGES: Set<String> = setOf(
+        "Biernatki", "Błażejewko", "Czmoniec", "Czmoń", "Czołowo", "Dachowa", "Gądki",
+        "Konarskie", "Koninko", "Pierzchno", "Radzewo", "Robakowo", "Runowo", "Szczytniki",
+        "Żerniki", "Bnin"
+    )
+
+    /**
+     * Villages within Gmina Dopiewo observed directly in its BIP "Decyzje
+     * o warunkach zabudowy" register - see `DopiewoWzParser`.
+     */
+    val DOPIEWO_GMINA_VILLAGES: Set<String> = setOf("Konarzewo")
+
     val ALL_LOCATIONS: Set<String> =
-        CORE_LOCATIONS + SWARZEDZ_GMINA_VILLAGES + SREM_GMINA_VILLAGES + MUROWANA_GOSLINA_GMINA_VILLAGES
+        CORE_LOCATIONS + SWARZEDZ_GMINA_VILLAGES + SREM_GMINA_VILLAGES + MUROWANA_GOSLINA_GMINA_VILLAGES +
+            BUK_GMINA_VILLAGES + SZAMOTULY_GMINA_VILLAGES + POBIEDZISKA_GMINA_VILLAGES +
+            KORNIK_GMINA_VILLAGES + DOPIEWO_GMINA_VILLAGES
 
     /**
      * Finds the first known location name mentioned as a whole word in

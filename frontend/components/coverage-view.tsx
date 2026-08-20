@@ -18,10 +18,14 @@ const STATUS_BADGE: Record<string, string> = {
   DISABLED: "border-border text-muted-foreground",
 };
 
-function CoverageBadge({ status }: { status: string }) {
+function CoverageBadge({ status, reason }: { status: string; reason?: string | null }) {
   const { t } = useI18n();
   return (
-    <Badge variant="outline" className={cn("text-[10px] uppercase", STATUS_BADGE[status])}>
+    <Badge
+      variant="outline"
+      className={cn("text-[10px] uppercase", STATUS_BADGE[status], reason && "cursor-help decoration-dotted underline underline-offset-4")}
+      title={reason ?? undefined}
+    >
       {t(`coverage.status.${status}` as "coverage.status.IMPLEMENTED")}
     </Badge>
   );
@@ -76,7 +80,7 @@ export function CoverageView({ municipalities }: CoverageViewProps) {
                   <CoverageBadge status={m.developer_coverage} />
                 </TableCell>
                 <TableCell>
-                  <CoverageBadge status={m.discovery_coverage} />
+                  <CoverageBadge status={m.discovery_coverage} reason={m.discovery_blocked_reason} />
                 </TableCell>
                 <TableCell>
                   <CoverageBadge status={m.aggregator_coverage} />

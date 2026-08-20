@@ -25,3 +25,9 @@ investment-monitor:
     enabled: true
     path: raw
     retention-days: 30
+  playwright:
+    # Disabled by default: unblocks JS-rendered sources (see ADR-007) but
+    # requires a Chromium binary (`npx playwright install chromium` or
+    # equivalent) - a scan must work with zero setup on a fresh checkout.
+    enabled: false
+    timeout-ms: 30000

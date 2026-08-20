@@ -62,7 +62,15 @@ function DeveloperTierTable({ title, developers }: { title: string; developers: 
               <TableRow key={dev.id}>
                 <TableCell className="font-medium">{dev.name}</TableCell>
                 <TableCell>
-                  <Badge variant="outline" className={cn("text-[10px] uppercase", STATUS_BADGE[dev.status])}>
+                  <Badge
+                    variant="outline"
+                    className={cn(
+                      "text-[10px] uppercase",
+                      STATUS_BADGE[dev.status],
+                      dev.blocked_reason && "cursor-help decoration-dotted underline underline-offset-4"
+                    )}
+                    title={dev.blocked_reason ?? undefined}
+                  >
                     {t(`developers.statusLabel.${dev.status}` as "developers.statusLabel.MONITORED")}
                   </Badge>
                 </TableCell>

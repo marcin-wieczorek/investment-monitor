@@ -144,6 +144,7 @@ export interface DeveloperRegistryRow {
     | "BLOCKED";
   geographic_scope: string;
   adapter_source_id: string | null;
+  blocked_reason: string | null;
 }
 
 export interface DeveloperCandidateRow {
@@ -201,4 +202,5 @@ export interface MunicipalityRegistryRow {
   developer_coverage: "IMPLEMENTED" | "NOT_IMPLEMENTED" | "BLOCKED" | "DISABLED";
   discovery_coverage: "IMPLEMENTED" | "NOT_IMPLEMENTED" | "BLOCKED" | "DISABLED";
   aggregator_coverage: "IMPLEMENTED" | "NOT_IMPLEMENTED" | "BLOCKED" | "DISABLED";
+  discovery_blocked_reason: string | null;
 }

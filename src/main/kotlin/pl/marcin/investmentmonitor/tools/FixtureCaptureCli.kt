@@ -1,7 +1,10 @@
 package pl.marcin.investmentmonitor.tools
 
 import pl.marcin.investmentmonitor.scraping.JsoupPageFetcher
+import pl.marcin.investmentmonitor.scraping.PageFetcher
+import pl.marcin.investmentmonitor.scraping.PlaywrightPageFetcher
 import pl.marcin.investmentmonitor.source.AgrobexSource
+import pl.marcin.investmentmonitor.source.ArchicomSource
 import pl.marcin.investmentmonitor.source.AreaSource
 import pl.marcin.investmentmonitor.source.ATALSource
 import pl.marcin.investmentmonitor.source.AtanerSource
@@ -19,6 +22,9 @@ import pl.marcin.investmentmonitor.source.KonimpexSource
 import pl.marcin.investmentmonitor.source.LineaSource
 import pl.marcin.investmentmonitor.source.MJSource
 import pl.marcin.investmentmonitor.source.MurapolSource
+import pl.marcin.investmentmonitor.source.NickelParser
+import pl.marcin.investmentmonitor.source.NickelSource
+import pl.marcin.investmentmonitor.source.PWDSource
 import pl.marcin.investmentmonitor.source.PekabexSource
 import pl.marcin.investmentmonitor.source.RobygSource
 import pl.marcin.investmentmonitor.source.RonsonSource
@@ -28,12 +34,21 @@ import pl.marcin.investmentmonitor.source.SpraviaSource
 import pl.marcin.investmentmonitor.source.UWISource
 import pl.marcin.investmentmonitor.source.VastbouwSource
 import pl.marcin.investmentmonitor.source.aggregator.RynekPierwotnySource
+import pl.marcin.investmentmonitor.source.discovery.BukObwieszczeniaParser
+import pl.marcin.investmentmonitor.source.discovery.BukObwieszczeniaSource
 import pl.marcin.investmentmonitor.source.discovery.CzerwonakObwieszczeniaSource
+import pl.marcin.investmentmonitor.source.discovery.DopiewoWzParser
+import pl.marcin.investmentmonitor.source.discovery.DopiewoWzSource
+import pl.marcin.investmentmonitor.source.discovery.KornikObwieszczeniaParser
+import pl.marcin.investmentmonitor.source.discovery.KornikObwieszczeniaSource
 import pl.marcin.investmentmonitor.source.discovery.MurowanaGoslinaObwieszczeniaSource
+import pl.marcin.investmentmonitor.source.discovery.PobiedziskaKomunikatySource
 import pl.marcin.investmentmonitor.source.discovery.PoznanUlicpSource
 import pl.marcin.investmentmonitor.source.discovery.SremWzSource
 import pl.marcin.investmentmonitor.source.discovery.SuchyLasNppSource
 import pl.marcin.investmentmonitor.source.discovery.SwarzedzWzSource
+import pl.marcin.investmentmonitor.source.discovery.SzamotulyUlicpParser
+import pl.marcin.investmentmonitor.source.discovery.SzamotulyUlicpSource
 import pl.marcin.investmentmonitor.source.discovery.TarnowoPodgorneWzSource
 import java.net.URI
 import java.nio.file.Files
@@ -89,11 +104,207 @@ fun main() {
     val fixturesDir = Path.of("src/test/resources/fixtures")
 
     targets.forEach { (sourceId, target) -> capture(fetcher, fixturesDir, sourceId, target.first, target.second) }
+    captureNickel(fetcher, fixturesDir)
+    captureBrowserRequiredFixtures(fixturesDir)
 
     println("Review captured HTML before committing it as a fixture.")
 }
 
-private fun capture(fetcher: JsoupPageFetcher, fixturesDir: Path, sourceId: String, uri: URI, fileName: String) {
+/**
+ * Every source requiring [PlaywrightPageFetcher] (see ADR-007) shares one
+ * browser instance for this capture run rather than each launching its
+ * own - requires `investment-monitor.playwright` setup (`npx playwright
+ * install chromium`, see README.md).
+ */
+private fun captureBrowserRequiredFixtures(fixturesDir: Path) {
+    val playwright = PlaywrightPageFetcher(30_000)
+    try {
+        captureBukObwieszczenia(playwright, fixturesDir)
+        captureSzamotulyUlicp(playwright, fixturesDir)
+        capture(playwright, fixturesDir, "pobiedziska-komunikaty", URI(PobiedziskaKomunikatySource.LIST_URL), "announcements.html")
+        capture(playwright, fixturesDir, "archicom", URI(ArchicomSource.LIST_URL), "investment-list.html")
+        capturePWD(playwright, fixturesDir)
+        captureYearSplitDiscovery(
+            playwright, fixturesDir, "kornik-obwieszczenia", KornikObwieszczeniaSource.INDEX_URL,
+            KornikObwieszczeniaParser()::findCurrentYearUrl
+        )
+        captureYearSplitDiscovery(
+            playwright, fixturesDir, "dopiewo-wz", DopiewoWzSource.INDEX_URL,
+            DopiewoWzParser()::findCurrentYearUrl
+        )
+    } finally {
+        playwright.close()
+    }
+}
+
+/**
+ * Buk's BIP (see ADR-007, [BukObwieszczeniaSource]) only renders content
+ * client-side, so its fixtures must be captured with
+ * [PlaywrightPageFetcher] rather than the plain [JsoupPageFetcher] used
+ * for every other source above - requires `investment-monitor.playwright`
+ * setup (`npx playwright install chromium`, see README.md). Also a
+ * two-step capture (index page, then the current year's article) since
+ * the register is split one page per calendar year - the year in
+ * `year-<yyyy>.html` will need manual updating once a year, same as
+ * `srem-wz`.
+ */
+private fun captureBukObwieszczenia(playwright: PlaywrightPageFetcher, fixturesDir: Path) {
+    val dir = fixturesDir.resolve("buk-obwieszczenia")
+    val indexResult = runCatching { playwright.fetch(URI(BukObwieszczeniaSource.INDEX_URL)) }
+    indexResult.fold(
+        onSuccess = { indexHtml ->
+            Files.createDirectories(dir)
+            Files.writeString(dir.resolve("index.html"), indexHtml)
+            println("Captured buk-obwieszczenia (index) -> ${dir.resolve("index.html")} (${indexHtml.length} bytes) at ${Instant.now()}")
+
+            val parser = BukObwieszczeniaParser()
+            val yearUrl = parser.findCurrentYearUrl(indexHtml, BukObwieszczeniaSource.INDEX_URL)
+            if (yearUrl == null) {
+                println("Failed to capture buk-obwieszczenia (year page): no year link found in index")
+                return@fold
+            }
+            runCatching { playwright.fetch(URI(yearUrl)) }.fold(
+                onSuccess = { yearHtml ->
+                    val yearFile = dir.resolve("year-${YEAR_IN_URL.find(yearUrl)?.groupValues?.get(1) ?: "current"}.html")
+                    Files.writeString(yearFile, yearHtml)
+                    println("Captured buk-obwieszczenia (year) -> $yearFile (${yearHtml.length} bytes) at ${Instant.now()}")
+                },
+                onFailure = { error -> println("Failed to capture buk-obwieszczenia (year page): ${error.message}") }
+            )
+        },
+        onFailure = { error -> println("Failed to capture buk-obwieszczenia (index): ${error.message}") }
+    )
+}
+
+/**
+ * Szamotuły's register (see [SzamotulyUlicpParser] KDoc) needs the list
+ * page plus every announcement's own article page - captures the list,
+ * then every article it links to, numbering fixture files in list order
+ * (`article-1.html`, `article-2.html`, ...) since article ids aren't
+ * meaningful test identifiers on their own.
+ */
+private fun captureSzamotulyUlicp(playwright: PlaywrightPageFetcher, fixturesDir: Path) {
+    val dir = fixturesDir.resolve("szamotuly-ulicp")
+    val listResult = runCatching { playwright.fetch(URI(SzamotulyUlicpSource.LIST_URL)) }
+    listResult.fold(
+        onSuccess = { listHtml ->
+            Files.createDirectories(dir)
+            Files.writeString(dir.resolve("list.html"), listHtml)
+            println("Captured szamotuly-ulicp (list) -> ${dir.resolve("list.html")} (${listHtml.length} bytes) at ${Instant.now()}")
+
+            val parser = SzamotulyUlicpParser()
+            val articleUrls = parser.findArticleUrls(listHtml, SzamotulyUlicpSource.LIST_URL)
+            articleUrls.forEachIndexed { index, url ->
+                runCatching { playwright.fetch(URI(url)) }.fold(
+                    onSuccess = { articleHtml ->
+                        val file = dir.resolve("article-${index + 1}.html")
+                        Files.writeString(file, articleHtml)
+                        println("Captured szamotuly-ulicp (article ${index + 1}) -> $file (${articleHtml.length} bytes) at ${Instant.now()}")
+                    },
+                    onFailure = { error -> println("Failed to capture szamotuly-ulicp article $url: ${error.message}") }
+                )
+            }
+        },
+        onFailure = { error -> println("Failed to capture szamotuly-ulicp (list): ${error.message}") }
+    )
+}
+
+private val YEAR_IN_URL = Regex("(\\d{4})-rok")
+
+/**
+ * PWD Deweloper (see [PWDSource] KDoc) publishes each stage as its own
+ * static URL - captures both directly, no discovery step needed.
+ */
+private fun capturePWD(playwright: PlaywrightPageFetcher, fixturesDir: Path) {
+    val dir = fixturesDir.resolve("pwd")
+    Files.createDirectories(dir)
+    listOf(PWDSource.STAGE_1_URL to "etap-1.html", PWDSource.STAGE_2_URL to "etap-2.html").forEach { (url, fileName) ->
+        runCatching { playwright.fetch(URI(url)) }.fold(
+            onSuccess = { html ->
+                val file = dir.resolve(fileName)
+                Files.writeString(file, html)
+                println("Captured pwd ($fileName) -> $file (${html.length} bytes) at ${Instant.now()}")
+            },
+            onFailure = { error -> println("Failed to capture pwd ($fileName): ${error.message}") }
+        )
+    }
+}
+
+/**
+ * Nickel's search results (see [NickelParser]/[NickelSource] KDoc) are
+ * paginated - captures page 1, discovers the last page number from it,
+ * then captures every remaining page as `page-<n>.html`. Uses plain
+ * [JsoupPageFetcher], not Playwright - this source is fully
+ * server-rendered.
+ */
+private fun captureNickel(fetcher: JsoupPageFetcher, fixturesDir: Path) {
+    val dir = fixturesDir.resolve("nickel")
+    val firstPageResult = runCatching { fetcher.fetch(URI(NickelSource.LIST_URL)) }
+    firstPageResult.fold(
+        onSuccess = { firstPageHtml ->
+            Files.createDirectories(dir)
+            Files.writeString(dir.resolve("page-1.html"), firstPageHtml)
+            println("Captured nickel (page 1) -> ${dir.resolve("page-1.html")} (${firstPageHtml.length} bytes) at ${Instant.now()}")
+
+            val lastPage = NickelParser().findLastPage(firstPageHtml)
+            (2..lastPage).forEach { page ->
+                runCatching { fetcher.fetch(URI("${NickelSource.LIST_URL}/p/$page")) }.fold(
+                    onSuccess = { html ->
+                        val file = dir.resolve("page-$page.html")
+                        Files.writeString(file, html)
+                        println("Captured nickel (page $page) -> $file (${html.length} bytes) at ${Instant.now()}")
+                    },
+                    onFailure = { error -> println("Failed to capture nickel page $page: ${error.message}") }
+                )
+            }
+        },
+        onFailure = { error -> println("Failed to capture nickel (page 1): ${error.message}") }
+    )
+}
+
+/**
+ * Generic two-step (index -> current year -> year page) capture, shared
+ * by [KornikObwieszczeniaSource]/[DopiewoWzSource] - see
+ * `captureBukObwieszczenia` for the one exception (Buk) that needs its
+ * own function because it also parses a differently-shaped year URL for
+ * the fixture-file year suffix.
+ */
+private fun captureYearSplitDiscovery(
+    playwright: PlaywrightPageFetcher,
+    fixturesDir: Path,
+    sourceId: String,
+    indexUrl: String,
+    findCurrentYearUrl: (String, String) -> String?
+) {
+    val dir = fixturesDir.resolve(sourceId)
+    val indexResult = runCatching { playwright.fetch(URI(indexUrl)) }
+    indexResult.fold(
+        onSuccess = { indexHtml ->
+            Files.createDirectories(dir)
+            Files.writeString(dir.resolve("index.html"), indexHtml)
+            println("Captured $sourceId (index) -> ${dir.resolve("index.html")} (${indexHtml.length} bytes) at ${Instant.now()}")
+
+            val yearUrl = findCurrentYearUrl(indexHtml, indexUrl)
+            if (yearUrl == null) {
+                println("Failed to capture $sourceId (year page): no year link found in index")
+                return@fold
+            }
+            runCatching { playwright.fetch(URI(yearUrl)) }.fold(
+                onSuccess = { yearHtml ->
+                    val yearFile = dir.resolve("year-${CALENDAR_YEAR.find(yearUrl)?.value ?: "current"}.html")
+                    Files.writeString(yearFile, yearHtml)
+                    println("Captured $sourceId (year) -> $yearFile (${yearHtml.length} bytes) at ${Instant.now()}")
+                },
+                onFailure = { error -> println("Failed to capture $sourceId (year page): ${error.message}") }
+            )
+        },
+        onFailure = { error -> println("Failed to capture $sourceId (index): ${error.message}") }
+    )
+}
+
+private val CALENDAR_YEAR = Regex("\\d{4}")
+
+private fun capture(fetcher: PageFetcher, fixturesDir: Path, sourceId: String, uri: URI, fileName: String) {
     val result = runCatching { fetcher.fetch(uri) }
 
     result.fold(

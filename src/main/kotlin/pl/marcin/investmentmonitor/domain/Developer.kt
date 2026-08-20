@@ -48,7 +48,15 @@ data class Developer(
     val tier: DeveloperTier,
     val status: DeveloperStatus,
     val geographicScope: Set<String>,
-    val adapterSourceId: String?
+    val adapterSourceId: String?,
+    /**
+     * True when this developer is (or was) [DeveloperStatus.BLOCKED] due to
+     * client-side rendering (JS SPA/React/AJAX-hydrated listings) rather
+     * than a WAF or a nonexistent site (see ADR-007) - i.e. a headless
+     * browser fetcher could plausibly unblock it. Purely descriptive;
+     * doesn't imply an adapter exists.
+     */
+    val requiresBrowser: Boolean = false
 ) {
     init {
         require(id.isNotBlank()) { "Developer id must not be blank" }

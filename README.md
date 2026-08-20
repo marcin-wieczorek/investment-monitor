@@ -141,6 +141,30 @@ Analysis works fully deterministically without any LLM. To enable
 qualitative interpretation, see [`docs/LLM.md`](docs/LLM.md) for local
 Ollama setup and configuration.
 
+### Optional: headless-browser fetching (Playwright)
+
+Fetching works fully via plain HTTP (Jsoup) without any browser. Some
+sources documented in `docs/SOURCES.md` "Investigated but not
+implemented" return an empty/shell HTML body because their content is
+rendered client-side (JS SPA, React, AJAX). For those, an opt-in
+Playwright-based fetcher can be enabled (see ADR-007):
+
+```bash
+npx playwright install chromium   # one-time browser binary download
+```
+
+```yaml
+investment-monitor:
+  playwright:
+    enabled: true
+```
+
+Disabled by default — a fresh checkout runs `./gradlew bootRun`
+successfully with zero Playwright setup. Enabling it only changes how
+HTML is *fetched* for a handful of registry-flagged hosts; a real,
+fixture-verified parser is still required before any of those sources
+counts as implemented.
+
 ## Frontend
 
 A Next.js dashboard lives in [`frontend/`](frontend/) — it reads the same

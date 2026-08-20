@@ -73,6 +73,7 @@ export function SourcesNeedingAttention({ sources, developers, municipalities }:
                 key={dev.id}
                 variant="outline"
                 className="border-red-500/30 text-[10px] text-red-500 dark:text-red-400"
+                title={dev.blocked_reason ?? undefined}
               >
                 {dev.name}
               </Badge>

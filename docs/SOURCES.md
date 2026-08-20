@@ -45,9 +45,12 @@ Aggregators are a completeness/cross-check layer only (see
 `docs/ARCHITECTURE.md` source precedence). When adding one:
 
 - Prefer server-rendered listing pages over anything requiring JS
-  execution - this project deliberately has no headless-browser
-  dependency (`RynekPierwotnySource` works because its listing page is
-  server-rendered; Otodom does not qualify for exactly this reason).
+  execution where possible - `RynekPierwotnySource` works because its
+  listing page is server-rendered. Sites that genuinely require JS can use
+  the opt-in `PlaywrightPageFetcher` instead (see ADR-007,
+  `investment-monitor.playwright.enabled`), which `BukObwieszczeniaSource`
+  does - but this is heavier (real Chromium, disabled by default) and
+  should stay the exception, not the default.
 - Anchor selectors on stable attributes (`data-testid`, semantic HTML)
   rather than content-hashed CSS classes, which regenerate on every
   deploy of modern CSS-in-JS sites.
@@ -65,26 +68,39 @@ where the underlying site changed:
 
 | Source | Category | Finding |
 |---|---|---|
-| Buk BIP, Oborniki BIP (now `bip.umoborniki.nv.pl`), Pobiedziska BIP, Szamotuły BIP | Discovery | Re-verified: HTTP 200 but an empty response body - still effectively a JS SPA shell with no server-rendered content. |
+| Oborniki BIP (now `bip.umoborniki.nv.pl`) | Discovery | Fetchable via the opt-in `PlaywrightPageFetcher` (ADR-007) - unlike Buk/Pobiedziska/Szamotuły (same "Madkom SIDAS BIP" platform), its content renders fine once JS executes. But its real WZ register ("Rejestr wydanych decyzji o warunkach zabudowy", `m,262`) publishes one PDF attachment per calendar year, not one HTML entry per case like Buk's - would need PDF text extraction, a capability this project doesn't have. Its "Ogłoszenia / Obwieszczenia" category (`m,189`) exists but defaults to an empty view behind a "Pokaż archiwalne" (show archived) button requiring a real click interaction, not just navigation - not attempted. See `registry.DiscoverySourceRegistry` for the full note. |
 | Komorniki BIP (`bip2.komorniki.pl`) | Discovery | Re-verified: now returns HTTP 403 (was 429) - still a WAF/anti-bot block. The archival BIP has a real WZ register but is explicitly marked archival. |
 | Luboń BIP | Discovery | Re-verified: now returns HTTP 403 (was 429) - still a WAF/anti-bot block. |
 | Kostrzyn BIP, Rokietnica BIP | Discovery | Re-verified: consistent transport/DNS errors on both HTTP and HTTPS. |
-| Kórnik BIP | Discovery | Re-verified: still a JS-hydrated Drupal 11 site - both the planning page and the obwieszczenia list return an effectively empty server-rendered shell. |
 | Mosina BIP | Discovery | Re-verified: `bip.mosina.pl` is now just a directory of subsite tiles; the real BIP at `bip.um.mosina.pl` is server-rendered but its "Planowanie przestrzenne" section only has MPZP/studium static pages, no obwieszczenia/case register. |
 | Puszczykowo BIP | Discovery | Re-verified: migrated to a WOKISS-hosted BIP with a real, server-rendered "Postępowania administracyjne" register - but every entry found so far is public-purpose infrastructure (water/sewer network), not residential warunki zabudowy, and it publishes no per-item date. |
-| Kleszczewo BIP, Dopiewo BIP, Skoki BIP | Discovery | Re-verified: all three migrated off the old Nefeni (`nowoczesnagmina.pl`) JS SPA to a real, server-rendered Next.js BIP platform (`bip-api.{municipality}.pl`). Dopiewo has a dedicated "Decyzje o warunkach zabudowy" category but its article list isn't in the server-rendered HTML (client-side-fetched from its API); Skoki has a real combined celu-publiczne/warunki-zabudowy register but currently only one (non-residential) entry; Kleszczewo's "Obwieszczenia i ogłoszenia" category only surfaced non-residential notices this session. Worth re-checking Dopiewo/Skoki again later - they're the closest to being real. |
+| Kleszczewo BIP, Skoki BIP | Discovery | Re-verified: both migrated off the old Nefeni (`nowoczesnagmina.pl`) JS SPA to a real, server-rendered Next.js BIP platform (`bip-api.{municipality}.pl`). Skoki has a real combined celu-publiczne/warunki-zabudowy register but currently only one (non-residential) entry; Kleszczewo's "Obwieszczenia i ogłoszenia" category only surfaced non-residential notices this session. Worth re-checking again later. |
 | Stęszew BIP | Discovery | Re-verified: reachable again (no longer a transport error) with a real "Zagospodarowanie Przestrzenne" section, but it only links to MPZP/studium/environmental pages - no obwieszczenia or case register found. |
-| Otodom | Aggregator | Modern client-side-rendered listing; would require a headless browser (Selenium/Playwright) to read reliably, which this project deliberately avoids as a dependency for a local-first CLI tool. |
-| PWD Deweloper (`pwd.com.pl`) | Developer | JavaScript fingerprinting (FingerprintJS) anti-bot protection serves only a JS-based redirect/challenge page; no content reachable without executing JS. |
-| Archicom / Echo Residential (`archicom.pl`) | Developer | Client-side-rendered React/PWA storefront ("Oops! JavaScript is disabled" with no fallback content). |
+| Otodom | Aggregator | Modern client-side-rendered listing; requires a headless browser to read reliably. Fetchable via the opt-in `PlaywrightPageFetcher` (ADR-007, disabled by default), but no parser has been built/verified yet. |
+| Archicom / Echo Residential (`archicom.pl`) | Developer | **Now implemented** as `archicom` via `PlaywrightPageFetcher` (ADR-007) - see "Implemented developer sources" below. |
 | Sovo Development | Developer | No working domain found (`sovodevelopment.pl` does not resolve; `sovo.pl` is an unrelated app). |
-| Nickel Development (`nickel.com.pl`) | Developer | Homepage is a heterogeneous hero carousel mixing investments, blog posts and resort/hotel properties, mostly linking off-domain with no location/area/price data. The dedicated investment-listing page (`/pl/nowe-mieszkania-...`) is AJAX-hydrated (Yii `multipage.js`) - raw HTML only contains empty `class="loading"` navigation stubs, no real card content. |
 | Villa, Budimex, Novaform, Cavallia, BTM, Constructa Plus, Virke, SGI, FB Antczak | Developer | No verifiable Poznań-area developer found under this name (wrong company, defunct/rebranded domain, unrelated business, or unreachable domain) - see `registry.DeveloperRegistry` for per-developer notes. |
 
 If any of these become accessible in the future (Komorniki's WAF rules
-change, Dopiewo's API becomes documented, etc.), implement them
+change, Kleszczewo's category gets a WZ subsection, etc.), implement them
 following the same standard as `SwarzedzWzSource`/`RynekPierwotnySource`:
 real fixture, real parser, real tests, `verifySources` passing.
+
+Sources whose finding is a JS SPA / client-side-rendered shell (Otodom)
+can be fetched via the opt-in
+`PlaywrightPageFetcher` (see ADR-007, `investment-monitor.playwright.enabled`)
+instead of `JsoupPageFetcher` - this unblocks *fetching* their HTML, but a
+real parser (fixture-verified per the standard above) is still required
+before it moves to `IMPLEMENTED`/`MONITORED`. Buk, Szamotuły, Pobiedziska,
+Kórnik, Dopiewo (same or comparable BIP platforms) and Archicom have
+already gone through this - see `BukObwieszczeniaSource`,
+`SzamotulyUlicpSource`, `PobiedziskaKomunikatySource`,
+`KornikObwieszczeniaSource`, `DopiewoWzSource`, `ArchicomSource` and their
+parsers - as templates for Otodom. Sources blocked for other reasons (WAF/403,
+DNS/transport failures, no content, PDF-only registers, interaction-gated
+views, expired/parked domains) are not affected by this - see
+ADR-007's "Alternatives considered"/scope discussion for why a headless
+browser doesn't fix those.
 
 ## Implemented developer sources
 
@@ -99,6 +115,43 @@ subset of fields (no area/price on the list page, or - for
 `jaksbud`/`uwi` - a single investment represented as an aggregated unit
 table rather than a card list); the per-parser KDoc documents exactly
 what each page publishes and why a field was deliberately left null.
+
+`archicom` (Archicom / Echo Residential) is a further exception: a
+client-side-rendered React/PWA, fetched via the opt-in
+`PlaywrightPageFetcher` (see ADR-007) rather than plain `JsoupPageFetcher`.
+Its Poznań listing page publishes only investment name, location and
+thumbnail image - no price/area/units/property type - left `null` per the
+same "no fake implementations" rule as every other parser.
+
+`pwd` (PWD Deweloper) is implemented at its real, current domain
+`pwd-mieszkania.pl` - the domain previously recorded in this registry,
+`pwd.com.pl`, turned out to have expired and now resolves to an unrelated
+domain-marketplace parking page. Also fetched via `PlaywrightPageFetcher`
+(a Leaflet SVG site-plan whose per-unit popup HTML is present in the
+initial page load, but the plan graphic itself needs JS). Same
+per-unit-aggregation shape as `jaksbud`: each of its two currently-built
+stages ("Etap I"/"Etap II") is one [Investment], with unit count and
+house/plot area aggregated across every unit's site-plan popup; unit-level
+sale status (sold/reserved/available) and price are not aggregated into a
+single page-level value and are left `null`.
+
+`nickel` (Nickel Development) turned out, on closer investigation, to
+need neither a headless browser nor an interaction to reach real data -
+the homepage and per-district "listing" pages genuinely only show
+generic promotional tiles as originally found, but the site's own
+apartment *search* page (`/pl/wyszukiwarka-mieszkan`) is a traditional
+server-rendered Yii1/jQuery results grid, reachable with plain
+`JsoupPageFetcher`. It publishes one row per unit (157 across 6 paginated
+pages as of implementation) mixing Poznań-area residential investments
+with seaside/mountain resort properties ("Nickel Resort & ..." -
+excluded by name). `NickelParser` aggregates unit rows into one
+`Investment` per investment name (same shape as `jaksbud`/`pwd`), using
+the search page's own `id_loc[]` location-filter checkboxes to build a
+real, unique, navigable per-investment URL (`?id_loc%5B%5D={id}`) -
+essential since the aggregated investments would otherwise all share the
+same unfiltered search URL and collide on canonical key (see
+ADR-002). Location, property type and per-investment status are not
+reliably published and are left `null`.
 
 Notes on the last seven (Phase E, all Tier B):
 
@@ -142,7 +195,7 @@ real fixture before writing (or not writing) any selector.
 ## Implemented discovery sources
 
 
-Beyond `swarzedz-wz`, six more municipal discovery sources are
+Beyond `swarzedz-wz`, eleven more municipal discovery sources are
 implemented: `czerwonak-obwieszczenia` and `tarnowo-podgorne-wz` (identical
 "Rekord BIP" CMS, share `RekordBipParser`), `suchy-las-npp` (Logonet CMS),
 `poznan-ulicp` (City of Poznań's public-purpose siting register, a
@@ -150,12 +203,58 @@ custom CMS that also exposes an XML/JSON API worth migrating to in a
 future revision), `srem-wz` (Gmina Śrem BIP - uniquely among these,
 split one page per calendar year rather than a single evergreen feed, so
 `SremWzSource` does a two-step fetch: find the current year's URL from
-an index page, then fetch that page), and `murowana-goslina-obwieszczenia`
+an index page, then fetch that page), `murowana-goslina-obwieszczenia`
 (Gmina Murowana Goślina BIP - a single evergreen feed mixing zoning-conditions
-and public-purpose siting decisions, classified by keyword). See
-`registry.DiscoverySourceRegistry` for the full per-municipality
-investigation record, including documented reasons for every municipality
-that is currently `BLOCKED` or `NOT_IMPLEMENTED`.
+and public-purpose siting decisions, classified by keyword), and three
+sources on the same "Madkom SIDAS BIP" React SPA platform, all fetched
+via the opt-in `PlaywrightPageFetcher` (see ADR-007) and each a distinct
+sub-pattern of that platform:
+- `buk-obwieszczenia` (Gmina Buk) - split one page per calendar year like
+  Śrem's, with every announcement's full description already inline as a
+  file-attachment entry on that year's page.
+- `szamotuly-ulicp` (Gmina Szamotuły) - the list page only publishes a
+  generic per-row title; the real description only exists on each row's
+  own article page, so `SzamotulyUlicpSource` does a per-announcement
+  detail fetch (list + N articles), unlike every other discovery source.
+- `pobiedziska-komunikaty` (Gmina Pobiedziska) - simplest of the three:
+  the list page's title column already contains each announcement's full
+  description, so a single fetch suffices, same shape as `RekordBipParser`.
+
+Both Szamotuły's dedicated "Decyzje o warunkach zabudowy" category and
+Pobiedziska's dedicated "Warunki zabudowy" category are currently empty
+("Brak artykułów") - not implemented since there was nothing to verify a
+parser against; both municipalities' registers are only reachable through
+their broader "celu publicznego"/"Komunikaty" categories instead, which
+is why every currently-observed signal from them is
+`SignalType.LAND_DEVELOPMENT_SIGNAL` rather than `WZ_DECISION` (the
+keyword classifier would still correctly tag a WZ-worded entry if one
+appears).
+
+Two more discovery sources round this out, both fetched via
+`PlaywrightPageFetcher` (ADR-007) despite being on entirely different BIP
+platforms from the Madkom one above:
+- `kornik-obwieszczenia` (Gmina Kórnik, a Drupal 11 BIP) - split one page
+  per calendar year like Śrem's/Buk's. Announcements are grouped into
+  accordion sections by department; only the "Wydział Planowania
+  Przestrzennego" (Spatial Planning) accordion is selected, skipping
+  every unrelated department's content entirely rather than trying to
+  classify it. Each entry publishes its real document date as free Polish
+  text ("z dnia 4 grudnia 2025 r.") - parsed via an explicit Polish
+  month-name map rather than falling back to `Instant.EPOCH`, since it's
+  reliably present.
+- `dopiewo-wz` (Gmina Dopiewo, a Next.js/Nefeni BIP) - also split one page
+  per calendar year. The real content lives in a stable `#category` id
+  (not a hashed/utility class), as `<a title="...">` links whose `title`
+  attribute holds the full case text - more reliable than relying on the
+  link's own visible text. No per-item date is published here at all
+  (unlike Kórnik), so `detectedAt` falls back to `Instant.EPOCH`.
+
+See `registry.DiscoverySourceRegistry` for the full
+per-municipality investigation record, including documented reasons for
+every municipality that is currently `BLOCKED` or `NOT_IMPLEMENTED`
+(e.g. Oborniki - same platform, but PDF-only register and an
+interaction-gated announcements view, see that registry entry for
+detail).
 
 ## `LocationCatalog.findIn` word-boundary bugfix
 

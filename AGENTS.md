@@ -66,7 +66,12 @@ src/main/kotlin/pl/marcin/investmentmonitor/
                    Chronos/Greenbud sources+parsers live directly in source/
   scraping/        PageFetcher (fun interface), JsoupPageFetcher (impl),
                    ArchivingPageFetcher (@Primary decorator — transparently
-                   archives every fetch, wraps JsoupPageFetcher by concrete type)
+                   archives every fetch, wraps JsoupPageFetcher by concrete type,
+                   and transparently routes to PlaywrightPageFetcher for
+                   registry-flagged hosts — see ADR-007), PlaywrightPageFetcher
+                   (opt-in headless-browser impl, disabled by default),
+                   ScrapingConfig (@Configuration — derives browserRequiredHosts
+                   from DiscoverySourceRegistry/DeveloperRegistry)
   detection/       ChangeDetector — canonical-key diff (NEW/CHANGED/UNCHANGED/REMOVED)
   validation/      SourceValidator — fail-closed drop-threshold + empty-result rejection
   correlation/     InvestmentCorrelator — deterministic signal<->investment linking;

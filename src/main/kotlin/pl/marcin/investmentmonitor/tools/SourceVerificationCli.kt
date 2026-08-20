@@ -1,8 +1,11 @@
 package pl.marcin.investmentmonitor.tools
 
 import pl.marcin.investmentmonitor.scraping.JsoupPageFetcher
+import pl.marcin.investmentmonitor.scraping.PageFetcher
+import pl.marcin.investmentmonitor.scraping.PlaywrightPageFetcher
 import pl.marcin.investmentmonitor.source.AgrobexSource
 import pl.marcin.investmentmonitor.source.AggregatorSource
+import pl.marcin.investmentmonitor.source.ArchicomSource
 import pl.marcin.investmentmonitor.source.AreaSource
 import pl.marcin.investmentmonitor.source.ATALSource
 import pl.marcin.investmentmonitor.source.AtanerSource
@@ -22,6 +25,8 @@ import pl.marcin.investmentmonitor.source.KonimpexSource
 import pl.marcin.investmentmonitor.source.LineaSource
 import pl.marcin.investmentmonitor.source.MJSource
 import pl.marcin.investmentmonitor.source.MurapolSource
+import pl.marcin.investmentmonitor.source.NickelSource
+import pl.marcin.investmentmonitor.source.PWDSource
 import pl.marcin.investmentmonitor.source.PekabexSource
 import pl.marcin.investmentmonitor.source.RobygSource
 import pl.marcin.investmentmonitor.source.RonsonSource
@@ -31,12 +36,17 @@ import pl.marcin.investmentmonitor.source.SpraviaSource
 import pl.marcin.investmentmonitor.source.UWISource
 import pl.marcin.investmentmonitor.source.VastbouwSource
 import pl.marcin.investmentmonitor.source.aggregator.RynekPierwotnySource
+import pl.marcin.investmentmonitor.source.discovery.BukObwieszczeniaSource
 import pl.marcin.investmentmonitor.source.discovery.CzerwonakObwieszczeniaSource
+import pl.marcin.investmentmonitor.source.discovery.DopiewoWzSource
+import pl.marcin.investmentmonitor.source.discovery.KornikObwieszczeniaSource
 import pl.marcin.investmentmonitor.source.discovery.MurowanaGoslinaObwieszczeniaSource
+import pl.marcin.investmentmonitor.source.discovery.PobiedziskaKomunikatySource
 import pl.marcin.investmentmonitor.source.discovery.PoznanUlicpSource
 import pl.marcin.investmentmonitor.source.discovery.SremWzSource
 import pl.marcin.investmentmonitor.source.discovery.SuchyLasNppSource
 import pl.marcin.investmentmonitor.source.discovery.SwarzedzWzSource
+import pl.marcin.investmentmonitor.source.discovery.SzamotulyUlicpSource
 import pl.marcin.investmentmonitor.source.discovery.TarnowoPodgorneWzSource
 import pl.marcin.investmentmonitor.validation.SourceValidator
 
@@ -56,7 +66,7 @@ fun main() {
         ATALSource(fetcher), RobygSource(fetcher), EBFSource(fetcher), GGWSource(fetcher),
         SpraviaSource(fetcher), JaksBudSource(fetcher), SagarisSource(fetcher),
         CordiaSource(fetcher), RonsonSource(fetcher), SivanetSource(fetcher), MJSource(fetcher),
-        AreaSource(fetcher), InwestycjeWielkopolskiSource(fetcher), VastbouwSource(fetcher)
+        AreaSource(fetcher), InwestycjeWielkopolskiSource(fetcher), VastbouwSource(fetcher), NickelSource(fetcher)
     )
     val discoverySources: List<DiscoverySource> = listOf(
         SwarzedzWzSource(fetcher), CzerwonakObwieszczeniaSource(fetcher), TarnowoPodgorneWzSource(fetcher),
@@ -74,12 +84,40 @@ fun main() {
 
     println("-- discovery sources --")
     discoverySources.forEach { source -> verifyDiscoverySource(source) }
+    verifyBrowserRequiredDiscoverySources()
 
     println("-- aggregator sources --")
     aggregatorSources.forEach { source -> verifyInvestmentSource(source.id, source::fetch, validator) }
 
     println(SEPARATOR)
     println("Live verification never updates the trusted snapshot.")
+}
+
+/**
+ * Verifies every discovery source requiring [PlaywrightPageFetcher] (see
+ * ADR-007) separately from the plain-HTTP ones above - Chromium needs to
+ * be installed (`npx playwright install chromium`), which isn't assumed
+ * to be present in every environment running this CLI. Skips all of them
+ * with a clear message rather than failing the whole run if Playwright
+ * can't launch. Shares one browser instance across all sources.
+ */
+private fun verifyBrowserRequiredDiscoverySources() {
+    val playwrightFetcher: PageFetcher? = runCatching { PlaywrightPageFetcher(30_000) }.getOrNull()
+    if (playwrightFetcher == null) {
+        println("buk-obwieszczenia, szamotuly-ulicp, pobiedziska-komunikaty, archicom, pwd: SKIPPED (Playwright/Chromium not available - see README.md 'Optional: headless-browser fetching')")
+        return
+    }
+    try {
+        verifyDiscoverySource(BukObwieszczeniaSource(playwrightFetcher))
+        verifyDiscoverySource(SzamotulyUlicpSource(playwrightFetcher))
+        verifyDiscoverySource(PobiedziskaKomunikatySource(playwrightFetcher))
+        verifyDiscoverySource(KornikObwieszczeniaSource(playwrightFetcher))
+        verifyDiscoverySource(DopiewoWzSource(playwrightFetcher))
+        verifyInvestmentSource(ArchicomSource.SOURCE_ID, ArchicomSource(playwrightFetcher)::fetch, SourceValidator())
+        verifyInvestmentSource(PWDSource.SOURCE_ID, PWDSource(playwrightFetcher)::fetch, SourceValidator())
+    } finally {
+        (playwrightFetcher as? AutoCloseable)?.close()
+    }
 }
 
 private fun verifyInvestmentSource(

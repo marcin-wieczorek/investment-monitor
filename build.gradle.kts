@@ -23,6 +23,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jsoup:jsoup:1.21.1")
+    implementation("com.microsoft.playwright:playwright:1.52.0")
     implementation("org.xerial:sqlite-jdbc:3.50.3.0")
     implementation("org.flywaydb:flyway-core")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")

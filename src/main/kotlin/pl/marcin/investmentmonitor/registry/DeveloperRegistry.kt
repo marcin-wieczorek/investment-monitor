@@ -22,13 +22,13 @@ object DeveloperRegistry {
         developer("chronos", "Chronos Development", "https://www.chronos.poznan.pl", DeveloperTier.A, DeveloperStatus.MONITORED, setOf("Komorniki", "Swarzędz", "Kruszewnia", "Rokietnica"), "chronos"),
         developer("greenbud", "Greenbud Development", "https://www.greenbud.com.pl", DeveloperTier.A, DeveloperStatus.MONITORED, setOf("Swarzędz", "Pobiedziska"), "greenbud"),
         developer("jakon", "Jakon", "https://www.jakon-inwest.pl", DeveloperTier.A, DeveloperStatus.MONITORED, setOf("Poznań", "Tarnowo Podgórne", "Mosina"), "jakon-inwest"),
-        developer("nickel", "Nickel Development", "https://www.nickel.com.pl", DeveloperTier.A, DeveloperStatus.BLOCKED, setOf("Poznań"), null),
+        developer("nickel", "Nickel Development", "https://www.nickel.com.pl", DeveloperTier.A, DeveloperStatus.MONITORED, setOf("Poznań"), "nickel"),
         developer("agrobex", "Agrobex", "https://www.agrobex.pl", DeveloperTier.A, DeveloperStatus.MONITORED, setOf("Poznań", "Kleszczewo", "Pobiedziska", "Szamotuły", "Śrem"), "agrobex"),
         developer("linea", "Linea", "https://linea-deweloper.pl", DeveloperTier.A, DeveloperStatus.MONITORED, setOf("Dopiewo", "Murowana Goślina", "Buk"), "linea"),
         developer("duda", "Duda Development", "https://dudadevelopment.pl", DeveloperTier.A, DeveloperStatus.MONITORED, setOf("Poznań"), "duda"),
         developer("ataner", "Ataner", "https://www.ataner.pl", DeveloperTier.A, DeveloperStatus.MONITORED, setOf("Poznań"), "ataner"),
         developer("uwi", "UWI", "https://uwi.com.pl", DeveloperTier.A, DeveloperStatus.MONITORED, setOf("Poznań"), "uwi"),
-        developer("pwd", "PWD Deweloper", "https://pwd.com.pl", DeveloperTier.A, DeveloperStatus.BLOCKED, emptySet(), null),
+        developer("pwd", "PWD Deweloper", "https://pwd-mieszkania.pl", DeveloperTier.A, DeveloperStatus.MONITORED, setOf("Poznań"), "pwd", requiresBrowser = true),
         developer("villa", "Villa", null, DeveloperTier.A, DeveloperStatus.CANDIDATE, emptySet(), null),
         developer("konimpex", "Konimpex-Invest", "https://www.konimpex-invest.pl", DeveloperTier.A, DeveloperStatus.MONITORED, setOf("Poznań"), "konimpex"),
         developer("sovo", "Sovo Development", null, DeveloperTier.A, DeveloperStatus.BLOCKED, emptySet(), null),
@@ -37,7 +37,7 @@ object DeveloperRegistry {
         developer("murapol", "Murapol", "https://murapol.pl", DeveloperTier.A, DeveloperStatus.MONITORED, setOf("Poznań"), "murapol"),
         developer("develia", "Develia", "https://develia.pl", DeveloperTier.A, DeveloperStatus.MONITORED, setOf("Poznań"), "develia"),
         developer("atal", "ATAL", "https://atal.pl", DeveloperTier.A, DeveloperStatus.MONITORED, setOf("Poznań", "Swarzędz"), "atal"),
-        developer("archicom", "Archicom / Echo Residential", "https://archicom.pl", DeveloperTier.A, DeveloperStatus.BLOCKED, emptySet(), null),
+        developer("archicom", "Archicom / Echo Residential", "https://archicom.pl", DeveloperTier.A, DeveloperStatus.MONITORED, setOf("Poznań"), "archicom", requiresBrowser = true),
         developer("robyg", "ROBYG", "https://robyg.pl", DeveloperTier.A, DeveloperStatus.MONITORED, setOf("Poznań"), "robyg"),
 
         // Tier B
@@ -70,6 +70,12 @@ object DeveloperRegistry {
 
     fun find(id: String): Developer? = ALL.firstOrNull { it.id == id }
 
+    /** Hosts of every developer flagged [Developer.requiresBrowser] (see ADR-007). */
+    fun browserRequiredHosts(): Set<String> =
+        ALL.filter { it.requiresBrowser }
+            .mapNotNull { it.website?.host }
+            .toSet()
+
     private fun developer(
         id: String,
         name: String,
@@ -77,7 +83,8 @@ object DeveloperRegistry {
         tier: DeveloperTier,
         status: DeveloperStatus,
         geographicScope: Set<String>,
-        adapterSourceId: String?
+        adapterSourceId: String?,
+        requiresBrowser: Boolean = false
     ): Developer = Developer(
         id = id,
         name = name,
@@ -86,6 +93,7 @@ object DeveloperRegistry {
         tier = tier,
         status = status,
         geographicScope = geographicScope,
-        adapterSourceId = adapterSourceId
+        adapterSourceId = adapterSourceId,
+        requiresBrowser = requiresBrowser
     )
 }
