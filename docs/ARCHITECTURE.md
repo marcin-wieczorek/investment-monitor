@@ -131,21 +131,11 @@ added to the catalog, not scattered across parsers.
 
 ## Known scope limitations (deliberately not built yet)
 
-- **Per-field provenance**: `SourceEvidence` is currently recorded once
-  per investment/signal at commit time (field_name="investment"/"signal"),
-  not once per individual fact (e.g. a separate evidence row for
-  `plotArea` vs. `price`). Full per-field provenance would require
-  carrying provenance metadata through every parser and was out of scope
-  for this iteration without a much larger parser rewrite.
 - **Signal-to-signal correlation**: only signal-to-investment correlation
   is implemented. Grouping multiple discovery signals that share the same
   case `reference` (e.g. different filing stages of the same zoning case)
   as "the same case" is possible client-side (the `reference` field is
   already present) but not yet a first-class `Correlation` type.
-- **Discovery lead-time metric**: the data to compute it exists
-  (`first_seen_at` per source category, joined via `Correlation`), but no
-  dedicated report/query surfaces "detected N days before the developer
-  published" yet.
 
 ## Not yet implemented
 
@@ -160,13 +150,6 @@ added to the catalog, not scattered across parsers.
   `PolishAreaFormat` edge cases (still covered only indirectly).
 - Per-field developer-candidate deduplication beyond exact-name matching
   (e.g. fuzzy matching "ABC Development" vs "ABC Development Sp. z o.o.").
-- Per-field provenance: `SourceEvidence` is still recorded once per
-  investment/signal at commit time, not once per individual fact.
-- 7 remaining Tier B `CANDIDATE` developers with a verified website but no
-  adapter yet (Cordia, Ronson, SIVANET, MJ Deweloper, Area Development,
-  Inwestycje Wielkopolski, Vastbouw - see `registry/DeveloperRegistry.kt`).
-- Frontend mutation of a `DeveloperCandidate`'s status (accept/reject) -
-  currently display-only on `/developers`.
 
 ## Implemented (phase 6, deterministic scoring pipeline + discovery lead time + watchlist)
 
@@ -247,3 +230,35 @@ added to the catalog, not scattered across parsers.
   collapsible "advanced filters" panel (source category, property type,
   status, location, plus range sliders for house area/plot area/price
   built on Base UI's `Slider` primitive).
+
+## Implemented (phase 7, per-field provenance + remaining Tier B developers + candidate review workflow)
+
+- **Per-field provenance**: `SourceEvidence` is now recorded once per
+  actual non-null fact (`name`/`location`/`propertyType`/`units`/
+  `houseArea`/`plotArea`/`price`/`status`/`imageUrl` for investments;
+  `title`/`signalType`/`detectedAt`/`location`/`reference` for signals) -
+  see `MonitoringService.recordInvestmentEvidence`/`recordSignalEvidence` -
+  rather than one `"investment"`/`"signal"` placeholder row per commit.
+  `investment-detail-view.tsx` groups evidence by `field_name` and shows a
+  "confirmed by N sources" badge when 2+ distinct `source_id`s independently
+  publish the same fact.
+- **25 developer adapters total**: the 7 remaining Tier B `CANDIDATE`
+  developers with a verified URL (Cordia, Ronson, SIVANET, MJ Deweloper,
+  Area Development, Inwestycje Wielkopolski, Vastbouw) are now `MONITORED`
+  (`V7__promote_tier_b_candidates.sql`) - see `docs/SOURCES.md`
+  "Implemented developer sources" for per-developer notes on what each
+  site actually publishes.
+- **Developer candidate review workflow**: `PUT /api/developers/candidates/[id]/status`
+  wraps `DeveloperCandidateRepository.updateStatus`; `/developers` gained
+  Accept/Reject/Block buttons per `NEW`/`REVIEW_REQUIRED` candidate row,
+  closing the human-review feedback loop that was previously display-only.
+- **Persisted aggregator-only discovery flag**: `investment.aggregator_only_discovery`
+  (`V8__aggregator_only_discovery_flag.sql`) is recomputed by
+  `MonitoringService.updateAggregatorOnlyDiscoveryFlags` for every current
+  aggregator investment on every scan (not just this run's new ones, unlike
+  the console-report-only `findAggregatorOnlyDiscoveries`), reusing the
+  same `LocationCatalog` matching so the location-coverage logic stays
+  single-sourced in the deterministic Kotlin core rather than re-derived in
+  SQL/JS. The dashboard gained an "Aggregator-only discoveries" stat card
+  linking to `/investments?aggregatorOnly=1`, and `/investments` gained a
+  matching toggle filter and row badge.

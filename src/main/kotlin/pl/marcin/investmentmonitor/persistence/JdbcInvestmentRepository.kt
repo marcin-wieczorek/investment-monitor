@@ -32,6 +32,10 @@ class JdbcInvestmentRepository(private val jdbcTemplate: JdbcTemplate) : Investm
     override fun findIdByCanonicalKey(canonicalKey: String): Long? =
         jdbcTemplate.query(SELECT_ID, { rs, _ -> rs.getLong("id") }, canonicalKey).firstOrNull()
 
+    override fun updateAggregatorOnlyDiscoveryFlag(canonicalKey: String, isAggregatorOnly: Boolean) {
+        jdbcTemplate.update(UPDATE_AGGREGATOR_ONLY_FLAG, if (isAggregatorOnly) 1 else 0, canonicalKey)
+    }
+
     private fun updateArgs(investment: Investment, seenAt: Instant): Array<Any?> = arrayOf(
         investment.developer,
         investment.name,
@@ -76,6 +80,7 @@ class JdbcInvestmentRepository(private val jdbcTemplate: JdbcTemplate) : Investm
         const val SELECT_BY_SOURCE = "SELECT * FROM investment WHERE source = ?"
         const val SELECT_ALL = "SELECT * FROM investment"
         const val SELECT_ID = "SELECT id FROM investment WHERE canonical_key = ?"
+        const val UPDATE_AGGREGATOR_ONLY_FLAG = "UPDATE investment SET aggregator_only_discovery = ? WHERE canonical_key = ?"
 
         const val UPDATE = """
             UPDATE investment SET

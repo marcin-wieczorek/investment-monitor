@@ -48,6 +48,20 @@ pipeline, discovery lead time, and price/watchlist UI (commit
   corrected `investment_list_urls`). See `docs/SOURCES.md` "Implemented
   developer sources" for per-developer notes (several currently list
   zero or non-Poznań investments - documented, not worked around).
+- **Phase F done**: `PUT /api/developers/candidates/[id]/status` (body
+  `{ status }`, one of `ACCEPTED`/`REJECTED`/`IMPLEMENTED`/`BLOCKED`)
+  wraps `DeveloperCandidateRepository.updateStatus`; `/developers` has
+  Accept/Reject/Block buttons per `NEW`/`REVIEW_REQUIRED` candidate row.
+  Aggregator-only discoveries are now persisted, not just reported once
+  per scan: `investment.aggregator_only_discovery` (`V8__aggregator_only_discovery_flag.sql`)
+  is recomputed by `MonitoringService.updateAggregatorOnlyDiscoveryFlags`
+  for every current aggregator investment on every scan (reusing
+  `LocationCatalog`, the same deterministic matching
+  `findAggregatorOnlyDiscoveries` already used for the console report -
+  kept single-sourced in Kotlin rather than re-derived in SQL/JS). The
+  dashboard has an "Aggregator-only discoveries" stat card linking to
+  `/investments?aggregatorOnly=1`, and `/investments` has a matching
+  toggle + row badge.
 
 See `docs/ARCHITECTURE.md` "Implemented (phase 5/6, ...)" sections and
 `docs/SOURCES.md` for the authoritative, detailed record.
@@ -62,32 +76,7 @@ Villa (Tier A) and Cavallia/BTM/Constructa Plus/Virke/SGI/FB Antczak
 (Tier B) remain `BLOCKED`/`CANDIDATE` with no known working URL - do not
 re-investigate unless new information surfaces.
 
-
-### Phase F — Candidate status mutation + aggregator-only discovery view
-
-**Problem**: `DeveloperCandidate` rows are visible on `/developers` but
-read-only; aggregator-only discoveries are only visible in the console
-scan report.
-
-**Plan**:
-1. `PUT /api/developers/candidates/[id]/status` route - body
-   `{ status: "ACCEPTED" | "REJECTED" | "IMPLEMENTED" | "BLOCKED" }`,
-   calls a new `updateDeveloperCandidateStatus()` query wrapping
-   `DeveloperCandidateRepository.updateStatus` (needs a thin query
-   function in `lib/queries.ts` similar to `setWatched`/`setArchived` -
-   currently the frontend has no write path into `developer_candidate`
-   at all, only Kotlin's `JdbcDeveloperCandidateRepository` does).
-2. `developers-view.tsx` - Accept/Reject/Block buttons per candidate row,
-   `router.refresh()` after mutation (same pattern as archive/watch).
-3. New query: `listAggregatorOnlyInvestments()` or reuse `listInvestments`
-   with a `sourceCategory: "AGGREGATOR"` filter plus "no developer source
-   covers this location" logic (mirrors
-   `MonitoringService.findAggregatorOnlyDiscoveries()` - decide whether to
-   replicate the location-coverage check in SQL/JS or persist a flag on
-   the investment row at scan time instead of recomputing it ad hoc).
-4. Dashboard section or `/investments` filter surfacing aggregator-only
-   discoveries explicitly (not just visible via manual source-category
-   filtering).
+### Phase F — Candidate status mutation + aggregator-only discovery view — DONE, see above.
 
 ### Phase G — Dashboard enhancements
 

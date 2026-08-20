@@ -51,6 +51,9 @@ export function listInvestments(filters: InvestmentFilters = {}): InvestmentWith
   if (!filters.includeArchived) {
     clauses.push("COALESCE(s.archived, 0) = 0");
   }
+  if (filters.aggregatorOnly) {
+    clauses.push("COALESCE(i.aggregator_only_discovery, 0) = 1");
+  }
 
   const where = clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
   const rows = db
@@ -81,6 +84,14 @@ export function countNewSince(sinceIso: string): number {
   const result = db
     .prepare("SELECT COUNT(*) AS count FROM investment WHERE first_seen_at >= ?")
     .get(sinceIso) as unknown as { count: number };
+  return result.count;
+}
+
+export function countAggregatorOnlyDiscoveries(): number {
+  const db = getDb();
+  const result = db
+    .prepare("SELECT COUNT(*) AS count FROM investment WHERE aggregator_only_discovery = 1")
+    .get() as unknown as { count: number };
   return result.count;
 }
 
@@ -150,6 +161,7 @@ function normalizeRow(row: InvestmentWithState): InvestmentWithState {
     property_type_match: row.property_type_match == null ? null : Boolean(row.property_type_match),
     location_tier_match: row.location_tier_match == null ? null : Boolean(row.location_tier_match),
     large_plot_bonus: row.large_plot_bonus == null ? null : Boolean(row.large_plot_bonus),
+    aggregator_only_discovery: Boolean(row.aggregator_only_discovery),
   };
 }
 
@@ -250,6 +262,24 @@ export function listDeveloperCandidates(): DeveloperCandidateRow[] {
     .prepare("SELECT * FROM developer_candidate ORDER BY discovered_at DESC")
     .all() as unknown as DeveloperCandidateRow[];
   return rows.map((row) => ({ ...row }));
+}
+
+const CANDIDATE_STATUSES = ["ACCEPTED", "REJECTED", "IMPLEMENTED", "BLOCKED"] as const;
+export type DeveloperCandidateMutableStatus = (typeof CANDIDATE_STATUSES)[number];
+
+export function isDeveloperCandidateMutableStatus(value: unknown): value is DeveloperCandidateMutableStatus {
+  return typeof value === "string" && (CANDIDATE_STATUSES as readonly string[]).includes(value);
+}
+
+/**
+ * Reviewer decision on a discovered developer candidate (see
+ * `DeveloperCandidateRepository.updateStatus` on the Kotlin side, which
+ * this mirrors). `NEW`/`REVIEW_REQUIRED` are scan-assigned only - a human
+ * reviewer can only move a candidate to one of `CANDIDATE_STATUSES`.
+ */
+export function setDeveloperCandidateStatus(id: number, status: DeveloperCandidateMutableStatus): void {
+  const db = getDb();
+  db.prepare("UPDATE developer_candidate SET status = @status WHERE id = @id").run({ id, status });
 }
 
 export function listMunicipalities(): MunicipalityRegistryRow[] {

@@ -10,4 +10,14 @@ interface InvestmentRepository {
 
     /** Looks up the database-assigned id for an investment, e.g. to store a [pl.marcin.investmentmonitor.domain.Correlation]. */
     fun findIdByCanonicalKey(canonicalKey: String): Long?
+
+    /**
+     * Persists whether an aggregator investment currently has no matching
+     * developer source covering its location - recomputed for every
+     * aggregator investment on every scan (see
+     * `MonitoringService.updateAggregatorOnlyDiscoveryFlags`), so the
+     * frontend can filter on it directly instead of re-deriving the same
+     * location-coverage logic.
+     */
+    fun updateAggregatorOnlyDiscoveryFlag(canonicalKey: String, isAggregatorOnly: Boolean)
 }

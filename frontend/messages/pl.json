@@ -28,7 +28,8 @@
     "scanSuccessChart": "Skuteczność skanowania",
     "avgLeadTime": "Śr. wyprzedzenie wykrycia",
     "leadTimeDays": "{days} dni",
-    "noData": "Brak danych"
+    "noData": "Brak danych",
+    "aggregatorOnlyDiscoveries": "Odkrycia tylko z agregatora"
   },
   "scan": {
     "runScan": "Uruchom skan",
@@ -73,6 +74,7 @@
     "allStatuses": "Wszystkie statusy",
     "allLocations": "Wszystkie lokalizacje",
     "watchedOnly": "Tylko obserwowane",
+    "aggregatorOnly": "Tylko z agregatora",
     "watched": "Obserwowane",
     "watch": "Obserwuj",
     "unwatch": "Przestań obserwować",
@@ -168,6 +170,10 @@
     "municipality": "Gmina",
     "discoveredFrom": "Odkryto z",
     "discoveredAt": "Odkryto",
+    "actions": "Akcje",
+    "accept": "Zaakceptuj",
+    "reject": "Odrzuć",
+    "block": "Zablokuj",
     "noCandidates": "Nie odkryto jeszcze żadnych kandydatów na deweloperów.",
     "statusLabel": {
       "MONITORED": "Monitorowany",
@@ -175,6 +181,14 @@
       "CANDIDATE": "Kandydat",
       "NO_CURRENT_INVESTMENTS": "Brak aktualnych inwestycji",
       "INACTIVE": "Nieaktywny",
+      "BLOCKED": "Zablokowany"
+    },
+    "candidateStatusLabel": {
+      "NEW": "Nowy",
+      "REVIEW_REQUIRED": "Wymaga przeglądu",
+      "ACCEPTED": "Zaakceptowany",
+      "REJECTED": "Odrzucony",
+      "IMPLEMENTED": "Wdrożony",
       "BLOCKED": "Zablokowany"
     }
   },

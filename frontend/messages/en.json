@@ -28,7 +28,8 @@
     "scanSuccessChart": "Scan success rate",
     "avgLeadTime": "Avg. discovery lead time",
     "leadTimeDays": "{days} day(s)",
-    "noData": "No data yet"
+    "noData": "No data yet",
+    "aggregatorOnlyDiscoveries": "Aggregator-only discoveries"
   },
   "scan": {
     "runScan": "Run scan",
@@ -73,6 +74,7 @@
     "allStatuses": "All statuses",
     "allLocations": "All locations",
     "watchedOnly": "Watched only",
+    "aggregatorOnly": "Aggregator-only discovery",
     "watched": "Watched",
     "watch": "Watch",
     "unwatch": "Unwatch",
@@ -168,6 +170,10 @@
     "municipality": "Municipality",
     "discoveredFrom": "Discovered from",
     "discoveredAt": "Discovered",
+    "actions": "Actions",
+    "accept": "Accept",
+    "reject": "Reject",
+    "block": "Block",
     "noCandidates": "No developer candidates discovered yet.",
     "statusLabel": {
       "MONITORED": "Monitored",
@@ -175,6 +181,14 @@
       "CANDIDATE": "Candidate",
       "NO_CURRENT_INVESTMENTS": "No current investments",
       "INACTIVE": "Inactive",
+      "BLOCKED": "Blocked"
+    },
+    "candidateStatusLabel": {
+      "NEW": "New",
+      "REVIEW_REQUIRED": "Review required",
+      "ACCEPTED": "Accepted",
+      "REJECTED": "Rejected",
+      "IMPLEMENTED": "Implemented",
       "BLOCKED": "Blocked"
     }
   },

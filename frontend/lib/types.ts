@@ -18,9 +18,10 @@ export interface InvestmentRow {
   image_url: string | null;
   first_seen_at: string;
   last_seen_at: string;
+  aggregator_only_discovery: number | null;
 }
 
-export interface InvestmentWithState extends InvestmentRow {
+export interface InvestmentWithState extends Omit<InvestmentRow, "aggregator_only_discovery"> {
   archived: boolean;
   watched: boolean;
   reviewed_at: string | null;
@@ -34,6 +35,7 @@ export interface InvestmentWithState extends InvestmentRow {
   price_score: number | null;
   large_plot_bonus: boolean | null;
   plot_to_house_ratio: number | null;
+  aggregator_only_discovery: boolean;
 }
 
 export interface SourceSnapshotRow {
@@ -103,6 +105,7 @@ export interface InvestmentFilters {
   developer?: string;
   location?: string;
   includeArchived?: boolean;
+  aggregatorOnly?: boolean;
 }
 
 export interface DeveloperRegistryRow {

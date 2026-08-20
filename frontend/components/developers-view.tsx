@@ -1,8 +1,11 @@
 "use client";
 
-import { ExternalLink } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Check, ExternalLink, ShieldOff, X } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn, formatRelativeTime } from "@/lib/utils";
 import type { DeveloperCandidateRow, DeveloperRegistryRow } from "@/lib/types";
@@ -29,6 +32,8 @@ const CANDIDATE_STATUS_BADGE: Record<string, string> = {
   IMPLEMENTED: "border-emerald-500/30 text-emerald-500 dark:text-emerald-400",
   BLOCKED: "border-red-500/30 text-red-500 dark:text-red-400",
 };
+
+const REVIEWABLE_CANDIDATE_STATUSES = new Set(["NEW", "REVIEW_REQUIRED"]);
 
 function DeveloperTierTable({ title, developers }: { title: string; developers: DeveloperRegistryRow[] }) {
   const { t } = useI18n();
@@ -90,8 +95,26 @@ function DeveloperTierTable({ title, developers }: { title: string; developers: 
 
 export function DevelopersView({ developers, candidates }: DevelopersViewProps) {
   const { t, locale } = useI18n();
+  const router = useRouter();
   const tierA = developers.filter((d) => d.tier === "A");
   const tierB = developers.filter((d) => d.tier === "B");
+  const [statuses, setStatuses] = useState<Record<number, DeveloperCandidateRow["status"]>>({});
+  const [updatingId, setUpdatingId] = useState<number | null>(null);
+
+  async function updateStatus(id: number, status: "ACCEPTED" | "REJECTED" | "IMPLEMENTED" | "BLOCKED") {
+    setUpdatingId(id);
+    try {
+      await fetch(`/api/developers/candidates/${id}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      });
+      setStatuses((prev) => ({ ...prev, [id]: status }));
+      router.refresh();
+    } finally {
+      setUpdatingId(null);
+    }
+  }
 
   return (
     <div className="space-y-8">
@@ -119,41 +142,83 @@ export function DevelopersView({ developers, candidates }: DevelopersViewProps) 
                   <TableHead className="hidden md:table-cell">{t("developers.discoveredFrom")}</TableHead>
                   <TableHead>{t("developers.status")}</TableHead>
                   <TableHead>{t("developers.discoveredAt")}</TableHead>
+                  <TableHead className="w-40">{t("developers.actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {candidates.map((candidate) => (
-                  <TableRow key={candidate.id}>
-                    <TableCell className="font-medium">
-                      <a
-                        href={candidate.discovered_url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex items-center gap-1 hover:underline"
-                      >
-                        {candidate.developer_name}
-                        <ExternalLink className="size-3" />
-                      </a>
-                    </TableCell>
-                    <TableCell className="hidden text-muted-foreground md:table-cell">
-                      {candidate.municipality ?? "—"}
-                    </TableCell>
-                    <TableCell className="hidden font-mono text-xs text-muted-foreground md:table-cell">
-                      {candidate.discovered_from_source}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={cn("text-[10px] uppercase", CANDIDATE_STATUS_BADGE[candidate.status])}
-                      >
-                        {candidate.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {formatRelativeTime(candidate.discovered_at, locale)}
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {candidates.map((candidate) => {
+                  const status = statuses[candidate.id] ?? candidate.status;
+                  const reviewable = REVIEWABLE_CANDIDATE_STATUSES.has(status);
+                  const isUpdating = updatingId === candidate.id;
+
+                  return (
+                    <TableRow key={candidate.id}>
+                      <TableCell className="font-medium">
+                        <a
+                          href={candidate.discovered_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 hover:underline"
+                        >
+                          {candidate.developer_name}
+                          <ExternalLink className="size-3" />
+                        </a>
+                      </TableCell>
+                      <TableCell className="hidden text-muted-foreground md:table-cell">
+                        {candidate.municipality ?? "—"}
+                      </TableCell>
+                      <TableCell className="hidden font-mono text-xs text-muted-foreground md:table-cell">
+                        {candidate.discovered_from_source}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={cn("text-[10px] uppercase", CANDIDATE_STATUS_BADGE[status])}>
+                          {t(`developers.candidateStatusLabel.${status}` as "developers.candidateStatusLabel.NEW")}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {formatRelativeTime(candidate.discovered_at, locale)}
+                      </TableCell>
+                      <TableCell>
+                        {reviewable ? (
+                          <div className="flex items-center gap-1">
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="size-7 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10 dark:text-emerald-400"
+                              disabled={isUpdating}
+                              onClick={() => updateStatus(candidate.id, "ACCEPTED")}
+                              title={t("developers.accept")}
+                            >
+                              <Check className="size-3.5" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="size-7 border-red-500/30 text-red-500 hover:bg-red-500/10 dark:text-red-400"
+                              disabled={isUpdating}
+                              onClick={() => updateStatus(candidate.id, "REJECTED")}
+                              title={t("developers.reject")}
+                            >
+                              <X className="size-3.5" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="size-7 text-muted-foreground hover:bg-muted"
+                              disabled={isUpdating}
+                              onClick={() => updateStatus(candidate.id, "BLOCKED")}
+                              title={t("developers.block")}
+                            >
+                              <ShieldOff className="size-3.5" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>

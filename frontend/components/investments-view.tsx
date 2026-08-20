@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowDown, ArrowUp, Building2, ChevronDown, ChevronUp, Search, SlidersHorizontal } from "lucide-react";
@@ -63,10 +64,12 @@ function numericBounds(values: Array<number | null>): [number, number] {
 
 export function InvestmentsView({ investments }: InvestmentsViewProps) {
   const { t, locale } = useI18n();
+  const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
   const [developer, setDeveloper] = useState<string>(ALL);
   const [showArchived, setShowArchived] = useState(false);
   const [showWatchedOnly, setShowWatchedOnly] = useState(false);
+  const [showAggregatorOnly, setShowAggregatorOnly] = useState(() => searchParams.get("aggregatorOnly") === "1");
   const [sortField, setSortField] = useState<SortField>("first_seen_at");
   const [sortDesc, setSortDesc] = useState(true);
   const [expandedId, setExpandedId] = useState<number | null>(null);
@@ -115,6 +118,7 @@ export function InvestmentsView({ investments }: InvestmentsViewProps) {
     const result = investments.filter((investment) => {
       if (!showArchived && investment.archived) return false;
       if (showWatchedOnly && !investment.watched) return false;
+      if (showAggregatorOnly && !investment.aggregator_only_discovery) return false;
       if (developer !== ALL && investment.developer !== developer) return false;
       if (sourceCategory !== ALL && investment.source_category !== sourceCategory) return false;
       if (propertyType !== ALL && investment.property_type !== propertyType) return false;
@@ -140,6 +144,7 @@ export function InvestmentsView({ investments }: InvestmentsViewProps) {
     developer,
     showArchived,
     showWatchedOnly,
+    showAggregatorOnly,
     sourceCategory,
     propertyType,
     status,
@@ -192,6 +197,10 @@ export function InvestmentsView({ investments }: InvestmentsViewProps) {
           <label className="flex items-center gap-2 text-sm text-muted-foreground">
             <Switch checked={showWatchedOnly} onCheckedChange={setShowWatchedOnly} />
             {t("investments.watchedOnly")}
+          </label>
+          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Switch checked={showAggregatorOnly} onCheckedChange={setShowAggregatorOnly} />
+            {t("investments.aggregatorOnly")}
           </label>
           <Button
             variant="outline"
@@ -405,6 +414,11 @@ export function InvestmentsView({ investments }: InvestmentsViewProps) {
                             {investment.watched ? (
                               <Badge variant="secondary" className="border-amber-500/30 text-amber-500 dark:text-amber-400">
                                 {t("investments.watched")}
+                              </Badge>
+                            ) : null}
+                            {investment.aggregator_only_discovery ? (
+                              <Badge variant="outline" className="border-orange-500/30 text-orange-500 dark:text-orange-400">
+                                {t("investments.aggregatorOnly")}
                               </Badge>
                             ) : null}
                           </div>

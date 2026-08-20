@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Clock, Sparkles, Activity, Building2, Radar, Users, Map, TrendingUp } from "lucide-react";
+import { Clock, Sparkles, Activity, Building2, Radar, Users, Map, TrendingUp, Search } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { StatCard } from "@/components/stat-card";
 import { RecentInvestmentsTable } from "@/components/recent-investments-table";
@@ -26,6 +26,7 @@ interface DashboardViewProps {
   developers: DeveloperRegistryRow[];
   municipalities: MunicipalityRegistryRow[];
   avgLeadTimeDays: number | null;
+  aggregatorOnlyCount: number;
 }
 
 export function DashboardView({
@@ -37,6 +38,7 @@ export function DashboardView({
   developers,
   municipalities,
   avgLeadTimeDays,
+  aggregatorOnlyCount,
 }: DashboardViewProps) {
   const { t, locale } = useI18n();
   const latestRun = runs[0];
@@ -87,7 +89,7 @@ export function DashboardView({
         />
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Link href="/developers" className="block">
           <StatCard
             icon={Users}
@@ -108,6 +110,14 @@ export function DashboardView({
             label={t("dashboard.avgLeadTime")}
             value={avgLeadTimeDays == null ? t("dashboard.noData") : t("dashboard.leadTimeDays").replace("{days}", Math.round(avgLeadTimeDays).toString())}
             tone={avgLeadTimeDays != null && avgLeadTimeDays > 0 ? "success" : "default"}
+          />
+        </Link>
+        <Link href="/investments?aggregatorOnly=1" className="block">
+          <StatCard
+            icon={Search}
+            label={t("dashboard.aggregatorOnlyDiscoveries")}
+            value={aggregatorOnlyCount}
+            tone={aggregatorOnlyCount > 0 ? "warning" : "default"}
           />
         </Link>
       </div>

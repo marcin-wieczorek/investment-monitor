@@ -43,6 +43,7 @@ import java.time.Instant
 
 private class InMemoryInvestmentRepository : InvestmentRepository {
     private val bySource = mutableMapOf<String, MutableMap<String, Investment>>()
+    val aggregatorOnlyFlags = mutableMapOf<String, Boolean>()
 
     override fun findAllBySource(source: String): Map<String, Investment> = bySource[source] ?: emptyMap()
     override fun findAll(): List<Investment> = bySource.values.flatMap { it.values }
@@ -51,6 +52,9 @@ private class InMemoryInvestmentRepository : InvestmentRepository {
     }
     override fun findIdByCanonicalKey(canonicalKey: String): Long? =
         findAll().indexOfFirst { it.canonicalKey == canonicalKey }.takeIf { it >= 0 }?.toLong()?.plus(1)
+    override fun updateAggregatorOnlyDiscoveryFlag(canonicalKey: String, isAggregatorOnly: Boolean) {
+        aggregatorOnlyFlags[canonicalKey] = isAggregatorOnly
+    }
 }
 
 private class InMemorySourceSnapshotRepository : SourceSnapshotRepository {
@@ -140,14 +144,15 @@ class MonitoringServiceTest {
         evidenceRepository: InMemoryEvidenceRepository = InMemoryEvidenceRepository(),
         correlationRepository: InMemoryCorrelationRepository = InMemoryCorrelationRepository(),
         developerCandidateRepository: InMemoryDeveloperCandidateRepository = InMemoryDeveloperCandidateRepository(),
-        investmentScoreRepository: InMemoryInvestmentScoreRepository = InMemoryInvestmentScoreRepository()
+        investmentScoreRepository: InMemoryInvestmentScoreRepository = InMemoryInvestmentScoreRepository(),
+        investmentRepository: InMemoryInvestmentRepository = InMemoryInvestmentRepository()
     ): MonitoringService = MonitoringService(
         sourceRegistry = SourceRegistry(developerSources, discoverySources, aggregatorSources),
         sourceValidator = SourceValidator(),
         changeDetector = ChangeDetector(),
         detailEnricher = InvestmentDetailEnricher(emptyList()) { _ -> "" },
         investmentAnalyzer = DefaultInvestmentAnalyzer(DeterministicScorer()),
-        investmentRepository = InMemoryInvestmentRepository(),
+        investmentRepository = investmentRepository,
         sourceSnapshotRepository = InMemorySourceSnapshotRepository(),
         monitoringRunRepository = InMemoryMonitoringRunRepository(),
         signalRepository = InMemorySignalRepository(),
@@ -272,6 +277,35 @@ class MonitoringServiceTest {
         val report = buildService(aggregatorSources = listOf(aggregatorSource)).scan()
 
         report.aggregatorOnlyDiscoveries shouldHaveSize 1
+    }
+
+    @Test
+    fun `persists the aggregator-only flag for every current aggregator investment, not just new ones`() {
+        val investmentRepository = InMemoryInvestmentRepository()
+        val aggregatorSource = FakeAggregatorSource(
+            "rynekpierwotny",
+            listOf(testInvestment(name = "AggregatorOnly", source = "rynekpierwotny", location = "Mosina"))
+        )
+        buildService(aggregatorSources = listOf(aggregatorSource), investmentRepository = investmentRepository).scan()
+
+        investmentRepository.aggregatorOnlyFlags.values shouldContainAll listOf(true)
+    }
+
+    @Test
+    fun `does not flag an aggregator investment whose location is already covered by a developer source`() {
+        val investmentRepository = InMemoryInvestmentRepository()
+        val developerSource = FakeInvestmentSource("chronos", listOf(testInvestment(name = "Aura", location = "Mosina")))
+        val aggregatorSource = FakeAggregatorSource(
+            "rynekpierwotny",
+            listOf(testInvestment(name = "Covered", source = "rynekpierwotny", location = "Mosina"))
+        )
+        buildService(
+            developerSources = listOf(developerSource),
+            aggregatorSources = listOf(aggregatorSource),
+            investmentRepository = investmentRepository
+        ).scan()
+
+        investmentRepository.aggregatorOnlyFlags.values shouldContainAll listOf(false)
     }
 
     @Test

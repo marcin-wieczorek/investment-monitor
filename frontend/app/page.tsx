@@ -1,5 +1,6 @@
 import {
   averageDiscoveryLeadTime,
+  countAggregatorOnlyDiscoveries,
   countAllInvestments,
   countAllSignals,
   listDevelopers,
@@ -21,6 +22,7 @@ export default function DashboardPage() {
   const developers = listDevelopers();
   const municipalities = listMunicipalities();
   const avgLeadTimeDays = averageDiscoveryLeadTime();
+  const aggregatorOnlyCount = countAggregatorOnlyDiscoveries();
 
   return (
     <DashboardView
@@ -32,6 +34,7 @@ export default function DashboardPage() {
       developers={developers}
       municipalities={municipalities}
       avgLeadTimeDays={avgLeadTimeDays}
+      aggregatorOnlyCount={aggregatorOnlyCount}
     />
   );
 }

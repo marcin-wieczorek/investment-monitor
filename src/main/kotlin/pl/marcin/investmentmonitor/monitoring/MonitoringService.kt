@@ -103,6 +103,7 @@ class MonitoringService(
         val correlations = runCorrelation()
         val aggregatorOnlyDiscoveries = findAggregatorOnlyDiscoveries(aggregatorReports)
         recordUnknownDeveloperCandidates(aggregatorOnlyDiscoveries)
+        updateAggregatorOnlyDiscoveryFlags()
 
         rawHtmlArchiver.cleanup()
 
@@ -396,6 +397,29 @@ class MonitoringService(
                     )
                 )
                 logger.info("Recorded new developer candidate '{}' from source '{}'", investment.developer, investment.source)
+            }
+    }
+
+    /**
+     * Persists, for every currently known aggregator investment (not just
+     * this run's new ones - unlike [findAggregatorOnlyDiscoveries], which
+     * only feeds the per-scan console report), whether it currently has no
+     * matching developer source covering its location. Lets the frontend
+     * filter on `investment.aggregator_only_discovery` directly instead of
+     * re-deriving [LocationCatalog] matching in SQL/JS.
+     */
+    private fun updateAggregatorOnlyDiscoveryFlags() {
+        val developerLocations = sourceRegistry.developerSources()
+            .flatMap { investmentRepository.findAllBySource(it.id).values }
+            .mapNotNull { it.location?.let(LocationCatalog::findIn) }
+            .toSet()
+
+        sourceRegistry.aggregatorSources()
+            .flatMap { investmentRepository.findAllBySource(it.id).values }
+            .forEach { investment ->
+                val location = investment.location?.let(LocationCatalog::findIn)
+                val isAggregatorOnly = location == null || location !in developerLocations
+                investmentRepository.updateAggregatorOnlyDiscoveryFlag(investment.canonicalKey, isAggregatorOnly)
             }
     }
 
