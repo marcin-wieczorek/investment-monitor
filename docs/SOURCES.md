@@ -91,13 +91,38 @@ against live HTML (see `registry.DeveloperRegistry` for tier/status and
 `FixtureCaptureCli`/`SourceVerificationCli` for the full list): `atal`,
 `agrobex`, `spravia`, `duda`, `develia`, `jakon-inwest`, `robyg`, `linea`,
 `murapol`, `ataner`, `konimpex`, `pekabex`, `ebf`, `ggw`, `jaksbud`, `uwi`,
-`sagaris`. Several of these publish only a subset of fields (no area/price
-on the list page, or - for `jaksbud`/`uwi` - a single investment
-represented as an aggregated unit table rather than a card list); the
-per-parser KDoc documents exactly what each page publishes and why a
-field was deliberately left null.
+`sagaris`, `cordia`, `ronson`, `sivanet`, `mj`, `area`,
+`inwestycje_wielkopolski`, `vastbouw`. Several of these publish only a
+subset of fields (no area/price on the list page, or - for
+`jaksbud`/`uwi` - a single investment represented as an aggregated unit
+table rather than a card list); the per-parser KDoc documents exactly
+what each page publishes and why a field was deliberately left null.
+
+Notes on the last seven (Phase E, all Tier B):
+
+- `cordia`/`ronson` each publish a dedicated Poznań-only listing page
+  (`/miasta/poznan/`, `/poznan/inwestycje/`); as of implementation both
+  currently list exactly one active Poznań investment.
+- `sivanet` is a single-investment one-page site (`Lechicka 65`), parsed
+  as a fixed set of labelled `.atile` blocks rather than a card list.
+- `mj` is a homepage hub linking out to each investment's own external
+  domain (same pattern as `ggw`), currently listing three investments
+  across three cities (one in Poznań).
+- `area` parses the "Nasza oferta" (currently marketed) slider; as of
+  implementation all four listed investments are on the coast - Area
+  Development's one Poznań investment is a completed project shown
+  separately under "Realizacje", so it won't appear via this adapter
+  until a new Poznań investment enters active sales.
+- `inwestycje_wielkopolski` parses the "Realizacje" (completed projects)
+  page (11 investments, all in Poznań, all marked `SOLD_OUT`) rather than
+  "W sprzedaży", which as of implementation only teases an unannounced
+  upcoming project with no dedicated URL of its own.
+- `vastbouw` publishes no plain-text investment name on its Poznań
+  archive page - the name is derived from the detail-page URL slug, the
+  same fallback `ChronosParser` uses.
 
 ## Implemented discovery sources
+
 
 Beyond `swarzedz-wz`, four more municipal discovery sources are
 implemented: `czerwonak-obwieszczenia` and `tarnowo-podgorne-wz` (identical

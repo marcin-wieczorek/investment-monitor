@@ -41,24 +41,24 @@ object DeveloperRegistry {
 
         // Tier B
         developer("ebf", "EBF Development", "https://ebfdevelopment.pl", DeveloperTier.B, DeveloperStatus.MONITORED, setOf("Poznań"), "ebf"),
-        developer("cordia", "Cordia", "https://cordiapolska.pl", DeveloperTier.B, DeveloperStatus.CANDIDATE, setOf("Poznań"), null),
-        developer("ronson", "Ronson", "https://ronson.pl", DeveloperTier.B, DeveloperStatus.CANDIDATE, setOf("Poznań"), null),
+        developer("cordia", "Cordia", "https://cordiapolska.pl", DeveloperTier.B, DeveloperStatus.MONITORED, setOf("Poznań"), "cordia"),
+        developer("ronson", "Ronson", "https://ronson.pl", DeveloperTier.B, DeveloperStatus.MONITORED, setOf("Poznań"), "ronson"),
         developer("budimex", "Budimex", null, DeveloperTier.B, DeveloperStatus.INACTIVE, emptySet(), null),
         developer("novaform", "Novaform", null, DeveloperTier.B, DeveloperStatus.BLOCKED, emptySet(), null),
         developer("ggw", "GGW Development", "https://ggwdevelopment.pl", DeveloperTier.B, DeveloperStatus.MONITORED, setOf("Poznań"), "ggw"),
-        developer("sivanet", "SIVANET", "https://sivanet.pl", DeveloperTier.B, DeveloperStatus.CANDIDATE, setOf("Poznań"), null),
-        developer("mj", "MJ Deweloper", "https://mjdeweloper.pl", DeveloperTier.B, DeveloperStatus.CANDIDATE, setOf("Poznań"), null),
+        developer("sivanet", "SIVANET", "https://sivanet.pl", DeveloperTier.B, DeveloperStatus.MONITORED, setOf("Poznań"), "sivanet"),
+        developer("mj", "MJ Deweloper", "https://mjdeweloper.pl", DeveloperTier.B, DeveloperStatus.MONITORED, setOf("Poznań"), "mj"),
         developer("spravia", "Spravia", "https://spravia.pl", DeveloperTier.B, DeveloperStatus.MONITORED, setOf("Poznań"), "spravia"),
         developer("cavallia", "Cavallia", null, DeveloperTier.B, DeveloperStatus.BLOCKED, emptySet(), null),
-        developer("area", "Area Development", "https://areadevelopment.pl", DeveloperTier.B, DeveloperStatus.CANDIDATE, setOf("Poznań"), null),
+        developer("area", "Area Development", "https://areadevelopment.pl", DeveloperTier.B, DeveloperStatus.MONITORED, setOf("Poznań"), "area"),
         developer("jaksbud", "JakśBud", "https://jaksbud.pl", DeveloperTier.B, DeveloperStatus.MONITORED, setOf("Poznań"), "jaksbud"),
         developer("btm", "BTM", null, DeveloperTier.B, DeveloperStatus.BLOCKED, emptySet(), null),
         developer("constructa_plus", "Constructa Plus", null, DeveloperTier.B, DeveloperStatus.BLOCKED, emptySet(), null),
-        developer("inwestycje_wielkopolski", "Inwestycje Wielkopolski", "https://inwestycjewielkopolski.pl", DeveloperTier.B, DeveloperStatus.CANDIDATE, setOf("Poznań"), null),
+        developer("inwestycje_wielkopolski", "Inwestycje Wielkopolski", "https://inwestycjewielkopolski.pl", DeveloperTier.B, DeveloperStatus.MONITORED, setOf("Poznań"), "inwestycje_wielkopolski"),
         developer("virke", "Virke", null, DeveloperTier.B, DeveloperStatus.BLOCKED, emptySet(), null),
         developer("sgi", "SGI", "https://sgi.pl", DeveloperTier.B, DeveloperStatus.BLOCKED, emptySet(), null),
         developer("sagaris", "Sagaris", "https://sagaris.pl", DeveloperTier.B, DeveloperStatus.MONITORED, setOf("Poznań"), "sagaris"),
-        developer("vastbouw", "Vastbouw", "https://vastbouw.pl", DeveloperTier.B, DeveloperStatus.CANDIDATE, setOf("Poznań"), null),
+        developer("vastbouw", "Vastbouw", "https://vastbouw.pl", DeveloperTier.B, DeveloperStatus.MONITORED, setOf("Poznań"), "vastbouw"),
         developer("fb_antczak", "FB Antczak", null, DeveloperTier.B, DeveloperStatus.BLOCKED, emptySet(), null)
     )
 

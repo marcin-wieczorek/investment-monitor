@@ -40,6 +40,14 @@ pipeline, discovery lead time, and price/watchlist UI (commit
   `investment-detail-view.tsx` groups evidence by `field_name` and shows
   a "confirmed by N sources" badge when 2+ distinct `source_id`s agree on
   the same fact.
+- **Phase E done**: the 7 remaining Tier B `CANDIDATE` developers with a
+  verified URL now have adapters and are `MONITORED`: `cordia`, `ronson`,
+  `sivanet`, `mj`, `area`, `inwestycje_wielkopolski`, `vastbouw` (25
+  developer adapters total). `V7__promote_tier_b_candidates.sql` updates
+  their `developer_registry` rows in place (status, adapter_source_id,
+  corrected `investment_list_urls`). See `docs/SOURCES.md` "Implemented
+  developer sources" for per-developer notes (several currently list
+  zero or non-Poznań investments - documented, not worked around).
 
 See `docs/ARCHITECTURE.md` "Implemented (phase 5/6, ...)" sections and
 `docs/SOURCES.md` for the authoritative, detailed record.
@@ -48,45 +56,12 @@ See `docs/ARCHITECTURE.md` "Implemented (phase 5/6, ...)" sections and
 
 ### Phase D — Per-field provenance — DONE, see above.
 
-### Phase E — Remaining Tier B `CANDIDATE` developers
-
-7 developers have a verified website and `CANDIDATE` status but no
-adapter yet (see `registry/DeveloperRegistry.kt`):
-
-| ID | Name | Website |
-|---|---|---|
-| `cordia` | Cordia | https://cordiapolska.pl |
-| `ronson` | Ronson | https://ronson.pl |
-| `sivanet` | SIVANET | https://sivanet.pl |
-| `mj` | MJ Deweloper | https://mjdeweloper.pl |
-| `area` | Area Development | https://areadevelopment.pl |
-| `inwestycje_wielkopolski` | Inwestycje Wielkopolski | https://inwestycjewielkopolski.pl |
-| `vastbouw` | Vastbouw | https://vastbouw.pl |
-
-**Per developer** (same workflow as the 16 already implemented):
-1. `curl` the real investment listing page, verify it's server-rendered
-   (not a JS SPA) - **do not assume**, some may turn out unimplementable
-   like Nickel/Archicom/PWD.
-2. Capture a fixture (`FixtureCaptureCli.kt` + `./gradlew captureFixtures`),
-   inspect the HTML by hand before writing selectors.
-3. `{Name}Source.kt` (`InvestmentSource`) + `{Name}Parser.kt` (Jsoup,
-   anchored on stable attributes, leave unpublished fields null).
-4. `{Name}ParserTest.kt` - fixture-based, asserts every published field.
-5. Register in `SourceVerificationCli.kt`.
-6. Update `registry/DeveloperRegistry.kt` - flip status to `MONITORED`,
-   set `adapterSourceId`.
-7. Update `V5__developer_municipality_registry.sql`? **No** - existing
-   migrations are never edited once applied; add a new
-   `V7__promote_tier_b_candidates.sql` that `UPDATE`s the relevant rows
-   (or just update the Kotlin registry object + accept the migration's
-   static snapshot is slightly stale until the next full registry
-   migration - confirm approach before implementing, since the DB is the
-   frontend's source of truth for `/developers`).
-8. Update `docs/SOURCES.md` "Implemented developer sources" list.
+### Phase E — Remaining Tier B `CANDIDATE` developers — DONE, see above.
 
 Villa (Tier A) and Cavallia/BTM/Constructa Plus/Virke/SGI/FB Antczak
 (Tier B) remain `BLOCKED`/`CANDIDATE` with no known working URL - do not
 re-investigate unless new information surfaces.
+
 
 ### Phase F — Candidate status mutation + aggregator-only discovery view
 

@@ -2,24 +2,31 @@ package pl.marcin.investmentmonitor.tools
 
 import pl.marcin.investmentmonitor.scraping.JsoupPageFetcher
 import pl.marcin.investmentmonitor.source.AgrobexSource
+import pl.marcin.investmentmonitor.source.AreaSource
 import pl.marcin.investmentmonitor.source.ATALSource
 import pl.marcin.investmentmonitor.source.AtanerSource
 import pl.marcin.investmentmonitor.source.ChronosSource
+import pl.marcin.investmentmonitor.source.CordiaSource
 import pl.marcin.investmentmonitor.source.DeveliaSource
 import pl.marcin.investmentmonitor.source.DudaSource
 import pl.marcin.investmentmonitor.source.EBFSource
 import pl.marcin.investmentmonitor.source.GGWSource
 import pl.marcin.investmentmonitor.source.GreenbudSource
+import pl.marcin.investmentmonitor.source.InwestycjeWielkopolskiSource
 import pl.marcin.investmentmonitor.source.JaksBudSource
 import pl.marcin.investmentmonitor.source.JakonInwestSource
 import pl.marcin.investmentmonitor.source.KonimpexSource
 import pl.marcin.investmentmonitor.source.LineaSource
+import pl.marcin.investmentmonitor.source.MJSource
 import pl.marcin.investmentmonitor.source.MurapolSource
 import pl.marcin.investmentmonitor.source.PekabexSource
 import pl.marcin.investmentmonitor.source.RobygSource
+import pl.marcin.investmentmonitor.source.RonsonSource
 import pl.marcin.investmentmonitor.source.SagarisSource
+import pl.marcin.investmentmonitor.source.SivanetSource
 import pl.marcin.investmentmonitor.source.SpraviaSource
 import pl.marcin.investmentmonitor.source.UWISource
+import pl.marcin.investmentmonitor.source.VastbouwSource
 import pl.marcin.investmentmonitor.source.aggregator.RynekPierwotnySource
 import pl.marcin.investmentmonitor.source.discovery.CzerwonakObwieszczeniaSource
 import pl.marcin.investmentmonitor.source.discovery.PoznanUlicpSource
@@ -58,6 +65,13 @@ fun main() {
         "spravia" to (URI(SpraviaSource.LIST_URL) to "investment-list.html"),
         "jaksbud" to (URI(JaksBudSource.LIST_URL) to "investment-list.html"),
         "sagaris" to (URI(SagarisSource.LIST_URL) to "investment-list.html"),
+        "cordia" to (URI(CordiaSource.LIST_URL) to "investment-list.html"),
+        "ronson" to (URI(RonsonSource.LIST_URL) to "investment-list.html"),
+        "sivanet" to (URI(SivanetSource.LIST_URL) to "investment-list.html"),
+        "mj" to (URI(MJSource.LIST_URL) to "investment-list.html"),
+        "area" to (URI(AreaSource.LIST_URL) to "investment-list.html"),
+        "inwestycje_wielkopolski" to (URI(InwestycjeWielkopolskiSource.LIST_URL) to "investment-list.html"),
+        "vastbouw" to (URI(VastbouwSource.LIST_URL) to "investment-list.html"),
         "swarzedz-wz" to (URI(SwarzedzWzSource.LIST_URL) to "warunki-zabudowy.html"),
         "czerwonak-obwieszczenia" to (URI(CzerwonakObwieszczeniaSource.LIST_URL) to "announcements.html"),
         "tarnowo-podgorne-wz" to (URI(TarnowoPodgorneWzSource.LIST_URL) to "announcements.html"),

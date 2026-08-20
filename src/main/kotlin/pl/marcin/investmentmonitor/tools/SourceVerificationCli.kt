@@ -3,9 +3,11 @@ package pl.marcin.investmentmonitor.tools
 import pl.marcin.investmentmonitor.scraping.JsoupPageFetcher
 import pl.marcin.investmentmonitor.source.AgrobexSource
 import pl.marcin.investmentmonitor.source.AggregatorSource
+import pl.marcin.investmentmonitor.source.AreaSource
 import pl.marcin.investmentmonitor.source.ATALSource
 import pl.marcin.investmentmonitor.source.AtanerSource
 import pl.marcin.investmentmonitor.source.ChronosSource
+import pl.marcin.investmentmonitor.source.CordiaSource
 import pl.marcin.investmentmonitor.source.DeveliaSource
 import pl.marcin.investmentmonitor.source.DiscoverySource
 import pl.marcin.investmentmonitor.source.DudaSource
@@ -13,16 +15,21 @@ import pl.marcin.investmentmonitor.source.EBFSource
 import pl.marcin.investmentmonitor.source.GGWSource
 import pl.marcin.investmentmonitor.source.GreenbudSource
 import pl.marcin.investmentmonitor.source.InvestmentSource
+import pl.marcin.investmentmonitor.source.InwestycjeWielkopolskiSource
 import pl.marcin.investmentmonitor.source.JaksBudSource
 import pl.marcin.investmentmonitor.source.JakonInwestSource
 import pl.marcin.investmentmonitor.source.KonimpexSource
 import pl.marcin.investmentmonitor.source.LineaSource
+import pl.marcin.investmentmonitor.source.MJSource
 import pl.marcin.investmentmonitor.source.MurapolSource
 import pl.marcin.investmentmonitor.source.PekabexSource
 import pl.marcin.investmentmonitor.source.RobygSource
+import pl.marcin.investmentmonitor.source.RonsonSource
 import pl.marcin.investmentmonitor.source.SagarisSource
+import pl.marcin.investmentmonitor.source.SivanetSource
 import pl.marcin.investmentmonitor.source.SpraviaSource
 import pl.marcin.investmentmonitor.source.UWISource
+import pl.marcin.investmentmonitor.source.VastbouwSource
 import pl.marcin.investmentmonitor.source.aggregator.RynekPierwotnySource
 import pl.marcin.investmentmonitor.source.discovery.CzerwonakObwieszczeniaSource
 import pl.marcin.investmentmonitor.source.discovery.PoznanUlicpSource
@@ -45,7 +52,9 @@ fun main() {
         LineaSource(fetcher), DudaSource(fetcher), AtanerSource(fetcher), UWISource(fetcher),
         KonimpexSource(fetcher), PekabexSource(fetcher), MurapolSource(fetcher), DeveliaSource(fetcher),
         ATALSource(fetcher), RobygSource(fetcher), EBFSource(fetcher), GGWSource(fetcher),
-        SpraviaSource(fetcher), JaksBudSource(fetcher), SagarisSource(fetcher)
+        SpraviaSource(fetcher), JaksBudSource(fetcher), SagarisSource(fetcher),
+        CordiaSource(fetcher), RonsonSource(fetcher), SivanetSource(fetcher), MJSource(fetcher),
+        AreaSource(fetcher), InwestycjeWielkopolskiSource(fetcher), VastbouwSource(fetcher)
     )
     val discoverySources: List<DiscoverySource> = listOf(
         SwarzedzWzSource(fetcher), CzerwonakObwieszczeniaSource(fetcher), TarnowoPodgorneWzSource(fetcher),
