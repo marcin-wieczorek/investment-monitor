@@ -127,11 +127,35 @@ export const LOCATION_TO_GMINA: Record<string, string> = {
 
 /**
  * Normalizes a location name to its gmina-level (municipality) name for
- * filtering/grouping purposes. Locations not present in the map (e.g.
- * future catalog additions not yet mirrored here) pass through
+ * filtering/grouping purposes.
+ *
+ * Real `investment.location` values are frequently richer than a bare
+ * catalog name - parsers store whatever the source page published, e.g.
+ * "Swarzędz – Jasin", "Poznań, ul. Bielicowa", "Komorniki ul. Młyńska",
+ * "UL. SZKOLNA, POZNAŃ" - so an exact-match lookup alone would leave
+ * almost every real investment unnormalized. Falls back to a
+ * case-insensitive substring search against every known catalog name
+ * (longest first, so e.g. "Suchy Las" wins over a shorter unrelated
+ * match) - same rationale as the backend's `LocationCatalog.findIn`.
+ *
+ * Locations matching nothing in the catalog (out-of-scope cities from
+ * the aggregator source, e.g. "Wrocław", "Bydgoszcz") pass through
  * unchanged rather than being dropped.
  */
+const SORTED_LOCATION_ENTRIES: [name: string, gmina: string][] = Object.entries(LOCATION_TO_GMINA).sort(
+  ([a], [b]) => b.length - a.length
+);
+
 export function normalizeToGmina(location: string | null): string | null {
   if (!location) return null;
-  return LOCATION_TO_GMINA[location] ?? location;
+
+  const exact = LOCATION_TO_GMINA[location];
+  if (exact) return exact;
+
+  const upper = location.toUpperCase();
+  for (const [name, gmina] of SORTED_LOCATION_ENTRIES) {
+    if (upper.includes(name.toUpperCase())) return gmina;
+  }
+
+  return location;
 }
