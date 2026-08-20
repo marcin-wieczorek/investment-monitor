@@ -69,7 +69,9 @@ src/main/kotlin/pl/marcin/investmentmonitor/
                    archives every fetch, wraps JsoupPageFetcher by concrete type)
   detection/       ChangeDetector — canonical-key diff (NEW/CHANGED/UNCHANGED/REMOVED)
   validation/      SourceValidator — fail-closed drop-threshold + empty-result rejection
-  correlation/     InvestmentCorrelator — deterministic signal<->investment linking
+  correlation/     InvestmentCorrelator — deterministic signal<->investment linking;
+                   InvestmentDeduplicator — deterministic investment<->investment
+                   cross-source duplicate matching (never LLM-driven, same rationale)
   analysis/        InvestmentAnalyzer interface, NoOpInvestmentAnalyzer (default),
                    DeterministicScorer, LocationProfiles (data), ReferenceProfiles (data)
   llm/             OllamaClient (JDK HttpClient, no Spring MVC dep), OllamaInvestmentAnalyzer,
@@ -77,7 +79,7 @@ src/main/kotlin/pl/marcin/investmentmonitor/
   archival/        RawHtmlArchiver — raw/<date>/<host>/<hash>.html, retention-based cleanup
   persistence/     One {Name}Repository interface + Jdbc{Name}Repository impl per aggregate:
                    Investment, Signal, SourceSnapshot, MonitoringRun, Evidence,
-                   Correlation, LlmAnalysis
+                   Correlation, InvestmentDuplicate, LlmAnalysis
   monitoring/      MonitoringService (the orchestrator — read this first for the
                    full pipeline), ScanRunner (ApplicationRunner, makes bootRun one-shot)
   reporting/       ScanReport (data), ScanReportRenderer (plain-text report)
@@ -85,7 +87,7 @@ src/main/kotlin/pl/marcin/investmentmonitor/
                    Spring-managed, construct sources manually
 src/main/resources/
   application.yml
-  db/migration/V1..V4__*.sql       Flyway, sequential, never edit an already-applied one
+  db/migration/V1..V10__*.sql       Flyway, sequential, never edit an already-applied one
 src/test/kotlin/...                Mirrors main/ package structure
 src/test/resources/fixtures/<source>/*.html   Real captured HTML, reviewed before commit
   testsupport/  TestInvestments.kt (testInvestment()), TestSignals.kt (testSignal())
@@ -95,19 +97,27 @@ frontend/
   app/                  Next.js App Router pages, one dir per route
     api/                 Route handlers (mutations + scan trigger only — pages
                          read the DB directly via lib/queries.ts, no fetch())
+    map/                 /map page — investment location overview
   components/
     layout/               app-shell.tsx / app-sidebar.tsx / app-header.tsx
     ui/                   shadcn-on-@base-ui/react primitives — don't hand-roll these
     charts/               ApexCharts wrappers (dynamic import, ssr:false)
+    map/                   Leaflet map (dynamic import, ssr:false — touches window/document)
     <name>-view.tsx        "use client" page content components, one per route
   lib/
     db.ts                 node:sqlite singleton, WAL + busy_timeout
     queries.ts             ALL SQL lives here — pages call these, never inline SQL in a page
     types.ts               Row interfaces mirroring exact DB columns (snake_case!)
-    i18n.tsx                React Context, en/pl, see messages/*.json
+    i18n.tsx                React Context, en/pl, see messages/*.json; useI18n() exposes
+                            both t(key) and tEnum(category, value) — use tEnum for any raw
+                            backend enum value (status, signal_type, confidence, ...) so it
+                            never regresses to a literal i18n key if a translation is missing
+    location-coordinates.ts  Static lat/lng lookup for every LocationCatalog.kt location name
+                            (frontend-only reference data, same rationale as LocationCatalog
+                            itself — no live geocoding API call)
     sidebar-context.tsx     collapsed/expanded state, localStorage-persisted
     constants.ts            NEW_THRESHOLD_MS, STALE_THRESHOLD_MS
-    utils.ts                cn(), formatRelativeTime(), formatArea()
+    utils.ts                cn(), formatRelativeTime(), formatArea(), dataCompleteness()
   messages/en.json, pl.json    flat-ish nested i18n dicts, keep both in sync
 
 docs/
@@ -128,6 +138,10 @@ SourceRegistry.{developerSources,discoverySources,aggregatorSources}()
      -> commit (upsert + SourceSnapshot) IFF fetch succeeded AND validation passed
   -> InvestmentCorrelator.correlate(allInvestments, allSignals) over the FULL current
      set (not just this run's new items) -> persisted as Correlation rows
+  -> InvestmentDeduplicator.findDuplicates(allInvestments) over the FULL current set
+     -> persisted as InvestmentDuplicate rows; HIGH-confidence pairs also trigger
+     cross-source enrichment (borrow missing price/area/propertyType from a
+     confirmed duplicate on another source, never overwrite an existing fact)
   -> aggregator-only-discovery heuristic (new aggregator investment whose location
      isn't covered by any developer source yet)
   -> RawHtmlArchiver.cleanup() (retention enforcement, once per scan)
@@ -193,14 +207,17 @@ regenerate every deploy).
 ## Database
 
 SQLite file `investment-monitor.db` in repo root (gitignored). Flyway
-migrations in `src/main/resources/db/migration/`, currently V1–V4. To add
-a column/table: new `V5__description.sql` — **never edit an already-
+migrations in `src/main/resources/db/migration/`, currently V1–V10. To add
+a column/table: new `V11__description.sql` — **never edit an already-
 applied migration**, Flyway checksums them.
 
 Tables: `investment`, `source_snapshot` (+`source_category`),
 `monitoring_run`, `user_note`, `investment_state` (frontend-only, notes/
 archive), `investment_signal`, `source_evidence`, `correlation`,
-`llm_analysis`, `location_profile`.
+`investment_duplicate`, `llm_analysis`, `location_profile` (unused —
+never populated at runtime, do not build on top of it without checking
+first), `developer_registry`, `developer_candidate`,
+`municipality_registry`, `investment_score`.
 
 ## Conventions
 
@@ -239,8 +256,9 @@ unrelated files just adds diff noise.
 ## Deterministic core — do not make this LLM-dependent
 
 Identity (`canonicalKey`), diffing (`ChangeDetector`), validation
-(`SourceValidator`), persistence, and the numeric investment score
-(`DeterministicScorer`) must stay pure/deterministic. The LLM
+(`SourceValidator`), cross-source correlation/deduplication
+(`InvestmentCorrelator`, `InvestmentDeduplicator`), persistence, and the
+numeric investment score (`DeterministicScorer`) must stay pure/deterministic. The LLM
 (`OllamaInvestmentAnalyzer`, disabled by default via
 `investment-monitor.llm.enabled=false`) only ever contributes
 `priority`/`reason` text, and only when it returns well-formed JSON —

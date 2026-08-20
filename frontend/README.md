@@ -28,7 +28,8 @@ npm run start   # http://localhost:3000
 ## What it does
 
 - **Dashboard** — last scan summary, source health, discovery signal count, recently detected investments.
-- **Investments** — searchable/filterable list with thumbnails, detail view with notes, archiving, provenance (evidence) and correlated discovery signals.
+- **Investments** — searchable/filterable list with thumbnails, cross-source duplicate grouping, an always-visible sort control, detail view with notes, archiving, provenance (evidence) and correlated discovery signals.
+- **Map** — every currently known investment plotted across the Poznań metro area (Leaflet + OpenStreetMap tiles, no API key), colour-coded by source category.
 - **Signals** — discovery signals (municipal zoning/planning evidence) from all discovery sources, filterable by type.
 - **Correlations** — deterministic links between discovery signals and investments that likely describe the same project.
 - **History** — timeline of every monitoring run.
@@ -44,4 +45,8 @@ subprocess and refreshes the page once it completes.
   by the Kotlin project (`V3__user_state.sql`) but only ever used by this frontend.
 - No authentication — designed to run on `localhost` for a single user.
 - UI language (EN/PL) is a client-side toggle stored in `localStorage`, not
-  URL-based routing.
+  URL-based routing; raw backend enum values (signal type, investment
+  status, confidence, ...) are translated via `useI18n().tEnum()`.
+- Map pin coordinates are a static, curated lookup
+  (`lib/location-coordinates.ts`) covering every location name the backend
+  knows about — no live geocoding API call.

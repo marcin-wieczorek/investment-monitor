@@ -3,7 +3,8 @@
 ```
 sources (developer / discovery / aggregator)
     -> fetch -> parser -> validation -> deterministic diff
-    -> enrich (new only) -> correlate -> analyze (new only, optional local LLM)
+    -> enrich (new only) -> correlate -> deduplicate -> cross-source enrich
+    -> analyze (new only, optional local LLM)
     -> report -> trusted snapshot
 ```
 
@@ -139,7 +140,7 @@ scan-time matching, unlike deterministic investment<->signal correlation.
 
 ## Not yet implemented
 
-- Additional discovery sources beyond the eight municipalities implemented
+- Additional discovery sources beyond the seven municipalities implemented
   so far - see `registry/DiscoverySourceRegistry.kt` for the full,
   per-municipality investigation record (which BIPs are `BLOCKED`/
   `NOT_IMPLEMENTED` and why; Dopiewo and Skoki are the closest to real -
@@ -148,9 +149,20 @@ scan-time matching, unlike deterministic investment<->signal correlation.
 - Otodom aggregator (requires JS execution to read; deliberately not
   implemented with a headless browser to keep this a lightweight,
   local-first CLI tool - see `docs/DISCOVERY.md`).
-- Additional detail parsers for other Chronos/Greenbud investment sites.
+- Additional detail parsers for developer sites beyond the single
+  Tercja/Chronos case - most developer list pages genuinely don't publish
+  price or plot area at all (verified against real fixture HTML, not
+  assumed); their detail pages would need to be captured and investigated
+  per-site, and several are JS-rendered flat-finder widgets that would
+  need the same no-headless-browser tradeoff as Otodom above. See
+  `DeterministicScorer`'s data-completeness gap in "Implemented (phase 9,
+  ...)" below for the current state.
 - Automated test coverage for `InvestmentDetailEnricher` and
   `PolishAreaFormat` edge cases (still covered only indirectly).
+- Per-investment geocoding for the `/map` page - it uses a static
+  location-name -> centroid lookup (`frontend/lib/location-coordinates.ts`),
+  good enough for a metro-area overview but not precise per-address
+  placement.
 
 ## Implemented (phase 6, deterministic scoring pipeline + discovery lead time + watchlist)
 
@@ -314,3 +326,90 @@ scan-time matching, unlike deterministic investment<->signal correlation.
   fuzzy/feature-based match like investment<->signal correlation.
 - Otodom explicitly stayed out of scope per the project's no-headless-browser
   constraint - re-confirmed, not re-implemented.
+
+## Implemented (phase 9, cross-source deduplication + scoring data gaps + investment map + filter clarity)
+
+- **Cross-source deduplication**: `InvestmentDeduplicator`
+  (`correlation/InvestmentDeduplicator.kt`) deterministically links
+  investments from *different* sources that likely describe the same
+  project - e.g. "Tercja" on Chronos's own site and "Osiedle Tercja |
+  Chronos" on RynekPierwotny. `canonicalKey` (`source:url`) never merges
+  these on its own, so without this they'd sit as unrelated rows
+  everywhere in the frontend. Matching requires a shared recognized
+  `LocationCatalog` location, then developer-name match (via
+  `DeveloperNameMatcher`) and/or investment-name token overlap ->
+  HIGH/MEDIUM/LOW confidence, same never-LLM-driven philosophy as
+  `InvestmentCorrelator`. Never compares two investments from the same
+  source (canonical-key identity is already ground truth there). Results
+  persist to `investment_duplicate` (`V10__investment_duplicate.sql`).
+  `/investments` groups HIGH/MEDIUM duplicate rows under the most
+  authoritative source (`DEVELOPER` > `DISCOVERY` > `AGGREGATOR`, tie-break
+  by earliest `first_seen_at`) with a "confirmed by N sources" badge and
+  an expandable list of the other sources; LOW-confidence pairs are
+  intentionally never auto-merged in the UI. `/investments/[id]` shows a
+  "related listings from other sources" section for every confidence
+  level.
+- **Cross-source enrichment**: `MonitoringService.runCrossSourceEnrichment`
+  runs after deduplication, HIGH-confidence pairs only, and borrows
+  missing `price`/`houseArea`/`plotArea`/`propertyType` from the sibling
+  investment on the other source - never overwrites a fact a source
+  already published itself (developer authority is preserved, only gaps
+  are filled). Records full `SourceEvidence` provenance attributing the
+  borrowed fact to the partner source, and re-runs `DeterministicScorer`
+  immediately so the improved completeness is reflected without waiting
+  for the next scan.
+- **Scoring data-completeness gap addressed**: most developer list pages
+  never publish price/plot area/property type (verified per-fixture, not
+  assumed), so `DeterministicScorer` was often computing a confident-
+  looking percentage from a single dimension. `InvestmentStatus` widened
+  (`LAST_UNITS`, `READY_FOR_HANDOVER`, `UNDER_CONSTRUCTION`) to capture
+  readiness states four parsers (Agrobex, Develia, Linea, JakonInwest)
+  actually publish per-card but previously discarded - each selector
+  verified against real fixture HTML with BeautifulSoup before writing
+  Kotlin, not guessed (two candidates investigated and dropped: Area and
+  Konimpex's apparent status text turned out to be either constant across
+  every card or unscoped to a specific investment - no real signal, so
+  nothing was added there). `frontend/lib/utils.ts` gained
+  `dataCompleteness()` (0-1 fraction of 6 key fields present) - the
+  investments list now shows "Not enough data" instead of a misleading
+  score percentage below a 2-of-6 threshold, and the detail page shows an
+  explicit N/6 badge next to the scoring breakdown.
+- **Investment map**: a new `/map` page (Leaflet + `react-leaflet`,
+  OpenStreetMap tiles, no API key - dynamically imported with `ssr:false`,
+  same pattern as the ApexCharts dashboard charts since `MapContainer`
+  touches `window`/`document`). Pins are grouped per-location (not per-
+  investment - there's no per-investment geocoding and ~50 known
+  locations don't need a marker-cluster plugin), coloured by the most
+  authoritative source category present at that location. Coordinates
+  come from a static, curated lookup
+  (`frontend/lib/location-coordinates.ts`) covering every name in
+  `LocationCatalog.kt` - same rationale as that file: no live geocoding
+  API call for something this project can hardcode once and review. The
+  `location_profile` table was investigated as a home for these
+  coordinates but turned out to be dead code (created in `V4`, never
+  populated or read by any repository) - reanimating an unused table was
+  worse than a frontend-only lookup for what is architecturally reference
+  data anyway.
+- **UI clarity fixes on `/investments`**: the sort-field dropdown was
+  previously hidden inside the collapsed "Advanced filters" panel with
+  only a lone direction-toggle arrow on the "First seen" column header as
+  a visible (and misleading - it looked like it changed *what* you sort
+  by, but only ever flipped direction) hint. Moved to an always-visible
+  "Sort by" control in the quick-filter bar. The "Aggregator-only
+  discovery" toggle previously sat in the quick-filter bar right next to
+  source-category filtering in the advanced panel, both visually implying
+  "only aggregator stuff" while filtering completely different fields
+  (`aggregator_only_discovery` vs `source_category`) - moved next to the
+  source-category select where it belongs, with an explicit tooltip.
+  Added `overflow-x-auto` to the results table so a cramped viewport
+  scrolls horizontally instead of pushing the expand-row chevron off
+  screen.
+- **Enum translations**: raw backend enum values (`signal_type`,
+  investment `status`, `property_type`, correlation/duplicate
+  `confidence`, monitoring run `status`) were previously shown verbatim
+  in the UI (e.g. `"WZ_DECISION"`, `"READY_FOR_HANDOVER"`). `useI18n()`
+  gained `tEnum(category, value)`, translating via
+  `enum.<category>.<value>` in `messages/{en,pl}.json` with a fallback to
+  the raw value (never the dotted i18n key) if a translation is missing,
+  so a newly-added Kotlin enum constant never regresses to showing a
+  literal key.

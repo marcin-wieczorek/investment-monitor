@@ -123,6 +123,22 @@ Notes on the last seven (Phase E, all Tier B):
   archive page - the name is derived from the detail-page URL slug, the
   same fallback `ChronosParser` uses.
 
+Status extraction (`InvestmentStatus`, widened with `LAST_UNITS`/
+`READY_FOR_HANDOVER`/`UNDER_CONSTRUCTION` - see `docs/ARCHITECTURE.md`
+phase 9): `agrobex` (`div.investment-block__status` - note the real
+spelling is "obioru", not "odbioru" as on the other three, verified
+against the live markup), `develia` (`div.investment-box__new-label`,
+keyword-filtered so generic marketing badges like "Top inwestycja" stay
+unmapped), `linea` (`div.investment-tag`), `jakon-inwest`
+(`div.ribbon > p`) all publish a genuine per-card readiness label that
+was previously parsed but discarded. `area` and `konimpex` were
+investigated for the same thing and dropped: `area`'s apparent status
+text is a constant category tag identical across every card (no
+discriminating signal), and `konimpex`'s "Dostępne mieszkania" text lives
+in an unrelated map-widget section of the page with no reliable link back
+to a specific investment card - verified with BeautifulSoup against the
+real fixture before writing (or not writing) any selector.
+
 ## Implemented discovery sources
 
 
