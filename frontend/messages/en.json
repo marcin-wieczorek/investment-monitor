@@ -48,7 +48,9 @@
     "scanning": "Scanning…",
     "scanComplete": "Scan complete",
     "scanFailed": "Scan failed",
-    "viewDetails": "View scan details"
+    "viewDetails": "View scan details",
+    "starting": "Starting scan…",
+    "progressLabel": "{current} / {total} sources"
   },
   "map": {
     "title": "Map",

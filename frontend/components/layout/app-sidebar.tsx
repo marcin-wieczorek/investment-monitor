@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
 import { useSidebar } from "@/lib/sidebar-context";
 import { ScanButton } from "@/components/scan-button";
+import { ScanProgress } from "@/components/scan-progress";
 
 const navItems = [
   { href: "/", key: "nav.dashboard" as const, icon: LayoutDashboard },
@@ -82,12 +83,13 @@ export function AppSidebar() {
           })}
         </nav>
 
-        <div className={cn("border-t border-border p-3", !showLabels && "flex justify-center")}>
+        <div className={cn("border-t border-border p-3", !showLabels && "flex flex-col items-center")}>
           {showLabels ? (
             <ScanButton className="w-full justify-center" />
           ) : (
             <ScanButton size="icon" iconOnly />
           )}
+          <ScanProgress collapsed={!showLabels} />
         </div>
       </aside>
     </>

@@ -97,16 +97,33 @@ class MonitoringService(
     fun scan(): ScanReport {
         val startedAt = Instant.now(clock)
         val runId = monitoringRunRepository.start(startedAt)
+        val developerSources = sourceRegistry.developerSources()
+        val discoverySources = sourceRegistry.discoverySources()
+        val aggregatorSources = sourceRegistry.aggregatorSources()
+        val totalSources = developerSources.size + discoverySources.size + aggregatorSources.size
         logger.info(
             "Scan started ({} developer, {} discovery, {} aggregator sources)",
-            sourceRegistry.developerSources().size,
-            sourceRegistry.discoverySources().size,
-            sourceRegistry.aggregatorSources().size
+            developerSources.size,
+            discoverySources.size,
+            aggregatorSources.size
         )
 
-        val developerReports = sourceRegistry.developerSources().map(::scanDeveloperSource)
-        val aggregatorReports = sourceRegistry.aggregatorSources().map(::scanAggregatorSource)
-        val discoveryReports = sourceRegistry.discoverySources().map(::scanDiscoverySource)
+        var sourcesScanned = 0
+        val developerReports = developerSources.map { source ->
+            sourcesScanned++
+            logger.info("Scanning source [{}/{}]: '{}'", sourcesScanned, totalSources, source.id)
+            scanDeveloperSource(source)
+        }
+        val aggregatorReports = aggregatorSources.map { source ->
+            sourcesScanned++
+            logger.info("Scanning source [{}/{}]: '{}'", sourcesScanned, totalSources, source.id)
+            scanAggregatorSource(source)
+        }
+        val discoveryReports = discoverySources.map { source ->
+            sourcesScanned++
+            logger.info("Scanning source [{}/{}]: '{}'", sourcesScanned, totalSources, source.id)
+            scanDiscoverySource(source)
+        }
 
         val correlations = runCorrelation()
         val duplicates = runDeduplication()

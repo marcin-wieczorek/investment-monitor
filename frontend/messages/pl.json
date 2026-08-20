@@ -48,7 +48,9 @@
     "scanning": "Skanowanie…",
     "scanComplete": "Skan zakończony",
     "scanFailed": "Skan nieudany",
-    "viewDetails": "Zobacz szczegóły skanu"
+    "viewDetails": "Zobacz szczegóły skanu",
+    "starting": "Uruchamianie skanu…",
+    "progressLabel": "{current} / {total} źródeł"
   },
   "map": {
     "title": "Mapa",
