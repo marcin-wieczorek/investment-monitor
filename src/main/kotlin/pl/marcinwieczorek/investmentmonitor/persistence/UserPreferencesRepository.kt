@@ -19,7 +19,7 @@ interface UserPreferencesRepository {
      * present, otherwise [ReferenceProfiles.DEFAULT] - callers (scoring,
      * rescoring) should always use this rather than [findScoringProfile]
      * directly, so "nothing configured yet" never means "no scoring
-     * happens" (same rationale as [pl.marcinwieczorek.investmentmonitor.analysis.DefaultInvestmentAnalyzer]).
+     * happens" (same rationale as [pl.marcinwieczorek.investmentmonitor.llm.OllamaInvestmentAnalyzer]).
      */
     fun effectiveScoringProfile(): ReferenceInvestmentProfile = findScoringProfile() ?: ReferenceProfiles.DEFAULT
 }

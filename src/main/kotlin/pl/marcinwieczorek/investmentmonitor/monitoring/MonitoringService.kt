@@ -59,8 +59,11 @@ import java.time.Instant
  * Cross-source concerns that don't belong to the per-source scan loop
  * itself are delegated to dedicated services: [EvidenceRecordingService]
  * (provenance), [CrossSourceEnrichmentService] (gap-filling from HIGH
- * duplicates) and [AggregatorDiscoveryService] (aggregator-only detection
- * + unknown-developer candidates).
+ * duplicates), [AggregatorDiscoveryService] (aggregator-only detection +
+ * unknown-developer candidates) and [LocationSynthesisService]
+ * (per-location and region-wide LLM-assisted activity synthesis, see
+ * docs/ARCHITECTURE.md phase 12) - run last, after correlation/
+ * deduplication, so it sees the full current cross-source picture.
  */
 @Service
 class MonitoringService(
@@ -82,6 +85,7 @@ class MonitoringService(
     private val crossSourceEnrichmentService: CrossSourceEnrichmentService,
     private val aggregatorDiscoveryService: AggregatorDiscoveryService,
     private val sourceCommitService: SourceCommitService,
+    private val locationSynthesisService: LocationSynthesisService,
     private val scorer: DeterministicScorer,
     private val investmentScoreRepository: InvestmentScoreRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
@@ -126,6 +130,8 @@ class MonitoringService(
         aggregatorDiscoveryService.recordUnknownDeveloperCandidates(aggregatorOnlyDiscoveries)
         aggregatorDiscoveryService.updateAggregatorOnlyDiscoveryFlags()
 
+        val locationIntelligence = locationSynthesisService.synthesize()
+
         rawHtmlArchiver.cleanup()
 
         val sourcesFailed = developerReports.count { !it.fetchSucceeded || !it.validation.valid } +
@@ -153,7 +159,9 @@ class MonitoringService(
             correlations = correlations,
             aggregatorOnlyDiscoveries = aggregatorOnlyDiscoveries,
             leadTimes = correlationRepository.findAllWithLeadTime(),
-            duplicates = duplicates
+            duplicates = duplicates,
+            locationSyntheses = locationIntelligence.locationSyntheses,
+            hotspotSynthesis = locationIntelligence.hotspotSynthesis
         )
     }
 

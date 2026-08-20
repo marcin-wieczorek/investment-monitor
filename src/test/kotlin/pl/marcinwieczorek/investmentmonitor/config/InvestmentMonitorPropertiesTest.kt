@@ -14,9 +14,13 @@ class InvestmentMonitorPropertiesTest {
 
         properties.validation.maxInvestmentDropPercentage shouldBe 50
         properties.jsoup.timeoutMs shouldBe 30_000
-        properties.llm.enabled shouldBe false
+        properties.llm.enabled shouldBe true
         properties.archival.enabled shouldBe true
         properties.playwright.enabled shouldBe false
+        properties.locationIntelligence.activityPeriodDays shouldBe 365
+        properties.locationIntelligence.minSignalsForSynthesis shouldBe 2
+        properties.locationIntelligence.maxLocationsPerScan shouldBe 20
+        properties.locationIntelligence.hotspotTopN shouldBe 10
 
         validator.validate(properties) shouldBe emptySet()
     }

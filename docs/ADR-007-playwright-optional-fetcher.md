@@ -93,11 +93,14 @@ class PlaywrightPageFetcher(
 }
 ```
 
-Same `@ConditionalOnProperty` pattern already used for
-`OllamaInvestmentAnalyzer` vs `DefaultInvestmentAnalyzer` (ADR-006): when
-disabled, the bean simply doesn't exist, no Chromium download is
-triggered, and `./gradlew bootRun` keeps working with zero setup on a
-fresh checkout.
+Same `@ConditionalOnProperty` pattern used for
+`PlaywrightPageFetcher` here was originally also used for
+`OllamaInvestmentAnalyzer` (ADR-006) - though the LLM analyzer has since
+moved to an internal enabled-check instead, since it's a single class
+with a deterministic fallback rather than two swappable beans. For
+Playwright, when disabled, the bean simply doesn't exist, no Chromium
+download is triggered, and `./gradlew bootRun` keeps working with zero
+setup on a fresh checkout.
 
 ### 3. Transparent per-host routing in `ArchivingPageFetcher`
 

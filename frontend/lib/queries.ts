@@ -5,10 +5,12 @@ import type {
   CorrelationRow,
   DeveloperCandidateRow,
   DeveloperRegistryRow,
+  HotspotSynthesisRow,
   InvestmentDuplicateRow,
   InvestmentFilters,
   InvestmentSignalRow,
   InvestmentWithState,
+  LocationSynthesisRow,
   MonitoringRunRow,
   MunicipalityRegistryRow,
   ScoringProfile,
@@ -435,4 +437,46 @@ export function saveScoringPreferences(profile: ScoringProfile): void {
     value: JSON.stringify(profile),
     updatedAt: new Date().toISOString(),
   });
+}
+
+/**
+ * Parses a JSON-array column (`key_developers`/`opportunities`/`risks`/
+ * `emerging_areas`) - node:sqlite returns these as raw TEXT, same pattern
+ * as `getScoringPreferences` parsing the `user_preferences` value.
+ *
+ * The actual implementation lives in lib/hotspot-utils.ts (no `getDb()`
+ * import) so client components can call it without pulling node:sqlite
+ * into the browser bundle - import from there directly in "use client"
+ * files; this re-export is only for Server Component callers that already
+ * import other things from this module.
+ */
+export { parseHotspotEntries, parseJsonArray } from "@/lib/hotspot-utils";
+
+export function listLocationSyntheses(): LocationSynthesisRow[] {
+  const db = getDb();
+  const rows = db
+    .prepare("SELECT * FROM location_synthesis ORDER BY signal_count DESC, investment_count DESC")
+    .all() as unknown as LocationSynthesisRow[];
+  return rows.map((row) => ({ ...row }));
+}
+
+export function getLocationSynthesis(location: string): LocationSynthesisRow | undefined {
+  const db = getDb();
+  const row = db
+    .prepare("SELECT * FROM location_synthesis WHERE location = ?")
+    .get(location) as unknown as LocationSynthesisRow | undefined;
+  return row ? { ...row } : undefined;
+}
+
+/**
+ * The single current region-wide hotspot ranking (see
+ * `JdbcLocationSynthesisRepository.findLatestHotspot` on the Kotlin side -
+ * there is only ever one row in `hotspot_synthesis`, replaced each scan).
+ */
+export function getHotspotSynthesis(): HotspotSynthesisRow | undefined {
+  const db = getDb();
+  const row = db
+    .prepare("SELECT * FROM hotspot_synthesis ORDER BY synthesized_at DESC LIMIT 1")
+    .get() as unknown as HotspotSynthesisRow | undefined;
+  return row ? { ...row } : undefined;
 }

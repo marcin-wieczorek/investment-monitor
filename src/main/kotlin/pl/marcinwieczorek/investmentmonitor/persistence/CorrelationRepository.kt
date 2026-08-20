@@ -11,7 +11,8 @@ import pl.marcinwieczorek.investmentmonitor.domain.Correlation
 data class CorrelationLeadTime(
     val investmentName: String,
     val signalTitle: String,
-    val leadTimeDays: Long?
+    val leadTimeDays: Long?,
+    val investmentLocation: String? = null
 )
 
 interface CorrelationRepository {

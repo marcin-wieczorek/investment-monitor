@@ -206,3 +206,58 @@ export interface MunicipalityRegistryRow {
   aggregator_coverage: "IMPLEMENTED" | "NOT_IMPLEMENTED" | "BLOCKED" | "DISABLED";
   discovery_blocked_reason: string | null;
 }
+
+export type DevelopmentTrend = "ACCELERATING" | "STABLE" | "SLOWING" | "MINIMAL";
+export type RecommendedAction = "WATCH_CLOSELY" | "MONITOR" | "LOW_PRIORITY";
+export type ActivityLevel = "HIGH" | "MEDIUM" | "LOW";
+
+/**
+ * Mirrors `pl.marcinwieczorek.investmentmonitor.domain.LocationSynthesis` -
+ * an LLM-assisted (or deterministic-fallback) synthesis of everything
+ * currently known about one location, recomputed once per scan by
+ * `LocationSynthesisService` on the Kotlin side. `key_developers`/
+ * `opportunities`/`risks` are stored as JSON arrays (see
+ * `parseJsonArray` in lib/queries.ts).
+ */
+export interface LocationSynthesisRow {
+  id: number;
+  location: string;
+  municipality: string | null;
+  development_trend: DevelopmentTrend;
+  summary: string;
+  estimated_timeline: string | null;
+  key_developers: string;
+  opportunities: string;
+  risks: string;
+  recommended_action: RecommendedAction;
+  reason: string;
+  signal_count: number;
+  investment_count: number;
+  average_lead_time_days: number | null;
+  synthesized_at: string;
+}
+
+/** One location's entry within a {@link HotspotSynthesisRow} ranking. */
+export interface HotspotEntry {
+  location: string;
+  activityLevel: ActivityLevel;
+  trend: DevelopmentTrend;
+  reason: string;
+  relevanceToProfile: ActivityLevel;
+}
+
+/**
+ * Mirrors `pl.marcinwieczorek.investmentmonitor.domain.HotspotSynthesis` -
+ * a single region-wide comparison of development activity across every
+ * currently active location, recomputed once per scan (replaces the
+ * previous row rather than accumulating history, see
+ * `JdbcLocationSynthesisRepository.saveHotspot` on the Kotlin side).
+ */
+export interface HotspotSynthesisRow {
+  id: number;
+  hotspots: string;
+  emerging_areas: string;
+  summary: string;
+  recommendation: string;
+  synthesized_at: string;
+}

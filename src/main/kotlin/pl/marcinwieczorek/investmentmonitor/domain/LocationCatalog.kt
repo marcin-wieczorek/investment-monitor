@@ -92,6 +92,37 @@ object LocationCatalog {
             KORNIK_GMINA_VILLAGES + DOPIEWO_GMINA_VILLAGES
 
     /**
+     * Maps each gmina's outlying villages to their parent municipality name
+     * (the same name used as `InvestmentSignal.municipality` by the
+     * corresponding discovery source, and as the matching entry in
+     * [CORE_LOCATIONS]). Used by location-intelligence aggregation
+     * ([pl.marcinwieczorek.investmentmonitor.analysis.LocationActivityCollector])
+     * to group a village-level `location` (e.g. "Jasin") together with
+     * signals/investments recorded directly under its municipality (e.g.
+     * "Swarzędz").
+     */
+    private val VILLAGE_TO_MUNICIPALITY: Map<String, String> = buildMap {
+        SWARZEDZ_GMINA_VILLAGES.forEach { put(it, "Swarzędz") }
+        SREM_GMINA_VILLAGES.forEach { put(it, "Śrem") }
+        MUROWANA_GOSLINA_GMINA_VILLAGES.forEach { put(it, "Murowana Goślina") }
+        BUK_GMINA_VILLAGES.forEach { put(it, "Buk") }
+        SZAMOTULY_GMINA_VILLAGES.forEach { put(it, "Szamotuły") }
+        POBIEDZISKA_GMINA_VILLAGES.forEach { put(it, "Pobiedziska") }
+        KORNIK_GMINA_VILLAGES.forEach { put(it, "Kórnik") }
+        DOPIEWO_GMINA_VILLAGES.forEach { put(it, "Dopiewo") }
+    }
+
+    /**
+     * The parent municipality for [location]: itself if [location] is
+     * already a top-level entry in [CORE_LOCATIONS], its gmina if it's one
+     * of the villages mapped above, or `null` if [location] isn't in this
+     * catalog at all.
+     */
+    fun parentMunicipality(location: String): String? =
+        CORE_LOCATIONS.firstOrNull { it.equals(location, ignoreCase = true) }
+            ?: VILLAGE_TO_MUNICIPALITY.entries.firstOrNull { it.key.equals(location, ignoreCase = true) }?.value
+
+    /**
      * Finds the first known location name mentioned as a whole word in
      * [text], if any.
      *

@@ -3,6 +3,7 @@ import {
   countAggregatorOnlyDiscoveries,
   countAllInvestments,
   countAllSignals,
+  getHotspotSynthesis,
   listCorrelations,
   listDevelopers,
   listMunicipalities,
@@ -25,6 +26,7 @@ export default function DashboardPage() {
   const avgLeadTimeDays = averageDiscoveryLeadTime();
   const aggregatorOnlyCount = countAggregatorOnlyDiscoveries();
   const correlations = listCorrelations(100);
+  const hotspotSynthesis = getHotspotSynthesis();
 
   return (
     <DashboardView
@@ -38,6 +40,7 @@ export default function DashboardPage() {
       avgLeadTimeDays={avgLeadTimeDays}
       aggregatorOnlyCount={aggregatorOnlyCount}
       correlations={correlations}
+      hotspotSynthesis={hotspotSynthesis}
     />
   );
 }

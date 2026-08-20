@@ -210,6 +210,7 @@ scan-time matching, unlike deterministic investment<->signal correlation.
 ## Implemented (phase 6, deterministic scoring pipeline + discovery lead time + watchlist)
 
 - **Deterministic scoring always runs, LLM or not**: `DefaultInvestmentAnalyzer`
+  (later merged into `OllamaInvestmentAnalyzer` - see phase 12)
   replaces the old `NoOpInvestmentAnalyzer` - "no LLM configured" no longer
   means "no scoring happens". It calls `DeterministicScorer` directly
   against `ReferenceProfiles.DEFAULT` and a `LocationProfile` resolved via
@@ -506,3 +507,73 @@ scan-time matching, unlike deterministic investment<->signal correlation.
   root `node_modules`), relies only on Node's built-ins already required
   for `node:sqlite`. `./gradlew bootRun` and `cd frontend && npm run dev`
   continue to work independently for manual control.
+
+## Implemented (phase 12, LLM enabled by default + location intelligence)
+
+- **LLM enabled by default**: `investment-monitor.llm.enabled` now
+  defaults to `true`. The two-bean `@ConditionalOnProperty` split
+  (`OllamaInvestmentAnalyzer` vs the old `DefaultInvestmentAnalyzer`) was
+  collapsed into a single `OllamaInvestmentAnalyzer`, which checks
+  `enabled` internally: when `false`, it returns the deterministic result
+  immediately without attempting an Ollama call - the exact same code path
+  it already used as its fallback when the LLM is enabled but unavailable
+  (see docs/ADR-006-ollama-integration.md "Amendment"). This does not
+  weaken the local-first guarantee: an uninstalled/unreachable Ollama
+  still degrades gracefully (5s connect timeout, `runCatching`) to
+  identical deterministic behavior, it just also logs one startup line
+  (`OllamaClient.probeAtStartup()`, a `@PostConstruct` best-effort
+  `isAvailable()` check) reporting whether Ollama was actually reachable.
+- **Location intelligence pipeline**: a new per-scan step synthesizes
+  everything currently known about each *active* location (own +
+  gmina-village signals/investments/correlations within a rolling
+  activity window, default 365 days -
+  `investment-monitor.location-intelligence.activity-period-days`) via
+  `LocationActivityCollector` (purely deterministic aggregation over
+  `InvestmentRepository`/`SignalRepository`/`CorrelationRepository` -
+  never LLM-driven), then has `LocationSynthesisAnalyzer` interpret each
+  snapshot (LLM-assisted `developmentTrend`/`summary`/`opportunities`/
+  `risks`/`recommendedAction`, or a deterministic template fallback when
+  disabled/unavailable, same "never break a scan" contract as
+  `OllamaInvestmentAnalyzer`). Persisted per-location in a new
+  `location_synthesis` table (`V15__location_synthesis.sql`), one row per
+  location, replaced each time it's resynthesized.
+- **Region-wide hotspot ranking**: once per scan, all active locations
+  (capped at `location-intelligence.hotspot-top-n`, default 10) are
+  compared *against each other* by `LocationSynthesisAnalyzer.synthesizeHotspots()`
+  - the one thing a per-location synthesis structurally cannot do -
+  producing a ranked `HotspotSynthesis` (activity level, trend, relevance
+  to the buyer's reference profile per location, plus emerging areas and
+  a region-wide summary). Persisted in `hotspot_synthesis` - a single row,
+  replaced each scan (only "now" is ever meaningful, not a history of
+  past rankings).
+- **`LocationCatalog.parentMunicipality()`**: resolves any gmina village
+  (e.g. "Jasin") to its parent municipality (e.g. "Swarzędz") so
+  `LocationActivityCollector` can group village-level signals under the
+  same location-intelligence bucket as their gmina - previously this
+  mapping existed only implicitly (via `Set` variable naming) and
+  separately on the frontend (`lib/location-groups.ts`).
+- **Both prompts respond in Polish** (`LocationSynthesisPromptBuilder`,
+  `HotspotSynthesisPromptBuilder`): system instructions are in English
+  (better instruction-following for most local models) but explicitly
+  require a Polish-language response - this is user-facing interpretive
+  text about Polish municipal planning data, not a system identifier (see
+  docs/LLM.md model recommendations for larger models if available RAM
+  allows).
+- **`LocationSynthesisService`**: new extracted service (same pattern as
+  `CrossSourceEnrichmentService`/`AggregatorDiscoveryService`), run in
+  `MonitoringService.scan()` after correlation/deduplication so
+  `LocationActivityCollector` sees the full current cross-source picture.
+  `ScanReport`/`ScanReportRenderer` gained `LOCATION INTELLIGENCE` and
+  `DEVELOPMENT HOTSPOTS` sections.
+- **Frontend**: new `/locations` page (`locations-view.tsx`) listing every
+  synthesized location with trend/action badges and an expandable detail
+  (summary, opportunities, risks, key developers, estimated timeline); the
+  region-wide hotspot ranking is shown both there and as a new "Development
+  hotspots" dashboard widget (`hotspot-card.tsx`). `/map` gained a "Show
+  development activity" toggle that colors marker rings by trend and adds
+  a trend/action summary to each location's popup. JSON-array columns
+  (`key_developers`/`opportunities`/`risks`/`emerging_areas`/`hotspots`)
+  are parsed by `lib/hotspot-utils.ts` - deliberately *not* in
+  `lib/queries.ts` (which pulls in `node:sqlite` and would break the
+  client bundle if imported from a `"use client"` component, same
+  rationale as the scoring-profile default in phase 10).

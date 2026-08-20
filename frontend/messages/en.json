@@ -7,6 +7,7 @@
     "correlations": "Correlations",
     "developers": "Developers",
     "coverage": "Coverage",
+    "locations": "Locations",
     "history": "History",
     "sources": "Sources",
     "settings": "Settings"
@@ -51,7 +52,9 @@
     "staleSources": "Stale sources",
     "staleSource": "Not captured in over {hours}h",
     "blockedDevelopers": "Blocked developers",
-    "blockedMunicipalities": "Municipalities with a blocked source"
+    "blockedMunicipalities": "Municipalities with a blocked source",
+    "hotspots": "Development hotspots",
+    "noHotspotsYet": "No hotspot ranking yet - run a scan to generate it."
   },
   "scan": {
     "runScan": "Run scan",
@@ -252,6 +255,31 @@
       "DISABLED": "Disabled"
     }
   },
+  "locations": {
+    "title": "Locations",
+    "subtitle": "LLM-assisted (or deterministic-fallback) synthesis of discovery-signal and investment activity per location, recomputed once per scan",
+    "hotspotsTitle": "Development Hotspots",
+    "hotspotsSubtitle": "Region-wide comparison of the most dynamically developing locations",
+    "location": "Location",
+    "municipality": "Municipality",
+    "trend": "Trend",
+    "action": "Recommended action",
+    "signals": "Signals",
+    "investments": "Investments",
+    "avgLeadTime": "Avg. lead time",
+    "relevance": "Relevance",
+    "activity": "Activity",
+    "keyDevelopers": "Key developers",
+    "opportunities": "Opportunities",
+    "risks": "Risks",
+    "estimatedTimeline": "Estimated timeline",
+    "reason": "Reason",
+    "emergingAreas": "Emerging areas",
+    "noResults": "No location intelligence recorded yet - run a scan to generate it.",
+    "noHotspots": "No hotspot ranking recorded yet - run a scan to generate it.",
+    "synthesizedAt": "Synthesized",
+    "viewAll": "View all locations"
+  },
   "settings": {
     "title": "Settings",
     "subtitle": "Configure the reference profile investments are scored against",
@@ -311,6 +339,22 @@
       "RUNNING": "Running",
       "SUCCESS": "Success",
       "PARTIAL_FAILURE": "Partial failure"
+    },
+    "developmentTrend": {
+      "ACCELERATING": "Accelerating",
+      "STABLE": "Stable",
+      "SLOWING": "Slowing",
+      "MINIMAL": "Minimal"
+    },
+    "recommendedAction": {
+      "WATCH_CLOSELY": "Watch closely",
+      "MONITOR": "Monitor",
+      "LOW_PRIORITY": "Low priority"
+    },
+    "activityLevel": {
+      "HIGH": "High",
+      "MEDIUM": "Medium",
+      "LOW": "Low"
     }
   }
 }

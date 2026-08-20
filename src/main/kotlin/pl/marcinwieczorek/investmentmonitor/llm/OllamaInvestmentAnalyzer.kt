@@ -4,7 +4,6 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
 import pl.marcinwieczorek.investmentmonitor.analysis.DeterministicAnalysisSupport
 import pl.marcinwieczorek.investmentmonitor.analysis.DeterministicScorer
@@ -19,34 +18,39 @@ import pl.marcinwieczorek.investmentmonitor.persistence.UserPreferencesRepositor
 import java.security.MessageDigest
 
 /**
- * Local-LLM-backed [InvestmentAnalyzer], active only when
- * `investment-monitor.llm.enabled=true` (see docs/LLM.md for local Ollama
- * setup).
+ * The sole [InvestmentAnalyzer] implementation. Enabled by default
+ * (`investment-monitor.llm.enabled=true`, see docs/LLM.md for local Ollama
+ * setup) - a fresh checkout with no Ollama installed still produces a
+ * fully valid, fully deterministic [InvestmentAnalysis] for every
+ * investment, because every LLM call path degrades gracefully to the
+ * same deterministic result (see below). There is deliberately no
+ * separate "LLM off" analyzer bean: the deterministic path *is* this
+ * class's fallback, not a different implementation, so the two can never
+ * drift apart (previously two classes - `DefaultInvestmentAnalyzer` and
+ * this one - duplicated the same deterministic logic; see
+ * docs/ADR-006-ollama-integration.md for why they were merged).
  *
  * The LLM never decides identity, deduplication or any fact a
  * deterministic parser already extracted (see
  * docs/ARCHITECTURE.md LLM role section): [DeterministicScorer] always
  * computes [InvestmentAnalysis.investmentScore] and
  * [InvestmentAnalysis.referenceProfileScore], against the same
- * user-configurable reference profile ([UserPreferencesRepository]) that
- * [pl.marcinwieczorek.investmentmonitor.analysis.DefaultInvestmentAnalyzer]
- * uses - so changing the scoring profile in Settings affects both analyzer
- * implementations identically, regardless of whether the LLM is enabled.
- * The LLM only supplies [InvestmentAnalysis.priority] and
+ * user-configurable reference profile ([UserPreferencesRepository]). The
+ * LLM only supplies [InvestmentAnalysis.priority] and
  * [InvestmentAnalysis.reason] - pure interpretation/ranking - and only
- * when it returns a well-formed response; any failure (unreachable,
- * timeout, malformed JSON) falls back to a deterministic priority/reason
- * derived purely from the numeric score, so a missing local LLM never
- * breaks a scan.
+ * when it returns a well-formed response; any failure (disabled,
+ * unreachable, timeout, malformed JSON) falls back to a deterministic
+ * priority/reason derived purely from the numeric score, so a missing or
+ * disabled local LLM never breaks a scan.
  */
 @Component
-@ConditionalOnProperty(prefix = "investment-monitor.llm", name = ["enabled"], havingValue = "true")
 class OllamaInvestmentAnalyzer(
     private val ollamaClient: OllamaClient,
     private val scorer: DeterministicScorer,
     private val llmAnalysisRepository: LlmAnalysisRepository,
     private val userPreferencesRepository: UserPreferencesRepository,
-    @param:Value("\${investment-monitor.llm.model:qwen2.5:7b}") private val model: String
+    @param:Value("\${investment-monitor.llm.model:qwen2.5:7b}") private val model: String,
+    @param:Value("\${investment-monitor.llm.enabled:true}") private val enabled: Boolean = true
 ) : InvestmentAnalyzer {
 
     private val mapper = jacksonObjectMapper()
@@ -54,6 +58,16 @@ class OllamaInvestmentAnalyzer(
     override fun analyze(investment: Investment, locationProfile: LocationProfile?): InvestmentAnalysis {
         val referenceProfile = userPreferencesRepository.effectiveScoringProfile()
         val scoring = scorer.score(investment, locationProfile, referenceProfile)
+
+        if (!enabled) {
+            return InvestmentAnalysis(
+                investmentScore = scoring.overallScore,
+                locationScore = DeterministicAnalysisSupport.locationScore(locationProfile),
+                referenceProfileScore = scoring.overallScore,
+                priority = DeterministicAnalysisSupport.priorityFrom(scoring),
+                reason = DeterministicAnalysisSupport.describeScore(scoring)
+            )
+        }
 
         val interpretation = interpret(investment, locationProfile, referenceProfile)
             ?: return fallback(scoring, "LLM unavailable or returned an unusable response; using deterministic score only.")
@@ -87,9 +101,6 @@ class OllamaInvestmentAnalyzer(
         }
         return interpretation
     }
-
-    private fun locationScore(locationProfile: LocationProfile?): Double? =
-        DeterministicAnalysisSupport.locationScore(locationProfile)
 
     private fun priorityFrom(attractiveness: String?): Priority? = when (attractiveness?.uppercase()) {
         "HIGH" -> Priority.HIGH

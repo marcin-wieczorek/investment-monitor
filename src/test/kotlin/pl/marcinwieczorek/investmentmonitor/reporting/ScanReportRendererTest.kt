@@ -5,7 +5,13 @@ import io.kotest.matchers.string.shouldContain
 import org.junit.jupiter.api.Test
 import pl.marcinwieczorek.investmentmonitor.detection.ChangeType
 import pl.marcinwieczorek.investmentmonitor.detection.InvestmentChange
+import pl.marcinwieczorek.investmentmonitor.domain.ActivityLevel
 import pl.marcinwieczorek.investmentmonitor.domain.AreaRange
+import pl.marcinwieczorek.investmentmonitor.domain.DevelopmentTrend
+import pl.marcinwieczorek.investmentmonitor.domain.HotspotEntry
+import pl.marcinwieczorek.investmentmonitor.domain.HotspotSynthesis
+import pl.marcinwieczorek.investmentmonitor.domain.LocationSynthesis
+import pl.marcinwieczorek.investmentmonitor.domain.RecommendedAction
 import pl.marcinwieczorek.investmentmonitor.persistence.CorrelationLeadTime
 import pl.marcinwieczorek.investmentmonitor.testsupport.testInvestment
 import pl.marcinwieczorek.investmentmonitor.validation.ValidationResult
@@ -81,5 +87,56 @@ class ScanReportRendererTest {
     @Test
     fun `renders none for the lead time section when there are no correlations`() {
         ScanReportRenderer.render(emptyReport()) shouldContain "DISCOVERY LEAD TIME"
+    }
+
+    @Test
+    fun `renders none for location intelligence when nothing was synthesized`() {
+        val output = ScanReportRenderer.render(emptyReport())
+        output shouldContain "LOCATION INTELLIGENCE"
+        output shouldContain "DEVELOPMENT HOTSPOTS"
+    }
+
+    @Test
+    fun `renders a per-location synthesis with trend, action and summary`() {
+        val synthesis = LocationSynthesis(
+            location = "Kruszewnia",
+            municipality = "Swarzędz",
+            developmentTrend = DevelopmentTrend.ACCELERATING,
+            summary = "Duza aktywnosc deweloperska.",
+            estimatedTimeline = "6-12 miesiecy",
+            keyDevelopers = listOf("Chronos"),
+            opportunities = emptyList(),
+            risks = emptyList(),
+            recommendedAction = RecommendedAction.WATCH_CLOSELY,
+            reason = "Wiele sygnalow.",
+            signalCount = 4,
+            investmentCount = 2,
+            averageLeadTimeDays = 28.0,
+            synthesizedAt = now
+        )
+        val report = emptyReport().copy(locationSyntheses = listOf(synthesis))
+
+        val output = ScanReportRenderer.render(report)
+        output shouldContain "Kruszewnia (Swarzędz) [ACCELERATING] - WATCH_CLOSELY"
+        output shouldContain "Duza aktywnosc deweloperska."
+        output shouldContain "4 signals / 2 investments"
+    }
+
+    @Test
+    fun `renders the region-wide hotspot ranking`() {
+        val hotspot = HotspotSynthesis(
+            hotspots = listOf(
+                HotspotEntry("Kruszewnia", ActivityLevel.HIGH, DevelopmentTrend.ACCELERATING, "reason", ActivityLevel.HIGH)
+            ),
+            emergingAreas = listOf("Jasin"),
+            summary = "Najwieksza aktywnosc w Kruszewni.",
+            recommendation = "Obserwuj Kruszewnie.",
+            synthesizedAt = now
+        )
+        val report = emptyReport().copy(hotspotSynthesis = hotspot)
+
+        val output = ScanReportRenderer.render(report)
+        output shouldContain "1. Kruszewnia - HIGH activity, ACCELERATING"
+        output shouldContain "Najwieksza aktywnosc w Kruszewni."
     }
 }

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import { useI18n } from "@/lib/i18n";
 import { METRO_CENTER, METRO_DEFAULT_ZOOM } from "@/lib/location-coordinates";
+import type { DevelopmentTrend, RecommendedAction } from "@/lib/badge-styles";
 
 export interface MapInvestment {
   id: number;
@@ -13,11 +14,19 @@ export interface MapInvestment {
   source_category: string | null;
 }
 
+/** Minimal location-intelligence context for a map marker (see `/locations`). */
+export interface LocationActivitySummary {
+  trend: DevelopmentTrend;
+  recommendedAction: RecommendedAction;
+  summary: string;
+}
+
 export interface LocationGroup {
   location: string;
   lat: number;
   lng: number;
   investments: MapInvestment[];
+  activity?: LocationActivitySummary;
 }
 
 /** Same category-authority colors as SOURCE_CATEGORY_BADGE_CLASS in lib/badge-styles.ts (blue/purple/orange), as plain hex since Leaflet marker HTML is not JSX. */
@@ -46,11 +55,20 @@ function dominantColor(investments: MapInvestment[]): string {
   return best ? (CATEGORY_COLOR[best] ?? DEFAULT_COLOR) : DEFAULT_COLOR;
 }
 
-function createMarkerIcon(color: string, count: number): L.DivIcon {
+/** Same trend colors as TREND_BADGE_CLASS in lib/badge-styles.ts, as plain hex since Leaflet marker HTML is not JSX. */
+const TREND_RING_COLOR: Record<DevelopmentTrend, string> = {
+  ACCELERATING: "#10b981",
+  STABLE: "#3b82f6",
+  SLOWING: "#f59e0b",
+  MINIMAL: "#6b7280",
+};
+
+function createMarkerIcon(color: string, count: number, ringColor?: string): L.DivIcon {
   const size = count > 9 ? 32 : count > 1 ? 28 : 22;
+  const ring = ringColor ? `outline:3px solid ${ringColor};outline-offset:2px;` : "";
   return L.divIcon({
     className: "",
-    html: `<div style="background-color:${color};width:${size}px;height:${size}px;border-radius:9999px;display:flex;align-items:center;justify-content:center;color:white;font-size:11px;font-weight:600;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.4);">${
+    html: `<div style="background-color:${color};width:${size}px;height:${size}px;border-radius:9999px;display:flex;align-items:center;justify-content:center;color:white;font-size:11px;font-weight:600;border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,0.4);${ring}">${
       count > 1 ? count : ""
     }</div>`,
     iconSize: [size, size],
@@ -62,6 +80,8 @@ const MAX_LISTED_PER_POPUP = 6;
 
 interface InvestmentMapProps {
   groups: LocationGroup[];
+  /** When true, marker rings are colored by development trend (see `/locations`) and popups show a trend summary. */
+  showActivity?: boolean;
 }
 
 /**
@@ -71,8 +91,8 @@ interface InvestmentMapProps {
  * Dynamically imported with `ssr: false` by MapView - react-leaflet's
  * MapContainer touches `window`/`document` and cannot render on the server.
  */
-export function InvestmentMap({ groups }: InvestmentMapProps) {
-  const { t } = useI18n();
+export function InvestmentMap({ groups, showActivity = false }: InvestmentMapProps) {
+  const { t, tEnum } = useI18n();
 
   return (
     <MapContainer center={METRO_CENTER} zoom={METRO_DEFAULT_ZOOM} scrollWheelZoom className="h-[600px] w-full rounded-xl">
@@ -84,7 +104,11 @@ export function InvestmentMap({ groups }: InvestmentMapProps) {
         <Marker
           key={group.location}
           position={[group.lat, group.lng]}
-          icon={createMarkerIcon(dominantColor(group.investments), group.investments.length)}
+          icon={createMarkerIcon(
+            dominantColor(group.investments),
+            group.investments.length,
+            showActivity && group.activity ? TREND_RING_COLOR[group.activity.trend] : undefined
+          )}
         >
           <Popup>
             <div className="space-y-1">
@@ -105,6 +129,19 @@ export function InvestmentMap({ groups }: InvestmentMapProps) {
                 <p className="text-xs text-muted-foreground">
                   {t("map.andMore").replace("{count}", String(group.investments.length - MAX_LISTED_PER_POPUP))}
                 </p>
+              ) : null}
+              {showActivity && group.activity ? (
+                <div className="mt-2 space-y-1 border-t border-border pt-2">
+                  <p className="text-xs">
+                    <span className="font-medium">{tEnum("developmentTrend", group.activity.trend)}</span>
+                    {" · "}
+                    {tEnum("recommendedAction", group.activity.recommendedAction)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{group.activity.summary}</p>
+                  <Link href="/locations" className="text-xs text-blue-600 hover:underline">
+                    {t("locations.viewAll")}
+                  </Link>
+                </div>
               ) : null}
             </div>
           </Popup>

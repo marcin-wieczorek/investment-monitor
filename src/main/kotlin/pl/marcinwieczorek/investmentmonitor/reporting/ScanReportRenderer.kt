@@ -29,6 +29,7 @@ object ScanReportRenderer {
         appendDiscoveryLeadTime(report)
         appendAggregatorOnlyDiscoveries(report)
         appendDuplicates(report)
+        appendLocationIntelligence(report)
         appendFailures(report)
 
         appendLine(SEPARATOR)
@@ -173,8 +174,44 @@ object ScanReportRenderer {
         appendLine()
     }
 
-    private fun StringBuilder.appendFailures(report: ScanReport) {
-        val failedDeveloper = report.developerReports.filter { !it.fetchSucceeded || !it.validation.valid }
+    private fun StringBuilder.appendLocationIntelligence(report: ScanReport) {
+        appendLine("LOCATION INTELLIGENCE")
+        appendLine(SEPARATOR)
+        if (report.locationSyntheses.isEmpty()) {
+            appendLine("(none)")
+        } else {
+            report.locationSyntheses.forEach { synthesis ->
+                val municipality = synthesis.municipality?.let { " ($it)" } ?: ""
+                appendLine(
+                    "  ${synthesis.location}$municipality [${synthesis.developmentTrend}] - ${synthesis.recommendedAction}"
+                )
+                appendLine(
+                    "    ${synthesis.signalCount} signals / ${synthesis.investmentCount} investments" +
+                        (synthesis.averageLeadTimeDays?.let { " / avg lead time %+.0f days".format(it) } ?: "")
+                )
+                appendLine("    ${synthesis.summary}")
+            }
+        }
+        appendLine()
+
+        appendLine("DEVELOPMENT HOTSPOTS")
+        appendLine(SEPARATOR)
+        val hotspot = report.hotspotSynthesis
+        if (hotspot == null || hotspot.hotspots.isEmpty()) {
+            appendLine("(none)")
+        } else {
+            hotspot.hotspots.forEachIndexed { index, entry ->
+                appendLine(
+                    "  ${index + 1}. ${entry.location} - ${entry.activityLevel} activity, ${entry.trend} " +
+                        "- profile relevance: ${entry.relevanceToProfile}"
+                )
+            }
+            appendLine("  Summary: ${hotspot.summary}")
+        }
+        appendLine()
+    }
+
+    private fun StringBuilder.appendFailures(report: ScanReport) {        val failedDeveloper = report.developerReports.filter { !it.fetchSucceeded || !it.validation.valid }
         val failedAggregator = report.aggregatorReports.filter { !it.fetchSucceeded || !it.validation.valid }
         val failedDiscovery = report.discoveryReports.filter { !it.fetchSucceeded }
 

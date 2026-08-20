@@ -4,8 +4,8 @@ import pl.marcinwieczorek.investmentmonitor.domain.LocationProfile
 
 /**
  * Shared conversions from a [ScoringResult] to the fields [InvestmentAnalyzer]
- * implementations report, so "no LLM configured" ([DefaultInvestmentAnalyzer])
- * and "LLM's deterministic fallback" ([pl.marcinwieczorek.investmentmonitor.llm.OllamaInvestmentAnalyzer])
+ * implementations report, so the "LLM disabled" and "LLM's deterministic
+ * fallback" paths inside [pl.marcinwieczorek.investmentmonitor.llm.OllamaInvestmentAnalyzer]
  * always describe an identical deterministic score identically.
  */
 object DeterministicAnalysisSupport {

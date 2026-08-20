@@ -6,8 +6,8 @@ import { useI18n } from "@/lib/i18n";
 import { Switch } from "@/components/ui/switch";
 import { coordinatesFor } from "@/lib/location-coordinates";
 import { SOURCE_CATEGORY_DOT_CLASS } from "@/lib/badge-styles";
-import type { InvestmentWithState } from "@/lib/types";
-import type { LocationGroup, MapInvestment } from "@/components/map/investment-map";
+import type { LocationSynthesisRow, InvestmentWithState } from "@/lib/types";
+import type { LocationActivitySummary, LocationGroup, MapInvestment } from "@/components/map/investment-map";
 
 const InvestmentMap = dynamic(
   () => import("@/components/map/investment-map").then((mod) => mod.InvestmentMap),
@@ -23,18 +23,26 @@ const InvestmentMap = dynamic(
 
 interface MapViewProps {
   investments: InvestmentWithState[];
+  locationSyntheses: LocationSynthesisRow[];
 }
 
 const CATEGORIES = ["DEVELOPER", "DISCOVERY", "AGGREGATOR"] as const;
 type Category = (typeof CATEGORIES)[number];
 
-export function MapView({ investments }: MapViewProps) {
+export function MapView({ investments, locationSyntheses }: MapViewProps) {
   const { t } = useI18n();
   const [visibleCategories, setVisibleCategories] = useState<Record<Category, boolean>>({
     DEVELOPER: true,
     DISCOVERY: true,
     AGGREGATOR: true,
   });
+  const [showActivity, setShowActivity] = useState(false);
+
+  const synthesisByLocation = useMemo(() => {
+    const map = new Map<string, LocationSynthesisRow>();
+    locationSyntheses.forEach((synthesis) => map.set(synthesis.location, synthesis));
+    return map;
+  }, [locationSyntheses]);
 
   const filtered = useMemo(
     () =>
@@ -63,11 +71,19 @@ export function MapView({ investments }: MapViewProps) {
       if (existing) {
         existing.investments.push(entry);
       } else {
-        byLocation.set(location, { location, lat: coords[0], lng: coords[1], investments: [entry] });
+        const synthesis = synthesisByLocation.get(location);
+        const activity: LocationActivitySummary | undefined = synthesis
+          ? {
+              trend: synthesis.development_trend,
+              recommendedAction: synthesis.recommended_action,
+              summary: synthesis.summary,
+            }
+          : undefined;
+        byLocation.set(location, { location, lat: coords[0], lng: coords[1], investments: [entry], activity });
       }
     });
     return Array.from(byLocation.values());
-  }, [filtered]);
+  }, [filtered, synthesisByLocation]);
 
   const mappedCount = groups.reduce((sum, group) => sum + group.investments.length, 0);
   const unmappedCount = filtered.length - mappedCount;
@@ -94,12 +110,16 @@ export function MapView({ investments }: MapViewProps) {
             </span>
           </label>
         ))}
+        <label className="flex items-center gap-2 text-muted-foreground">
+          <Switch checked={showActivity} onCheckedChange={setShowActivity} />
+          <span>{t("locations.activity")}</span>
+        </label>
         <span className="ml-auto text-xs text-muted-foreground">
           {t("map.locationsShown").replace("{count}", String(groups.length))}
         </span>
       </div>
 
-      <InvestmentMap groups={groups} />
+      <InvestmentMap groups={groups} showActivity={showActivity} />
 
       {unmappedCount > 0 ? (
         <p className="text-xs text-muted-foreground">

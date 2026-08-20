@@ -1,14 +1,13 @@
-# ADR-006: Local Ollama via JDK `HttpClient`, disabled by default
+# ADR-006: Local Ollama via JDK `HttpClient`, enabled by default with deterministic fallback
 
 ## Status
 
-Accepted
+Accepted (amended - see "Amendment" below)
 
 ## Context
 
 The project needed a real local-LLM integration behind
-`InvestmentAnalyzer`, replacing the no-op placeholder (now
-`DefaultInvestmentAnalyzer`),
+`InvestmentAnalyzer`, replacing the no-op placeholder,
 while preserving two hard constraints from ADR-001 (local-first) and
 ADR-002 (deterministic core): no cloud dependency, and the LLM must never
 be able to break a scan.
@@ -32,15 +31,40 @@ Two implementation questions came up:
 - Every `OllamaClient` method is wrapped in `runCatching` and returns
   `null`/`false` on any failure (network error, timeout, non-2xx status,
   malformed JSON) - it never throws out of the client.
-- `OllamaInvestmentAnalyzer` is registered as a Spring bean only when
-  `investment-monitor.llm.enabled=true`
-  (`@ConditionalOnProperty`), with `DefaultInvestmentAnalyzer` registered
-  for the (default) opposite case via the same mechanism. Exactly one
-  `InvestmentAnalyzer` bean exists at a time - `MonitoringService`'s
-  constructor is unchanged (still takes a single `InvestmentAnalyzer`).
-- Configuration defaults to `enabled: false` in `application.yml` - a
-  fresh checkout of this project runs `./gradlew bootRun` successfully
-  with zero LLM setup.
+- `OllamaInvestmentAnalyzer` is the sole `InvestmentAnalyzer` bean.
+  `MonitoringService`'s constructor is unchanged (still takes a single
+  `InvestmentAnalyzer`).
+
+## Amendment (LLM enabled by default)
+
+The original decision registered two mutually exclusive
+`InvestmentAnalyzer` beans via `@ConditionalOnProperty`:
+`OllamaInvestmentAnalyzer` when `investment-monitor.llm.enabled=true`,
+and a separate `DefaultInvestmentAnalyzer` (deterministic-only) for the
+default `false` case. In practice this meant two classes independently
+reimplementing the same deterministic scoring/priority/reason logic,
+with only a passing code comment ("uses the exact same deterministic
+score via `DeterministicAnalysisSupport`") keeping them in sync.
+
+This was collapsed into a single class: `OllamaInvestmentAnalyzer` now
+checks `investment-monitor.llm.enabled` internally. When `false`, it
+returns the deterministic result immediately, without attempting an
+Ollama call - this is the *same* code path used as the fallback when the
+LLM is enabled but unavailable, so "LLM off" and "LLM failed" can never
+silently drift apart into two different deterministic behaviors.
+
+`investment-monitor.llm.enabled` now defaults to `true` in
+`application.yml`. This does not weaken the local-first guarantee: when
+Ollama isn't installed or reachable, `OllamaClient.generate()` still
+fails gracefully (5s connect timeout, `runCatching`) and the analyzer
+still falls back to the identical deterministic result a disabled LLM
+would produce - a fresh checkout still runs `./gradlew bootRun`
+successfully with zero LLM setup, it just also logs one startup line
+(`OllamaClient.probeAtStartup()`, a `@PostConstruct` best-effort
+`isAvailable()` check) reporting whether Ollama was actually reachable,
+so the difference between "LLM not installed" and "LLM installed and
+working" is visible immediately instead of only inferable from a
+per-investment reason string.
 
 ## Consequences
 
@@ -49,9 +73,15 @@ Two implementation questions came up:
 - `./gradlew test` never touches a real network (verified with a local
   JDK `HttpServer` fixture in `OllamaClientTest`/`OllamaInvestmentAnalyzerTest`,
   not a real Ollama instance).
-- A misconfigured or absent local LLM degrades to fully deterministic
-  behavior (see ADR-005) rather than failing the scan or hanging
-  indefinitely (5s connect timeout, configurable read timeout).
+- A misconfigured, absent, or explicitly disabled local LLM degrades to
+  fully deterministic behavior (see ADR-005) rather than failing the scan
+  or hanging indefinitely (5s connect timeout, configurable read timeout).
+- Exactly one code path computes the deterministic fallback, eliminating
+  the risk of the two-analyzer split drifting apart.
+- A user who installs Ollama gets LLM-enhanced interpretation with zero
+  configuration beyond installing it; a user who never installs it gets
+  identical deterministic behavior to before, plus one informational
+  startup log line.
 
 **Traded away:**
 - No streaming support, retries, or connection pooling beyond what the

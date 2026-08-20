@@ -57,7 +57,8 @@ on both sides for exactly this reason. Don't remove it.
 src/main/kotlin/pl/marcinwieczorek/investmentmonitor/
   domain/          Investment, InvestmentSignal, SourceEvidence, Correlation,
                    LocationProfile, LocationCatalog, ReferenceInvestmentProfile,
-                   SourceCategory — pure data classes/enums, no framework deps
+                   SourceCategory, LocationActivity, LocationSynthesis,
+                   HotspotSynthesis — pure data classes/enums, no framework deps
   source/          InvestmentSource (developer), DiscoverySource, AggregatorSource
                    interfaces + SourceRegistry. Per-source subpackages:
                      source/discovery/SwarzedzWz{Source,Parser}.kt
@@ -77,15 +78,22 @@ src/main/kotlin/pl/marcinwieczorek/investmentmonitor/
   correlation/     InvestmentCorrelator — deterministic signal<->investment linking;
                    InvestmentDeduplicator — deterministic investment<->investment
                    cross-source duplicate matching (never LLM-driven, same rationale)
-  analysis/        InvestmentAnalyzer interface, DefaultInvestmentAnalyzer (default),
-                   DeterministicScorer, LocationProfiles (data), ReferenceProfiles (data)
-  llm/             OllamaClient (JDK HttpClient, no Spring MVC dep), OllamaInvestmentAnalyzer,
-                   InvestmentPromptBuilder, LlmInvestmentInterpretation (response DTO)
+  analysis/        InvestmentAnalyzer interface,
+                   DeterministicScorer, LocationProfiles (data), ReferenceProfiles (data),
+                   LocationActivityCollector (deterministic per-location activity aggregation)
+  llm/             OllamaClient (JDK HttpClient, no Spring MVC dep), OllamaInvestmentAnalyzer
+                   (sole InvestmentAnalyzer bean, internal enabled-check + deterministic
+                   fallback — see docs/ADR-006), InvestmentPromptBuilder,
+                   LlmInvestmentInterpretation (response DTO), LocationSynthesisAnalyzer
+                   (per-location + region-wide hotspot synthesis), LocationSynthesisPromptBuilder,
+                   HotspotSynthesisPromptBuilder, LlmLocationSynthesis/LlmHotspotSynthesis
+                   (response DTOs)
   archival/        RawHtmlArchiver — raw/<date>/<host>/<hash>.html, retention-based cleanup
   persistence/     One {Name}Repository interface + Jdbc{Name}Repository impl per aggregate:
                    Investment, Signal, SourceSnapshot, MonitoringRun, Evidence,
                    Correlation, InvestmentDuplicate, LlmAnalysis, UserPreferences
-                   (generic key-value store, currently just the scoring profile)
+                   (generic key-value store, currently just the scoring profile),
+                   LocationSynthesis (per-location + region-wide hotspot rows)
   monitoring/      MonitoringService (the orchestrator — read this first for the
                    full pipeline), SourceCommitService (transactional per-source
                    commit — a separate bean so @Transactional isn't bypassed by
@@ -93,6 +101,8 @@ src/main/kotlin/pl/marcinwieczorek/investmentmonitor/
                    (per-fact provenance), CrossSourceEnrichmentService (gap-filling
                    from HIGH-confidence duplicates), AggregatorDiscoveryService
                    (aggregator-only detection + unknown-developer candidates),
+                   LocationSynthesisService (per-scan location-intelligence step,
+                   runs after correlation/deduplication — see docs/ARCHITECTURE.md phase 12),
                    ScanRunner (ApplicationRunner, makes bootRun one-shot),
                    RescoreService + RescoreRunner (recomputes investment_score for every
                    known investment against the current scoring profile, no live fetch —
@@ -114,6 +124,7 @@ frontend/
     api/                 Route handlers (mutations + scan trigger only — pages
                          read the DB directly via lib/queries.ts, no fetch())
     map/                 /map page — investment location overview
+    locations/           /locations page — per-location LLM synthesis + region-wide hotspot ranking
     settings/            /settings page — configurable scoring reference profile
   components/
     layout/               app-shell.tsx / app-sidebar.tsx / app-header.tsx
@@ -142,6 +153,10 @@ frontend/
     location-coordinates.ts  Static lat/lng lookup for every LocationCatalog.kt location name
                             (frontend-only reference data, same rationale as LocationCatalog
                             itself — no live geocoding API call)
+    hotspot-utils.ts        parseJsonArray()/parseHotspotEntries() for location_synthesis/
+                            hotspot_synthesis JSON-array columns — client-safe (no getDb()
+                            import), so "use client" components import from here, never
+                            from queries.ts (would pull node:sqlite into the browser bundle)
     sidebar-context.tsx     collapsed/expanded state, localStorage-persisted
     constants.ts            NEW_THRESHOLD_MS, STALE_THRESHOLD_MS
     utils.ts                cn(), formatRelativeTime(), formatArea(), dataCompleteness()
@@ -234,8 +249,8 @@ regenerate every deploy).
 ## Database
 
 SQLite file `investment-monitor.db` in repo root (gitignored). Flyway
-migrations in `src/main/resources/db/migration/`, currently V1–V14. To add
-a column/table: new `V15__description.sql` — **never edit an already-
+migrations in `src/main/resources/db/migration/`, currently V1–V15. To add
+a column/table: new `V16__description.sql` — **never edit an already-
 applied migration**, Flyway checksums them.
 
 Tables: `investment`, `source_snapshot` (+`source_category`),
@@ -249,7 +264,10 @@ investment's row exists yet, see `JdbcInvestmentScoreRepository`),
 `user_preferences`
 (generic key-value store, currently just `key="scoring.profile"` - this one
 actually is read at scan/rescore time, see
-`UserPreferencesRepository`). The previously-unused `location_profile`
+`UserPreferencesRepository`), `location_synthesis` + `hotspot_synthesis`
+(V15 - per-location and region-wide LLM-assisted activity synthesis, see
+`LocationSynthesisRepository`; `hotspot_synthesis` only ever holds one
+row, replaced each scan). The previously-unused `location_profile`
 table (declared in V4, never populated at runtime) was dropped in V13.
 
 ## Conventions
@@ -292,9 +310,14 @@ Identity (`canonicalKey`), diffing (`ChangeDetector`), validation
 (`SourceValidator`), cross-source correlation/deduplication
 (`InvestmentCorrelator`, `InvestmentDeduplicator`), persistence, and the
 numeric investment score (`DeterministicScorer`) must stay pure/deterministic. The LLM
-(`OllamaInvestmentAnalyzer`, disabled by default via
-`investment-monitor.llm.enabled=false`) only ever contributes
+(`OllamaInvestmentAnalyzer`, enabled by default via
+`investment-monitor.llm.enabled=true`) only ever contributes
 `priority`/`reason` text, and only when it returns well-formed JSON —
-every failure mode falls back to a value derived purely from
-`DeterministicScorer`. If you're tempted to have the LLM decide "is this
-new" or "what's the price", stop — read ADR-002 and ADR-005 first.
+every failure mode (disabled, unreachable, timeout, malformed JSON) falls
+back to a value derived purely from `DeterministicScorer`. Same contract
+for `LocationSynthesisAnalyzer` (location-intelligence synthesis, see
+phase 12): interpretation only, deterministic aggregation
+(`LocationActivityCollector`) and every count/aggregate on a
+`LocationSynthesis`/`HotspotSynthesis` row always comes from already-
+persisted facts, never the LLM. If you're tempted to have the LLM decide
+"is this new" or "what's the price", stop — read ADR-002 and ADR-005 first.

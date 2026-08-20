@@ -32,3 +32,36 @@ export const SOURCE_CATEGORY_DOT_CLASS: Record<SourceCategory, string> = {
   DISCOVERY: "bg-purple-500",
   AGGREGATOR: "bg-orange-500",
 };
+
+export type DevelopmentTrend = "ACCELERATING" | "STABLE" | "SLOWING" | "MINIMAL";
+export type RecommendedAction = "WATCH_CLOSELY" | "MONITOR" | "LOW_PRIORITY";
+export type ActivityLevel = "HIGH" | "MEDIUM" | "LOW";
+
+/** Badge `border`/`text` classes for a location's development trend (see `/locations`). */
+export const TREND_BADGE_CLASS: Record<DevelopmentTrend, string> = {
+  ACCELERATING: "border-emerald-500/30 text-emerald-500 dark:text-emerald-400",
+  STABLE: "border-blue-500/30 text-blue-500 dark:text-blue-400",
+  SLOWING: "border-amber-500/30 text-amber-500 dark:text-amber-400",
+  MINIMAL: "border-border text-muted-foreground",
+};
+
+/** Badge `border`/`text` classes for a recommended-action label (see `/locations`). */
+export const ACTION_BADGE_CLASS: Record<RecommendedAction, string> = {
+  WATCH_CLOSELY: "border-emerald-500/30 text-emerald-500 dark:text-emerald-400",
+  MONITOR: "border-blue-500/30 text-blue-500 dark:text-blue-400",
+  LOW_PRIORITY: "border-border text-muted-foreground",
+};
+
+/** Badge `border`/`text` classes for HIGH/MEDIUM/LOW activity or relevance levels (see `/locations`). */
+export const ACTIVITY_LEVEL_BADGE_CLASS: Record<ActivityLevel, string> = {
+  HIGH: "border-emerald-500/30 text-emerald-500 dark:text-emerald-400",
+  MEDIUM: "border-amber-500/30 text-amber-500 dark:text-amber-400",
+  LOW: "border-border text-muted-foreground",
+};
+
+/** Solid `bg-*` classes for HIGH/MEDIUM/LOW activity level (map heat indicator dots). */
+export const ACTIVITY_LEVEL_DOT_CLASS: Record<ActivityLevel, string> = {
+  HIGH: "bg-emerald-500",
+  MEDIUM: "bg-amber-500",
+  LOW: "bg-muted-foreground",
+};

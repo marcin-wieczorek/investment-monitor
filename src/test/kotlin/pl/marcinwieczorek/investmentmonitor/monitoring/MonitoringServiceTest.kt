@@ -6,8 +6,11 @@ import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import pl.marcinwieczorek.investmentmonitor.analysis.DefaultInvestmentAnalyzer
+import pl.marcinwieczorek.investmentmonitor.analysis.DeterministicAnalysisSupport
 import pl.marcinwieczorek.investmentmonitor.analysis.DeterministicScorer
+import pl.marcinwieczorek.investmentmonitor.analysis.InvestmentAnalysis
+import pl.marcinwieczorek.investmentmonitor.analysis.InvestmentAnalyzer
+import pl.marcinwieczorek.investmentmonitor.analysis.LocationActivityCollector
 import pl.marcinwieczorek.investmentmonitor.analysis.ScoringResult
 import pl.marcinwieczorek.investmentmonitor.archival.RawHtmlArchiver
 import pl.marcinwieczorek.investmentmonitor.correlation.InvestmentCorrelator
@@ -19,20 +22,26 @@ import pl.marcinwieczorek.investmentmonitor.domain.DeveloperCandidate
 import pl.marcinwieczorek.investmentmonitor.domain.DeveloperCandidateStatus
 import pl.marcinwieczorek.investmentmonitor.domain.DuplicateConfidence
 import pl.marcinwieczorek.investmentmonitor.domain.EvidenceOwner
+import pl.marcinwieczorek.investmentmonitor.domain.HotspotSynthesis
 import pl.marcinwieczorek.investmentmonitor.domain.Investment
 import pl.marcinwieczorek.investmentmonitor.domain.InvestmentDuplicate
 import pl.marcinwieczorek.investmentmonitor.domain.InvestmentSignal
+import pl.marcinwieczorek.investmentmonitor.domain.LocationProfile
+import pl.marcinwieczorek.investmentmonitor.domain.LocationSynthesis
 import pl.marcinwieczorek.investmentmonitor.domain.PriceRange
 import pl.marcinwieczorek.investmentmonitor.domain.PropertyType
 import pl.marcinwieczorek.investmentmonitor.domain.ReferenceInvestmentProfile
 import pl.marcinwieczorek.investmentmonitor.domain.SourceEvidence
 import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+import pl.marcinwieczorek.investmentmonitor.llm.LocationSynthesisAnalyzer
+import pl.marcinwieczorek.investmentmonitor.llm.OllamaClient
 import pl.marcinwieczorek.investmentmonitor.persistence.CorrelationRepository
 import pl.marcinwieczorek.investmentmonitor.persistence.DeveloperCandidateRepository
 import pl.marcinwieczorek.investmentmonitor.persistence.EvidenceRepository
 import pl.marcinwieczorek.investmentmonitor.persistence.InvestmentDuplicateRepository
 import pl.marcinwieczorek.investmentmonitor.persistence.InvestmentRepository
 import pl.marcinwieczorek.investmentmonitor.persistence.InvestmentScoreRepository
+import pl.marcinwieczorek.investmentmonitor.persistence.LocationSynthesisRepository
 import pl.marcinwieczorek.investmentmonitor.persistence.MonitoringRunRepository
 import pl.marcinwieczorek.investmentmonitor.persistence.RunStatus
 import pl.marcinwieczorek.investmentmonitor.persistence.SignalRepository
@@ -145,12 +154,59 @@ private class InMemoryInvestmentScoreRepository : InvestmentScoreRepository {
     override fun find(investmentCanonicalKey: String): ScoringResult? = saved[investmentCanonicalKey]
 }
 
+private class InMemoryLocationSynthesisRepository : LocationSynthesisRepository {
+    private val byLocation = mutableMapOf<String, LocationSynthesis>()
+    private var hotspot: HotspotSynthesis? = null
+    override fun upsertLocation(synthesis: LocationSynthesis) {
+        byLocation[synthesis.location] = synthesis
+    }
+    override fun findByLocation(location: String): LocationSynthesis? = byLocation[location]
+    override fun findAllLocations(): List<LocationSynthesis> = byLocation.values.toList()
+    override fun saveHotspot(synthesis: HotspotSynthesis) {
+        hotspot = synthesis
+    }
+    override fun findLatestHotspot(): HotspotSynthesis? = hotspot
+}
+
+private class InMemoryLlmAnalysisRepositoryForSynthesis : pl.marcinwieczorek.investmentmonitor.persistence.LlmAnalysisRepository {
+    private val store = mutableMapOf<String, String>()
+    override fun findCached(investmentCanonicalKey: String, model: String, promptHash: String): String? =
+        store["$investmentCanonicalKey|$model|$promptHash"]
+    override fun save(investmentCanonicalKey: String, model: String, promptHash: String, responseJson: String) {
+        store["$investmentCanonicalKey|$model|$promptHash"] = responseJson
+    }
+}
+
 private class InMemoryUserPreferencesRepository(
     private var scoringProfile: ReferenceInvestmentProfile? = null
 ) : UserPreferencesRepository {
     override fun findScoringProfile(): ReferenceInvestmentProfile? = scoringProfile
     override fun saveScoringProfile(profile: ReferenceInvestmentProfile) {
         scoringProfile = profile
+    }
+}
+
+/**
+ * Deterministic-only test double for [InvestmentAnalyzer]. `MonitoringService`
+ * only depends on the interface, so pipeline-orchestration tests don't need
+ * the real LLM-backed implementation ([pl.marcinwieczorek.investmentmonitor.llm.OllamaInvestmentAnalyzer])
+ * or its Ollama/caching dependencies - they just need *a* valid, deterministic
+ * [InvestmentAnalysis] for every investment.
+ */
+private class DeterministicOnlyAnalyzer(
+    private val scorer: DeterministicScorer,
+    private val userPreferencesRepository: UserPreferencesRepository
+) : InvestmentAnalyzer {
+    override fun analyze(investment: Investment, locationProfile: LocationProfile?): InvestmentAnalysis {
+        val referenceProfile = userPreferencesRepository.effectiveScoringProfile()
+        val scoring = scorer.score(investment, locationProfile, referenceProfile)
+        return InvestmentAnalysis(
+            investmentScore = scoring.overallScore,
+            locationScore = DeterministicAnalysisSupport.locationScore(locationProfile),
+            referenceProfileScore = scoring.overallScore,
+            priority = DeterministicAnalysisSupport.priorityFrom(scoring),
+            reason = DeterministicAnalysisSupport.describeScore(scoring)
+        )
     }
 }
 
@@ -207,13 +263,26 @@ class MonitoringServiceTest {
         val aggregatorDiscoveryService = AggregatorDiscoveryService(
             investmentRepository, sourceRegistry, developerCandidateRepository
         )
+        val activityCollector = LocationActivityCollector(
+            investmentRepository, signalRepository, correlationRepository, activityPeriodDays = 365
+        )
+        val synthesisAnalyzer = LocationSynthesisAnalyzer(
+            OllamaClient(baseUrl = "http://127.0.0.1:1", timeoutSeconds = 1),
+            InMemoryLlmAnalysisRepositoryForSynthesis(),
+            model = "test-model",
+            enabled = false
+        )
+        val locationSynthesisService = LocationSynthesisService(
+            activityCollector, synthesisAnalyzer, InMemoryLocationSynthesisRepository(), userPreferencesRepository,
+            minSignalsForSynthesis = 2, maxLocationsPerScan = 20, hotspotTopN = 10
+        )
 
         return MonitoringService(
             sourceRegistry = sourceRegistry,
             sourceValidator = SourceValidator(),
             changeDetector = ChangeDetector(),
             detailEnricher = InvestmentDetailEnricher(emptyList()) { _ -> "" },
-            investmentAnalyzer = DefaultInvestmentAnalyzer(DeterministicScorer(), InMemoryUserPreferencesRepository()),
+            investmentAnalyzer = DeterministicOnlyAnalyzer(DeterministicScorer(), InMemoryUserPreferencesRepository()),
             investmentRepository = investmentRepository,
             sourceSnapshotRepository = sourceSnapshotRepository,
             monitoringRunRepository = InMemoryMonitoringRunRepository(),
@@ -227,6 +296,7 @@ class MonitoringServiceTest {
             crossSourceEnrichmentService = crossSourceEnrichmentService,
             aggregatorDiscoveryService = aggregatorDiscoveryService,
             sourceCommitService = sourceCommitService,
+            locationSynthesisService = locationSynthesisService,
             scorer = scorer,
             investmentScoreRepository = investmentScoreRepository,
             userPreferencesRepository = userPreferencesRepository

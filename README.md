@@ -87,14 +87,19 @@ sources -> fetch -> parse -> validate -> diff -> enrich (new only)
 - **Analyze** - a numeric `DeterministicScorer` compares an investment
   against a `ReferenceInvestmentProfile` and `LocationProfile`, and always
   runs (and is persisted, and shown in the dashboard) even with no LLM
-  configured. An optional local LLM (Ollama) adds qualitative
+  configured. A local LLM (Ollama, enabled by default) adds qualitative
   interpretation (priority/reasoning) on top, with a fully deterministic
-  fallback when it's unavailable or misconfigured.
+  fallback when it's unavailable, disabled, or misconfigured.
 
 Discovery lead time - how many days before a developer publishes an
 investment the system already had an official/public signal for it - is
 computed for every correlation and shown both in the console report and
 on `/correlations`/the dashboard (see `docs/ARCHITECTURE.md` phase 6).
+
+Once per scan, active locations also get an LLM-assisted (or
+deterministic-fallback) synthesis of their recent discovery-signal and
+investment activity, plus a region-wide ranking of the most dynamically
+developing areas - see `/locations` and `docs/ARCHITECTURE.md` phase 12.
 
 ## Business scope
 
@@ -214,11 +219,16 @@ intentionally one-shot - schedule it with cron/systemd for recurring runs.
 See [`docs/SOURCE-VERIFICATION.md`](docs/SOURCE-VERIFICATION.md) for the
 full workflow of adding or fixing a parser after a site change.
 
-### Optional: local LLM (Ollama)
+### Local LLM (Ollama)
 
-Analysis works fully deterministically without any LLM. To enable
-qualitative interpretation, see [`docs/LLM.md`](docs/LLM.md) for local
-Ollama setup and configuration.
+Analysis always works fully deterministically, LLM installed or not - if
+Ollama isn't running, every call fails gracefully and falls back to a
+deterministic score, so a fresh checkout runs `./gradlew bootRun`
+successfully with zero LLM setup. LLM analysis is enabled by default; to
+get qualitative interpretation (`priority`/`reason` text), install Ollama
+and pull a model, see [`docs/LLM.md`](docs/LLM.md) for setup and model
+recommendations. To skip the Ollama call attempt entirely, set
+`investment-monitor.llm.enabled: false`.
 
 ### Optional: headless-browser fetching (Playwright)
 
@@ -256,11 +266,15 @@ under their most authoritative source, and has a collapsible filter panel
 (source, property type, status, location, and range sliders for house
 area/plot area/price) plus an always-visible sort control. A `/map` page
 (Leaflet + OpenStreetMap, no API key) shows where every currently known
-investment is located across the Poznań metro area. A `/settings` page
-lets you configure the scoring reference profile (property types,
-location tiers, area/price ranges, large-plot preference) - saving
-immediately recomputes every investment's score, no new scan needed.
-Dark/light mode and an English/Polish language toggle are built in.
+investment is located across the Poznań metro area, with an optional
+development-activity overlay. A `/locations` page shows the LLM-assisted
+(or deterministic-fallback) per-location synthesis and region-wide
+development-hotspot ranking (see `docs/ARCHITECTURE.md` phase 12). A
+`/settings` page lets you configure the scoring reference profile
+(property types, location tiers, area/price ranges, large-plot
+preference) - saving immediately recomputes every investment's score, no
+new scan needed. Dark/light mode and an English/Polish language toggle
+are built in.
 
 Requires Node 22.5+.
 

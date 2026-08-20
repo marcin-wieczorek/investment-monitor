@@ -7,6 +7,7 @@
     "correlations": "Korelacje",
     "developers": "Deweloperzy",
     "coverage": "Pokrycie",
+    "locations": "Lokalizacje",
     "history": "Historia",
     "sources": "Źródła",
     "settings": "Ustawienia"
@@ -51,7 +52,9 @@
     "staleSources": "Nieaktualne źródła",
     "staleSource": "Brak danych od ponad {hours}h",
     "blockedDevelopers": "Zablokowani deweloperzy",
-    "blockedMunicipalities": "Gminy z zablokowanym źródłem"
+    "blockedMunicipalities": "Gminy z zablokowanym źródłem",
+    "hotspots": "Obszary rozwoju",
+    "noHotspotsYet": "Brak rankingu obszarów rozwoju - uruchom skan, aby go wygenerować."
   },
   "scan": {
     "runScan": "Uruchom skan",
@@ -252,6 +255,31 @@
       "DISABLED": "Wyłączone"
     }
   },
+  "locations": {
+    "title": "Lokalizacje",
+    "subtitle": "Synteza aktywności sygnałów i inwestycji per lokalizacja (wspomagana przez LLM lub deterministyczna), przeliczana raz na skan",
+    "hotspotsTitle": "Obszary rozwoju",
+    "hotspotsSubtitle": "Porównanie regionalne najbardziej dynamicznie rozwijających się lokalizacji",
+    "location": "Lokalizacja",
+    "municipality": "Gmina",
+    "trend": "Trend",
+    "action": "Zalecane działanie",
+    "signals": "Sygnały",
+    "investments": "Inwestycje",
+    "avgLeadTime": "Śr. czas wyprzedzenia",
+    "relevance": "Dopasowanie",
+    "activity": "Aktywność",
+    "keyDevelopers": "Kluczowi deweloperzy",
+    "opportunities": "Szanse",
+    "risks": "Ryzyka",
+    "estimatedTimeline": "Szacowany harmonogram",
+    "reason": "Uzasadnienie",
+    "emergingAreas": "Wschodzące obszary",
+    "noResults": "Brak danych o lokalizacjach - uruchom skan, aby je wygenerować.",
+    "noHotspots": "Brak rankingu obszarów rozwoju - uruchom skan, aby go wygenerować.",
+    "synthesizedAt": "Wygenerowano",
+    "viewAll": "Zobacz wszystkie lokalizacje"
+  },
   "settings": {
     "title": "Ustawienia",
     "subtitle": "Skonfiguruj profil referencyjny, do którego porównywane są inwestycje",
@@ -311,6 +339,22 @@
       "RUNNING": "W trakcie",
       "SUCCESS": "Sukces",
       "PARTIAL_FAILURE": "Częściowa awaria"
+    },
+    "developmentTrend": {
+      "ACCELERATING": "Przyspieszający",
+      "STABLE": "Stabilny",
+      "SLOWING": "Zwalniający",
+      "MINIMAL": "Minimalny"
+    },
+    "recommendedAction": {
+      "WATCH_CLOSELY": "Obserwuj uważnie",
+      "MONITOR": "Monitoruj",
+      "LOW_PRIORITY": "Niski priorytet"
+    },
+    "activityLevel": {
+      "HIGH": "Wysoka",
+      "MEDIUM": "Średnia",
+      "LOW": "Niska"
     }
   }
 }

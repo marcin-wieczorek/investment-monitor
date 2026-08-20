@@ -10,11 +10,13 @@ import { ScanSuccessChart } from "@/components/charts/scan-success-chart";
 import { LeadTimeTrendChart } from "@/components/charts/lead-time-trend-chart";
 import { CoverageBreakdown } from "@/components/coverage-breakdown";
 import { SourcesNeedingAttention } from "@/components/sources-needing-attention";
+import { HotspotCard } from "@/components/hotspot-card";
 import { formatRelativeTime } from "@/lib/utils";
 import { STALE_THRESHOLD_MS } from "@/lib/constants";
 import type {
   CorrelationRow,
   DeveloperRegistryRow,
+  HotspotSynthesisRow,
   InvestmentWithState,
   MonitoringRunRow,
   MunicipalityRegistryRow,
@@ -32,6 +34,7 @@ interface DashboardViewProps {
   avgLeadTimeDays: number | null;
   aggregatorOnlyCount: number;
   correlations: CorrelationRow[];
+  hotspotSynthesis: HotspotSynthesisRow | undefined;
 }
 
 export function DashboardView({
@@ -45,6 +48,7 @@ export function DashboardView({
   avgLeadTimeDays,
   aggregatorOnlyCount,
   correlations,
+  hotspotSynthesis,
 }: DashboardViewProps) {
   const { t, locale } = useI18n();
   const latestRun = runs[0];
@@ -154,6 +158,8 @@ export function DashboardView({
           <CoverageBreakdown developers={developers} municipalities={municipalities} />
         </div>
       </div>
+
+      <HotspotCard hotspotSynthesis={hotspotSynthesis} />
 
       <div className="rounded-2xl border border-border bg-card p-5 md:p-6">
         <h2 className="mb-4 text-sm font-medium text-muted-foreground">

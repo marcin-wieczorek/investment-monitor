@@ -43,7 +43,8 @@ class JdbcCorrelationRepository(private val jdbcTemplate: JdbcTemplate) : Correl
             CorrelationLeadTime(
                 investmentName = rs.getString("investment_name"),
                 signalTitle = rs.getString("signal_title"),
-                leadTimeDays = rs.getObject("lead_time_days")?.let { (it as Number).toLong() }
+                leadTimeDays = rs.getObject("lead_time_days")?.let { (it as Number).toLong() },
+                investmentLocation = rs.getString("investment_location")
             )
         }
 
@@ -60,6 +61,7 @@ class JdbcCorrelationRepository(private val jdbcTemplate: JdbcTemplate) : Correl
         const val SELECT_LEAD_TIME = """
             SELECT
                 i.name AS investment_name,
+                i.location AS investment_location,
                 s.title AS signal_title,
                 CAST(julianday(i.first_seen_at) - julianday(s.first_seen_at) AS INTEGER) AS lead_time_days
             FROM correlation c

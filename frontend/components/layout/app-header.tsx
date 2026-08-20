@@ -16,6 +16,7 @@ const breadcrumbKeys: Record<string, MessageKey> = {
   "/map": "nav.map",
   "/signals": "nav.signals",
   "/correlations": "nav.correlations",
+  "/locations": "nav.locations",
   "/developers": "nav.developers",
   "/coverage": "nav.coverage",
   "/sources": "nav.sources",

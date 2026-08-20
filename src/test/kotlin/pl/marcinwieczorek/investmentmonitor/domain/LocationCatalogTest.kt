@@ -49,4 +49,28 @@ class LocationCatalogTest {
                 LocationCatalog.DOPIEWO_GMINA_VILLAGES
             )
     }
+
+    @Test
+    fun `parentMunicipality resolves a gmina village to its municipality`() {
+        LocationCatalog.parentMunicipality("Jasin") shouldBe "Swarzędz"
+        LocationCatalog.parentMunicipality("Konarzewo") shouldBe "Dopiewo"
+        LocationCatalog.parentMunicipality("Bnin") shouldBe "Kórnik"
+        LocationCatalog.parentMunicipality("Kaleje") shouldBe "Śrem"
+    }
+
+    @Test
+    fun `parentMunicipality returns itself for a top-level core location`() {
+        LocationCatalog.parentMunicipality("Poznań") shouldBe "Poznań"
+        LocationCatalog.parentMunicipality("Swarzędz") shouldBe "Swarzędz"
+    }
+
+    @Test
+    fun `parentMunicipality is case-insensitive`() {
+        LocationCatalog.parentMunicipality("jasin") shouldBe "Swarzędz"
+    }
+
+    @Test
+    fun `parentMunicipality returns null for an unknown location`() {
+        LocationCatalog.parentMunicipality("Nieznana Wieś") shouldBe null
+    }
 }

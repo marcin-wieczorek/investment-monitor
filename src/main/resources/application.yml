@@ -17,9 +17,11 @@ investment-monitor:
   jsoup:
     timeout-ms: 30000
   llm:
-    # Disabled by default: a scan must never depend on a local LLM being
-    # installed/running. Set to true once Ollama is set up (see docs/LLM.md).
-    enabled: false
+    # Enabled by default. If Ollama isn't installed/running, every call
+    # fails gracefully and analysis falls back to deterministic scoring
+    # only (see docs/LLM.md) - a scan never depends on a local LLM being
+    # available. Set to false to skip the Ollama call attempt entirely.
+    enabled: true
     base-url: http://localhost:11434
     model: qwen2.5:7b
     timeout-seconds: 60
@@ -33,3 +35,8 @@ investment-monitor:
     # equivalent) - a scan must work with zero setup on a fresh checkout.
     enabled: false
     timeout-ms: 30000
+  location-intelligence:
+    activity-period-days: 365
+    min-signals-for-synthesis: 2
+    max-locations-per-scan: 20
+    hotspot-top-n: 10

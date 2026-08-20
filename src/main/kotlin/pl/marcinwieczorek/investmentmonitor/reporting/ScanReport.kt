@@ -5,8 +5,10 @@ import pl.marcinwieczorek.investmentmonitor.correlation.CorrelationCandidate
 import pl.marcinwieczorek.investmentmonitor.correlation.DuplicateCandidate
 import pl.marcinwieczorek.investmentmonitor.detection.ChangeType
 import pl.marcinwieczorek.investmentmonitor.detection.InvestmentChange
+import pl.marcinwieczorek.investmentmonitor.domain.HotspotSynthesis
 import pl.marcinwieczorek.investmentmonitor.domain.Investment
 import pl.marcinwieczorek.investmentmonitor.domain.InvestmentSignal
+import pl.marcinwieczorek.investmentmonitor.domain.LocationSynthesis
 import pl.marcinwieczorek.investmentmonitor.persistence.CorrelationLeadTime
 import pl.marcinwieczorek.investmentmonitor.validation.ValidationResult
 import java.time.Instant
@@ -59,7 +61,11 @@ data class ScanReport(
     /** Discovery lead time for every persisted correlation, not just this run's new ones (see AGENTS.md section 28). */
     val leadTimes: List<CorrelationLeadTime> = emptyList(),
     /** Cross-source duplicate pairs found over the full current investment set, not just this run's new ones. */
-    val duplicates: List<DuplicateCandidate> = emptyList()
+    val duplicates: List<DuplicateCandidate> = emptyList(),
+    /** Per-location LLM-assisted (or deterministic-fallback) synthesis, for every location active this scan. */
+    val locationSyntheses: List<LocationSynthesis> = emptyList(),
+    /** Region-wide comparison of development activity across active locations, recomputed once per scan. */
+    val hotspotSynthesis: HotspotSynthesis? = null
 ) {
     val newInvestmentCount: Int
         get() = developerReports.sumOf { source -> source.changes.count { it.change.type == ChangeType.NEW } }
