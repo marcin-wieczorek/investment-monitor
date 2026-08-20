@@ -274,4 +274,4 @@ See [`frontend/README.md`](frontend/README.md) for full setup and details.
 
 ## License
 
-[MIT](LICENSE)
+[AGPL-3.0](LICENSE)
