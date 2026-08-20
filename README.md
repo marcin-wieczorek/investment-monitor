@@ -108,8 +108,8 @@ full scope and the extensible location-profile model.
 
 | Category | Source | Area | Notes |
 |---|---|---|---|
-| Developer | 26 developers (Chronos, Greenbud, ATAL, Agrobex, Spravia, Duda, Develia, Jakon, ROBYG, Linea, Murapol, Ataner, Konimpex, Pekabex, EBF, GGW, JaksBud, UWI, Sagaris, Sivanet, Cordia, Ronson, MJ, Area, Inwestycje Wielkopolski, Vastbouw) | Poznań metro area | See `registry/DeveloperRegistry.kt` for the full Tier A/B priority list, verified URLs, and status of every developer investigated |
-| Discovery | Swarzędz, Czerwonak, Tarnowo Podgórne, Suchy Las, Poznań, Śrem, Murowana Goślina BIP registers | 7 municipalities | Zoning-conditions/planning-announcement registers; see `registry/DiscoverySourceRegistry.kt` for full municipal coverage investigation |
+| Developer | 29 developers (Chronos, Greenbud, ATAL, Agrobex, Spravia, Duda, Develia, Jakon, ROBYG, Linea, Murapol, Ataner, Konimpex, Pekabex, EBF, GGW, JaksBud, UWI, Sagaris, Sivanet, Cordia, Ronson, MJ, Area, Inwestycje Wielkopolski, Vastbouw, Archicom, PWD, Nickel) | Poznań metro area | See `registry/DeveloperRegistry.kt` for the full Tier A/B priority list, verified URLs, and status of every developer investigated |
+| Discovery | Swarzędz, Czerwonak, Tarnowo Podgórne, Suchy Las, Poznań, Śrem, Murowana Goślina, Buk, Szamotuły, Pobiedziska, Kórnik, Dopiewo BIP registers | 12 municipalities | Zoning-conditions/planning-announcement registers; see `registry/DiscoverySourceRegistry.kt` for full municipal coverage investigation |
 | Aggregator | [RynekPierwotny.pl](https://rynekpierwotny.pl) — new houses, 4+ rooms, Wielkopolskie | Wielkopolskie voivodeship | Completeness/cross-check only, never primary identity |
 
 Developer and municipality registries (`registry/DeveloperRegistry.kt`,
@@ -213,7 +213,7 @@ See [`frontend/README.md`](frontend/README.md) for full setup and details.
 
 ## Project status
 
-- **Done** — 26 verified developer parsers, 7 verified discovery sources
+- **Done** — 29 verified developer parsers, 12 verified discovery sources
   (municipal zoning/planning registers) and one verified aggregator
   source (RynekPierwotny); explicit `DeveloperRegistry`/
   `MunicipalityRegistry`/`DiscoverySourceRegistry` tracking every priority

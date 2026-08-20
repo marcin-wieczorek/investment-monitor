@@ -77,7 +77,7 @@ src/main/kotlin/pl/marcinwieczorek/investmentmonitor/
   correlation/     InvestmentCorrelator — deterministic signal<->investment linking;
                    InvestmentDeduplicator — deterministic investment<->investment
                    cross-source duplicate matching (never LLM-driven, same rationale)
-  analysis/        InvestmentAnalyzer interface, NoOpInvestmentAnalyzer (default),
+  analysis/        InvestmentAnalyzer interface, DefaultInvestmentAnalyzer (default),
                    DeterministicScorer, LocationProfiles (data), ReferenceProfiles (data)
   llm/             OllamaClient (JDK HttpClient, no Spring MVC dep), OllamaInvestmentAnalyzer,
                    InvestmentPromptBuilder, LlmInvestmentInterpretation (response DTO)
@@ -97,7 +97,7 @@ src/main/kotlin/pl/marcinwieczorek/investmentmonitor/
                    Spring-managed, construct sources manually
 src/main/resources/
   application.yml
-  db/migration/V1..V11__*.sql       Flyway, sequential, never edit an already-applied one
+  db/migration/V1..V12__*.sql       Flyway, sequential, never edit an already-applied one
 src/test/kotlin/...                Mirrors main/ package structure
 src/test/resources/fixtures/<source>/*.html   Real captured HTML, reviewed before commit
   testsupport/  TestInvestments.kt (testInvestment()), TestSignals.kt (testSignal())
@@ -228,8 +228,8 @@ regenerate every deploy).
 ## Database
 
 SQLite file `investment-monitor.db` in repo root (gitignored). Flyway
-migrations in `src/main/resources/db/migration/`, currently V1–V11. To add
-a column/table: new `V12__description.sql` — **never edit an already-
+migrations in `src/main/resources/db/migration/`, currently V1–V12. To add
+a column/table: new `V13__description.sql` — **never edit an already-
 applied migration**, Flyway checksums them.
 
 Tables: `investment`, `source_snapshot` (+`source_category`),

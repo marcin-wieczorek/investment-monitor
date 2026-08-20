@@ -7,7 +7,8 @@ Accepted
 ## Context
 
 The project needed a real local-LLM integration behind
-`InvestmentAnalyzer`, replacing the `NoOpInvestmentAnalyzer` placeholder,
+`InvestmentAnalyzer`, replacing the no-op placeholder (now
+`DefaultInvestmentAnalyzer`),
 while preserving two hard constraints from ADR-001 (local-first) and
 ADR-002 (deterministic core): no cloud dependency, and the LLM must never
 be able to break a scan.
@@ -33,7 +34,7 @@ Two implementation questions came up:
   malformed JSON) - it never throws out of the client.
 - `OllamaInvestmentAnalyzer` is registered as a Spring bean only when
   `investment-monitor.llm.enabled=true`
-  (`@ConditionalOnProperty`), with `NoOpInvestmentAnalyzer` registered
+  (`@ConditionalOnProperty`), with `DefaultInvestmentAnalyzer` registered
   for the (default) opposite case via the same mechanism. Exactly one
   `InvestmentAnalyzer` bean exists at a time - `MonitoringService`'s
   constructor is unchanged (still takes a single `InvestmentAnalyzer`).

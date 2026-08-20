@@ -56,10 +56,15 @@ an LLM own that comparison directly:
   exercise.
 
 **Traded away:**
-- The deterministic scorer's weighting (property type 25%, location tier
+- The deterministic scorer's *weighting* (property type 25%, location tier
   15%, plot area 25%, house area 20%, price 15%, see
   `DeterministicScorer.weightedAverage`) is a fixed heuristic, not learned
-  or user-configurable via the UI yet. Changing it requires a code change.
+  or user-configurable via the UI. Changing it requires a code change.
+  The reference *profile* those weights are applied against (property
+  types, location tiers, area/price ranges, large-plot preference) is
+  user-configurable via the `/settings` page and `UserPreferencesRepository`
+  - saving immediately triggers a rescore of every known investment - but
+  the weighting percentages themselves are not.
 - The LLM's qualitative output (strongest positives, risks, missing
   information) is currently only stored in the `llm_analysis` cache table
   and not yet surfaced anywhere beyond `priority`/`reason` in

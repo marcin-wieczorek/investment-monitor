@@ -94,7 +94,7 @@ class PlaywrightPageFetcher(
 ```
 
 Same `@ConditionalOnProperty` pattern already used for
-`OllamaInvestmentAnalyzer` vs `NoOpInvestmentAnalyzer` (ADR-006): when
+`OllamaInvestmentAnalyzer` vs `DefaultInvestmentAnalyzer` (ADR-006): when
 disabled, the bean simply doesn't exist, no Chromium download is
 triggered, and `./gradlew bootRun` keeps working with zero setup on a
 fresh checkout.
@@ -151,12 +151,16 @@ hosts of every registry entry with `requiresBrowser = true`, and injected
 into `ArchivingPageFetcher` as a `@Bean` (e.g. from a small
 `@Configuration` class), rather than hardcoded.
 
-Sources whose `status` flips from `BLOCKED`/`NOT_IMPLEMENTED` to
-`IMPLEMENTED` once a parser exists: Buk, Oborniki, Pobiedziska,
-Szamotuly, Kornik, Dopiewo (discovery); Archicom, Nickel Development
-(developer). PWD Deweloper is attempted but may remain `BLOCKED` if
-FingerprintJS still rejects a headless browser. Otodom (aggregator) is
-in scope but out of this ADR's immediate parser work.
+Sources whose `status` flipped from `BLOCKED`/`NOT_IMPLEMENTED` to
+`IMPLEMENTED` once a parser was built: Buk, Pobiedziska, Szamotuly, Kornik,
+Dopiewo (discovery); Archicom, Nickel Development, PWD Deweloper
+(developer) - all now have verified parsers (see `docs/SOURCES.md`).
+Nickel turned out not to need `PlaywrightPageFetcher` at all - its search
+page is plain server-rendered HTML once queried correctly. Oborniki
+remains `BLOCKED` (its real WZ register is PDF-only, a capability this
+project doesn't have - see `docs/SOURCES.md`). Otodom (aggregator) is
+still not implemented - reachable via `PlaywrightPageFetcher` but no
+parser has been built/verified yet.
 
 Komorniki, Luboń (WAF 403), Kostrzyn, Rokietnica (DNS/transport), and the
 five content-gap sources are explicitly **not** addressed by this
@@ -178,16 +182,19 @@ investment-monitor:
 Each newly reachable source still needs a parser built and verified
 against a real captured fixture, per the existing "Adding a new
 developer/discovery source" workflow in `AGENTS.md` - Playwright only
-solves *fetching*, not *parsing*. Suggested order (highest value /
-lowest risk first):
+solves *fetching*, not *parsing*. All items originally suggested here
+have since been completed, except where noted:
 
-1. Buk / Oborniki / Pobiedziska / Szamotuly - same BIP platform, one
-   parser likely covers all four.
-2. Dopiewo - dedicated WZ register, most valuable discovery source.
-3. Archicom, Nickel Development - real Poznań-area developer inventory.
-4. Kornik - Drupal 11, one-off parser.
-5. PWD Deweloper - attempt last; may stay `BLOCKED` if FingerprintJS
-   still blocks headless Chromium.
+1. ~~Buk / Pobiedziska / Szamotuly~~ - done (one parser per BIP platform
+   variant, not a single shared one as originally guessed). Oborniki was
+   attempted but remains `BLOCKED` (PDF-only register).
+2. ~~Dopiewo~~ - done.
+3. ~~Archicom, Nickel Development~~ - done.
+4. ~~Kornik~~ - done.
+5. ~~PWD Deweloper~~ - done; FingerprintJS did not end up blocking
+   headless Chromium.
+6. Otodom - still open; would follow the same fixture-verification
+   workflow as the sources above.
 
 `FixtureCaptureCli` needs a way to capture via the browser fetcher for
 these sources (e.g. instantiate `PlaywrightPageFetcher` directly, same

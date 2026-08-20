@@ -459,3 +459,50 @@ scan-time matching, unlike deterministic investment<->signal correlation.
   `ReferenceProfiles.POZNAN_HOUSE_SEEKER` - deliberately not in
   `lib/queries.ts`, which pulls in `node:sqlite` and would break the
   client bundle if imported from a `"use client"` component).
+
+## Implemented (phase 11, Playwright-enabled sources + RynekPierwotny scope change + UX polish)
+
+- **8 new sources unblocked by ADR-007's opt-in `PlaywrightPageFetcher`**:
+  5 discovery (Buk, Szamotuły, Pobiedziska, Kórnik, Dopiewo) and 3
+  developer (Archicom, PWD Deweloper, Nickel Development) - bringing the
+  totals to 12 discovery sources and 29 developer sources. Nickel turned
+  out not to actually need the browser fetcher once queried correctly
+  (plain `JsoupPageFetcher` suffices); the other 7 do. Oborniki remains
+  `BLOCKED` (its real WZ register is PDF-only) and Otodom remains
+  unimplemented (reachable via Playwright but no parser built yet) - see
+  `docs/SOURCES.md`.
+- **RynekPierwotny scope change**: switched from `nowe-domy-poznan` (no
+  room filter, Poznań city only) to `nowe-domy-wielkopolskie-liczba-pokoi-od-4`
+  (4+ rooms, whole Wielkopolskie voivodeship), matching an explicit user
+  preference for larger houses. `RynekPierwotnySource.fetch()` now
+  paginates (`?page=N`), stopping on an empty page or a page containing
+  only already-seen offers - this site's pagination was found to behave
+  inconsistently for this route (an empty page 2, followed by page 3
+  silently repeating page 1), so both stop conditions exist specifically
+  to make that safe.
+- **Location filter consolidation**: `/investments`' location dropdown
+  previously listed every village/neighborhood name separately (e.g.
+  Jasin, Gruszczyn, Bogucin all distinct, fragmenting a single gmina).
+  `frontend/lib/location-groups.ts` maps every known location to its
+  parent gmina; the filter now normalizes both its options and its
+  predicate to gmina level via a case-insensitive substring match
+  (mirroring `LocationCatalog.findIn`) - real `investment.location`
+  values are rarely bare catalog names (e.g. "Swarzędz – Jasin",
+  "Komorniki ul. Młyńska"), so an exact-match lookup alone would have
+  left almost every real investment unnormalized.
+- **Non-blocking scan progress**: `POST /api/scan` switched from
+  `execFile` (blocks until the whole `bootRun` process exits, up to 120s)
+  to `spawn`, returning `202` immediately and updating a shared in-memory
+  `ScanState` as it parses `bootRun`'s stdout for a new explicit
+  `"Scanning source [n/total]: 'id'"` progress line added to
+  `MonitoringService.scan()`. `GET /api/scan/progress` exposes that
+  state; `ScanButton` and the new `ScanProgress` sidebar component poll
+  it independently via `useScanPoll`/`useScanFinishEffect` - neither
+  depends on the other existing.
+- **`npm start`** (root `package.json` + `scripts/start.mjs`):
+  single-command launcher - starts the frontend dev server, waits for it
+  to actually serve requests, then triggers a scan via the same
+  non-blocking endpoint above. Dependency-free (no `concurrently`, no
+  root `node_modules`), relies only on Node's built-ins already required
+  for `node:sqlite`. `./gradlew bootRun` and `cd frontend && npm run dev`
+  continue to work independently for manual control.

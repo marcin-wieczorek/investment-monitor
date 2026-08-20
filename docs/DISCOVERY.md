@@ -95,8 +95,12 @@ both sides).
 1. Identify the municipality's real BIP (Biuletyn Informacji Publicznej)
    URL and inspect its actual HTML (`curl`/browser devtools) - do not
    guess selectors.
-2. Confirm the content is server-rendered (no JS execution required) and
-   accessible without aggressive rate-limiting/blocking.
+2. Confirm the content is reachable: either server-rendered directly (no
+   JS execution required), or - if it's a client-side-rendered shell -
+   reachable via the opt-in `PlaywrightPageFetcher` (see ADR-007; several
+   implemented sources, e.g. Buk, Szamotuły, Pobiedziska, Kórnik, Dopiewo,
+   needed this). Either way, confirm it's accessible without aggressive
+   rate-limiting/blocking.
 3. Capture a fixture (`./gradlew captureFixtures`, or manually if the
    target isn't wired into the CLI yet) and inspect it.
 4. Implement `DiscoverySource` + a dedicated parser, anchored on stable
@@ -111,8 +115,9 @@ both sides).
 
 ## Investigated municipalities
 
-See `docs/SOURCES.md` "Investigated but not implemented" for Kleszczewo
-and Komorniki, which were inspected with real HTTP requests during this
-project and found not currently implementable without either
-reverse-engineering an undocumented API or hitting active anti-bot
-blocking.
+See `docs/SOURCES.md` "Investigated but not implemented" for the full,
+maintained list of municipalities inspected but not currently
+implementable (WAF/anti-bot blocking, DNS/transport failures, PDF-only
+registers, or genuinely no usable content) - e.g. Kleszczewo and
+Komorniki, inspected with real HTTP requests during this project and
+found blocked by either an undocumented API or active anti-bot blocking.

@@ -38,8 +38,8 @@ installed. To enable:
        timeout-seconds: 60
    ```
 4. Run `./gradlew bootRun` as usual - `OllamaInvestmentAnalyzer` replaces
-   `NoOpInvestmentAnalyzer` automatically
-   (`@ConditionalOnProperty`-gated, see `analysis/NoOpInvestmentAnalyzer.kt`
+   `DefaultInvestmentAnalyzer` automatically
+   (`@ConditionalOnProperty`-gated, see `analysis/DefaultInvestmentAnalyzer.kt`
    and `llm/OllamaInvestmentAnalyzer.kt`).
 
 ## How a call works
