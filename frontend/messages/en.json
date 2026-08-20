@@ -29,7 +29,17 @@
     "avgLeadTime": "Avg. discovery lead time",
     "leadTimeDays": "{days} day(s)",
     "noData": "No data yet",
-    "aggregatorOnlyDiscoveries": "Aggregator-only discoveries"
+    "aggregatorOnlyDiscoveries": "Aggregator-only discoveries",
+    "leadTimeTrendChart": "Discovery lead time trend",
+    "coverageBreakdown": "Coverage breakdown",
+    "tierAMonitored": "Tier A monitored",
+    "tierBMonitored": "Tier B monitored",
+    "sourcesNeedingAttention": "Sources needing attention",
+    "noAttentionNeeded": "Nothing needs attention - all sources healthy, no blocked developers.",
+    "staleSources": "Stale sources",
+    "staleSource": "Not captured in over {hours}h",
+    "blockedDevelopers": "Blocked developers",
+    "blockedMunicipalities": "Municipalities with a blocked source"
   },
   "scan": {
     "runScan": "Run scan",
@@ -122,6 +132,7 @@
     "reason": "Reason",
     "noResults": "No correlations found yet.",
     "leadTime": "Lead time",
+    "leadTimeDays": "Lead time (days)",
     "daysBefore": "+{days}d before developer",
     "daysAfter": "{days}d after developer",
     "sameDay": "same day"

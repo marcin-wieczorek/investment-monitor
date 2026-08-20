@@ -231,7 +231,7 @@ added to the catalog, not scattered across parsers.
   status, location, plus range sliders for house area/plot area/price
   built on Base UI's `Slider` primitive).
 
-## Implemented (phase 7, per-field provenance + remaining Tier B developers + candidate review workflow)
+## Implemented (phase 7, per-field provenance + remaining Tier B developers + candidate review workflow + dashboard enhancements)
 
 - **Per-field provenance**: `SourceEvidence` is now recorded once per
   actual non-null fact (`name`/`location`/`propertyType`/`units`/
@@ -262,3 +262,16 @@ added to the catalog, not scattered across parsers.
   SQL/JS. The dashboard gained an "Aggregator-only discoveries" stat card
   linking to `/investments?aggregatorOnly=1`, and `/investments` gained a
   matching toggle filter and row badge.
+- **Dashboard enhancements**: a "Discovery lead time trend" line chart
+  (`charts/lead-time-trend-chart.tsx`, x-axis = correlation `created_at`,
+  y-axis = `lead_time_days`, same ApexCharts pattern as
+  `new-investments-chart.tsx`/`scan-success-chart.tsx`); a "Coverage
+  breakdown" panel (`coverage-breakdown.tsx`) showing Tier A/B monitored
+  counts and developer/discovery/aggregator municipality coverage as
+  progress bars; a "Sources needing attention" panel
+  (`sources-needing-attention.tsx`) surfacing stale `source_snapshot`
+  rows, `BLOCKED` developers and municipalities with any `BLOCKED`
+  coverage category together, each linking to its full page (`/sources`,
+  `/developers`, `/coverage`) instead of duplicating it. No new backend
+  queries were needed - `listDevelopers`/`listMunicipalities`/`listSources`/
+  `listCorrelations` already exposed everything required.

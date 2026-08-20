@@ -7,9 +7,13 @@ import { StatCard } from "@/components/stat-card";
 import { RecentInvestmentsTable } from "@/components/recent-investments-table";
 import { NewInvestmentsChart } from "@/components/charts/new-investments-chart";
 import { ScanSuccessChart } from "@/components/charts/scan-success-chart";
+import { LeadTimeTrendChart } from "@/components/charts/lead-time-trend-chart";
+import { CoverageBreakdown } from "@/components/coverage-breakdown";
+import { SourcesNeedingAttention } from "@/components/sources-needing-attention";
 import { formatRelativeTime } from "@/lib/utils";
 import { STALE_THRESHOLD_MS } from "@/lib/constants";
 import type {
+  CorrelationRow,
   DeveloperRegistryRow,
   InvestmentWithState,
   MonitoringRunRow,
@@ -27,6 +31,7 @@ interface DashboardViewProps {
   municipalities: MunicipalityRegistryRow[];
   avgLeadTimeDays: number | null;
   aggregatorOnlyCount: number;
+  correlations: CorrelationRow[];
 }
 
 export function DashboardView({
@@ -39,6 +44,7 @@ export function DashboardView({
   municipalities,
   avgLeadTimeDays,
   aggregatorOnlyCount,
+  correlations,
 }: DashboardViewProps) {
   const { t, locale } = useI18n();
   const latestRun = runs[0];
@@ -135,6 +141,25 @@ export function DashboardView({
           </h2>
           <ScanSuccessChart runs={runs} />
         </div>
+        <div className="rounded-2xl border border-border bg-card p-5 md:p-6">
+          <h2 className="mb-4 text-sm font-medium text-muted-foreground">
+            {t("dashboard.leadTimeTrendChart")}
+          </h2>
+          <LeadTimeTrendChart correlations={correlations} />
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-5 md:p-6">
+          <h2 className="mb-4 text-sm font-medium text-muted-foreground">
+            {t("dashboard.coverageBreakdown")}
+          </h2>
+          <CoverageBreakdown developers={developers} municipalities={municipalities} />
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-border bg-card p-5 md:p-6">
+        <h2 className="mb-4 text-sm font-medium text-muted-foreground">
+          {t("dashboard.sourcesNeedingAttention")}
+        </h2>
+        <SourcesNeedingAttention sources={sources} developers={developers} municipalities={municipalities} />
       </div>
 
       <div className="rounded-2xl border border-border bg-card p-5 md:p-6">

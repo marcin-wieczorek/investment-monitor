@@ -29,7 +29,17 @@
     "avgLeadTime": "Śr. wyprzedzenie wykrycia",
     "leadTimeDays": "{days} dni",
     "noData": "Brak danych",
-    "aggregatorOnlyDiscoveries": "Odkrycia tylko z agregatora"
+    "aggregatorOnlyDiscoveries": "Odkrycia tylko z agregatora",
+    "leadTimeTrendChart": "Trend wyprzedzenia wykrycia",
+    "coverageBreakdown": "Podział pokrycia",
+    "tierAMonitored": "Monitorowani Tier A",
+    "tierBMonitored": "Monitorowani Tier B",
+    "sourcesNeedingAttention": "Źródła wymagające uwagi",
+    "noAttentionNeeded": "Wszystko w porządku - źródła zdrowe, brak zablokowanych deweloperów.",
+    "staleSources": "Nieaktualne źródła",
+    "staleSource": "Brak danych od ponad {hours}h",
+    "blockedDevelopers": "Zablokowani deweloperzy",
+    "blockedMunicipalities": "Gminy z zablokowanym źródłem"
   },
   "scan": {
     "runScan": "Uruchom skan",
@@ -122,6 +132,7 @@
     "reason": "Powód",
     "noResults": "Nie znaleziono jeszcze żadnych korelacji.",
     "leadTime": "Wyprzedzenie",
+    "leadTimeDays": "Wyprzedzenie (dni)",
     "daysBefore": "+{days}d przed deweloperem",
     "daysAfter": "{days}d po deweloperze",
     "sameDay": "ten sam dzień"

@@ -60,8 +60,17 @@ pipeline, discovery lead time, and price/watchlist UI (commit
   `findAggregatorOnlyDiscoveries` already used for the console report -
   kept single-sourced in Kotlin rather than re-derived in SQL/JS). The
   dashboard has an "Aggregator-only discoveries" stat card linking to
-  `/investments?aggregatorOnly=1`, and `/investments` has a matching
-  toggle + row badge.
+   `/investments?aggregatorOnly=1`, and `/investments` has a matching
+   toggle + row badge.
+- **Phase G done**: dashboard gained a "Discovery lead time trend" line
+  chart (`LeadTimeTrendChart`, x-axis = correlation `created_at`, y-axis
+  = `lead_time_days`, mirrors `NewInvestmentsChart`/`ScanSuccessChart`), a
+  "Coverage breakdown" panel (`CoverageBreakdown`: Tier A/B monitored
+  counts + developer/discovery/aggregator municipality coverage, each as
+  a mini progress bar), and a "Sources needing attention" panel
+  (`SourcesNeedingAttention`: stale `source_snapshot` rows, `BLOCKED`
+  developers, municipalities with any `BLOCKED` coverage category - each
+  linking to its full page instead of duplicating it).
 
 See `docs/ARCHITECTURE.md` "Implemented (phase 5/6, ...)" sections and
 `docs/SOURCES.md` for the authoritative, detailed record.
@@ -78,18 +87,12 @@ re-investigate unless new information surfaces.
 
 ### Phase F — Candidate status mutation + aggregator-only discovery view — DONE, see above.
 
-### Phase G — Dashboard enhancements
+### Phase G — Dashboard enhancements — DONE, see above.
 
-1. "Discovery lead time trend" chart (`ApexCharts` line/area, x-axis =
-   correlation date, y-axis = lead time days) - mirrors
-   `new-investments-chart.tsx`/`scan-success-chart.tsx` pattern.
-2. "Coverage progress" mini-chart or stat breakdown (Tier A vs Tier B
-   monitored count, municipality coverage by category) beyond the single
-   stat cards that exist today.
-3. "Sources needing attention" section - sources with `BLOCKED` status
-   (from `DiscoverySourceRegistry`/`DeveloperRegistry`) or stale
-   `source_snapshot` rows, surfaced together rather than requiring a
-   visit to `/sources` + `/coverage` + `/developers` separately.
+All roadmap phases (D-G) from this file are now complete. Remaining
+work is tracked in "Lower-priority / explicitly deferred" below and in
+`docs/ARCHITECTURE.md` "Not yet implemented" - nothing currently
+prioritized above those.
 
 ## Lower-priority / explicitly deferred (see AGENTS.md + docs/ARCHITECTURE.md)
 

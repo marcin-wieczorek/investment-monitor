@@ -3,6 +3,7 @@ import {
   countAggregatorOnlyDiscoveries,
   countAllInvestments,
   countAllSignals,
+  listCorrelations,
   listDevelopers,
   listMunicipalities,
   listRecentInvestments,
@@ -23,6 +24,7 @@ export default function DashboardPage() {
   const municipalities = listMunicipalities();
   const avgLeadTimeDays = averageDiscoveryLeadTime();
   const aggregatorOnlyCount = countAggregatorOnlyDiscoveries();
+  const correlations = listCorrelations(100);
 
   return (
     <DashboardView
@@ -35,6 +37,7 @@ export default function DashboardPage() {
       municipalities={municipalities}
       avgLeadTimeDays={avgLeadTimeDays}
       aggregatorOnlyCount={aggregatorOnlyCount}
+      correlations={correlations}
     />
   );
 }
