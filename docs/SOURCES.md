@@ -63,11 +63,47 @@ not guessed:
 
 | Source | Category | Finding |
 |---|---|---|
-| Kleszczewo BIP | Discovery | Client-side rendered (Next.js SPA) with no discoverable public JSON API; content only exists after JS execution. Would require reverse-engineering an undocumented private API. |
-| Komorniki BIP (`bip2.komorniki.pl`) | Discovery | Server-rendered (verified: HTML + working RSS feed), but the specific "Obwieszczenia" (planning announcements) section actively blocks repeated automated requests (WAF/rate-limiting observed in testing). The general "Ogłoszenia" RSS feed that *is* accessible doesn't carry planning/zoning content. |
+| Kleszczewo BIP, Dopiewo BIP, Buk BIP, Oborniki BIP, Pobiedziska BIP, Szamotuły BIP, Skoki BIP | Discovery | All run the Nefeni (`nowoczesnagmina.pl`) JavaScript SPA platform with no discoverable public JSON API; content only exists after JS execution. |
+| Komorniki BIP (`bip2.komorniki.pl`) | Discovery | Server-rendered (verified: HTML + working RSS feed), but the specific "Obwieszczenia" (planning announcements) section actively blocks repeated automated requests (WAF/rate-limiting observed in testing, HTTP 429). The archival BIP has a real WZ register but is explicitly marked archival. |
+| Luboń BIP | Discovery | Returns HTTP 429 (rate limiting/WAF). |
+| Kostrzyn BIP, Rokietnica BIP | Discovery | Consistent transport errors on both HTTP and HTTPS. |
+| Stęszew BIP | Discovery | Only an archival BIP is reachable; the current BIP URL returns transport errors. |
+| Kórnik BIP | Discovery | Planning page exists (Drupal 11) but obwieszczenia/WZ listing URLs return 404; needs further URL discovery before a parser can be built. |
+| Śrem BIP | Discovery | Planning section only contains application forms/instructions, no register of issued decisions. |
+| Mosina BIP | Discovery | BIP root page is a near-empty redirect stub; no discoverable WZ register. |
+| Murowana Goślina BIP, Puszczykowo BIP | Discovery | SSR sites with planning sections, but no confirmed WZ/obwieszczenia register structure verified yet. |
 | Otodom | Aggregator | Modern client-side-rendered listing; would require a headless browser (Selenium/Playwright) to read reliably, which this project deliberately avoids as a dependency for a local-first CLI tool. |
+| PWD Deweloper (`pwd.com.pl`) | Developer | JavaScript fingerprinting (FingerprintJS) anti-bot protection serves only a JS-based redirect/challenge page; no content reachable without executing JS. |
+| Archicom / Echo Residential (`archicom.pl`) | Developer | Client-side-rendered React/PWA storefront ("Oops! JavaScript is disabled" with no fallback content). |
+| Sovo Development | Developer | No working domain found (`sovodevelopment.pl` does not resolve; `sovo.pl` is an unrelated app). |
+| Nickel Development (`nickel.com.pl`) | Developer | Homepage is a heterogeneous hero carousel mixing investments, blog posts and resort/hotel properties, mostly linking off-domain with no location/area/price data. The dedicated investment-listing page (`/pl/nowe-mieszkania-...`) is AJAX-hydrated (Yii `multipage.js`) - raw HTML only contains empty `class="loading"` navigation stubs, no real card content. |
+| Villa, Budimex, Novaform, Cavallia, BTM, Constructa Plus, Virke, SGI, FB Antczak | Developer | No verifiable Poznań-area developer found under this name (wrong company, defunct/rebranded domain, unrelated business, or unreachable domain) - see `registry.DeveloperRegistry` for per-developer notes. |
 
 If any of these become accessible in the future (Komorniki's WAF rules
 change, Kleszczewo publishes a documented API, etc.), implement them
 following the same standard as `SwarzedzWzSource`/`RynekPierwotnySource`:
 real fixture, real parser, real tests, `verifySources` passing.
+
+## Implemented developer sources
+
+Beyond `chronos`/`greenbud`, the following are implemented and verified
+against live HTML (see `registry.DeveloperRegistry` for tier/status and
+`FixtureCaptureCli`/`SourceVerificationCli` for the full list): `atal`,
+`agrobex`, `spravia`, `duda`, `develia`, `jakon-inwest`, `robyg`, `linea`,
+`murapol`, `ataner`, `konimpex`, `pekabex`, `ebf`, `ggw`, `jaksbud`, `uwi`,
+`sagaris`. Several of these publish only a subset of fields (no area/price
+on the list page, or - for `jaksbud`/`uwi` - a single investment
+represented as an aggregated unit table rather than a card list); the
+per-parser KDoc documents exactly what each page publishes and why a
+field was deliberately left null.
+
+## Implemented discovery sources
+
+Beyond `swarzedz-wz`, four more municipal discovery sources are
+implemented: `czerwonak-obwieszczenia` and `tarnowo-podgorne-wz` (identical
+"Rekord BIP" CMS, share `RekordBipParser`), `suchy-las-npp` (Logonet CMS),
+and `poznan-ulicp` (City of Poznań's public-purpose siting register, a
+custom CMS that also exposes an XML/JSON API worth migrating to in a
+future revision). See `registry.DiscoverySourceRegistry` for the full
+per-municipality investigation record, including documented reasons for
+every municipality that is currently `BLOCKED` or `NOT_IMPLEMENTED`.

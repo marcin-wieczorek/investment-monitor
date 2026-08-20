@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.stereotype.Component
+import pl.marcin.investmentmonitor.analysis.DeterministicAnalysisSupport
 import pl.marcin.investmentmonitor.analysis.DeterministicScorer
 import pl.marcin.investmentmonitor.analysis.InvestmentAnalysis
 import pl.marcin.investmentmonitor.analysis.InvestmentAnalyzer
@@ -53,10 +54,10 @@ class OllamaInvestmentAnalyzer(
 
         return InvestmentAnalysis(
             investmentScore = scoring.overallScore,
-            locationScore = locationScore(locationProfile),
+            locationScore = DeterministicAnalysisSupport.locationScore(locationProfile),
             referenceProfileScore = scoring.overallScore,
-            priority = priorityFrom(interpretation.attractiveness) ?: priorityFrom(scoring),
-            reason = interpretation.reason ?: describeScore(scoring)
+            priority = priorityFrom(interpretation.attractiveness) ?: DeterministicAnalysisSupport.priorityFrom(scoring),
+            reason = interpretation.reason ?: DeterministicAnalysisSupport.describeScore(scoring)
         )
     }
 
@@ -81,9 +82,8 @@ class OllamaInvestmentAnalyzer(
         return interpretation
     }
 
-    private fun locationScore(locationProfile: LocationProfile?): Double? = locationProfile?.let {
-        (it.growthScore + it.infrastructureScore + it.transportScore + it.familyScore) / 40.0
-    }
+    private fun locationScore(locationProfile: LocationProfile?): Double? =
+        DeterministicAnalysisSupport.locationScore(locationProfile)
 
     private fun priorityFrom(attractiveness: String?): Priority? = when (attractiveness?.uppercase()) {
         "HIGH" -> Priority.HIGH
@@ -92,24 +92,13 @@ class OllamaInvestmentAnalyzer(
         else -> null
     }
 
-    private fun priorityFrom(scoring: ScoringResult): Priority = when {
-        scoring.overallScore >= 0.66 -> Priority.HIGH
-        scoring.overallScore >= 0.4 -> Priority.MEDIUM
-        else -> Priority.LOW
-    }
-
     private fun fallback(scoring: ScoringResult, reason: String): InvestmentAnalysis = InvestmentAnalysis(
         investmentScore = scoring.overallScore,
         locationScore = null,
         referenceProfileScore = scoring.overallScore,
-        priority = priorityFrom(scoring),
+        priority = DeterministicAnalysisSupport.priorityFrom(scoring),
         reason = reason
     )
-
-    private fun describeScore(scoring: ScoringResult): String = buildString {
-        append("Deterministic score ${"%.2f".format(scoring.overallScore)}.")
-        if (scoring.largePlotBonus) append(" Plot is unusually large for the reference profile.")
-    }
 
     private fun sha256(text: String): String {
         val digest = MessageDigest.getInstance("SHA-256").digest(text.toByteArray())

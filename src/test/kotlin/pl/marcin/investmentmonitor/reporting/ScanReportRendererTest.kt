@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test
 import pl.marcin.investmentmonitor.detection.ChangeType
 import pl.marcin.investmentmonitor.detection.InvestmentChange
 import pl.marcin.investmentmonitor.domain.AreaRange
+import pl.marcin.investmentmonitor.persistence.CorrelationLeadTime
 import pl.marcin.investmentmonitor.testsupport.testInvestment
 import pl.marcin.investmentmonitor.validation.ValidationResult
 import java.time.Instant
@@ -64,5 +65,21 @@ class ScanReportRendererTest {
 
         ScanReportRenderer.render(report) shouldContain "SmallPlot"
         (ScanReportRenderer.render(report).contains("LARGE PLOT")) shouldBe false
+    }
+
+    @Test
+    fun `renders a discovery lead time section with the number of days`() {
+        val report = emptyReport().copy(
+            leadTimes = listOf(CorrelationLeadTime(investmentName = "Osiedle X", signalTitle = "WZ decision", leadTimeDays = 14))
+        )
+
+        val output = ScanReportRenderer.render(report)
+        output shouldContain "DISCOVERY LEAD TIME"
+        output shouldContain "14 day(s) before developer publication"
+    }
+
+    @Test
+    fun `renders none for the lead time section when there are no correlations`() {
+        ScanReportRenderer.render(emptyReport()) shouldContain "DISCOVERY LEAD TIME"
     }
 }

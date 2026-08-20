@@ -2,7 +2,10 @@ package pl.marcin.investmentmonitor.monitoring
 
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
+import pl.marcin.investmentmonitor.analysis.DeterministicScorer
 import pl.marcin.investmentmonitor.analysis.InvestmentAnalyzer
+import pl.marcin.investmentmonitor.analysis.LocationProfiles
+import pl.marcin.investmentmonitor.analysis.ReferenceProfiles
 import pl.marcin.investmentmonitor.archival.RawHtmlArchiver
 import pl.marcin.investmentmonitor.correlation.CorrelationCandidate
 import pl.marcin.investmentmonitor.correlation.InvestmentCorrelator
@@ -10,15 +13,19 @@ import pl.marcin.investmentmonitor.detection.ChangeDetector
 import pl.marcin.investmentmonitor.detection.ChangeType
 import pl.marcin.investmentmonitor.detection.InvestmentChange
 import pl.marcin.investmentmonitor.domain.Correlation
+import pl.marcin.investmentmonitor.domain.DeveloperCandidate
 import pl.marcin.investmentmonitor.domain.ExtractionMethod
 import pl.marcin.investmentmonitor.domain.Investment
 import pl.marcin.investmentmonitor.domain.InvestmentSignal
 import pl.marcin.investmentmonitor.domain.LocationCatalog
+import pl.marcin.investmentmonitor.domain.LocationProfile
 import pl.marcin.investmentmonitor.domain.SourceCategory
 import pl.marcin.investmentmonitor.domain.SourceEvidence
 import pl.marcin.investmentmonitor.persistence.CorrelationRepository
+import pl.marcin.investmentmonitor.persistence.DeveloperCandidateRepository
 import pl.marcin.investmentmonitor.persistence.EvidenceRepository
 import pl.marcin.investmentmonitor.persistence.InvestmentRepository
+import pl.marcin.investmentmonitor.persistence.InvestmentScoreRepository
 import pl.marcin.investmentmonitor.persistence.MonitoringRunRepository
 import pl.marcin.investmentmonitor.persistence.RunStatus
 import pl.marcin.investmentmonitor.persistence.SignalRepository
@@ -28,6 +35,7 @@ import pl.marcin.investmentmonitor.reporting.AnalyzedChange
 import pl.marcin.investmentmonitor.reporting.DiscoverySourceReport
 import pl.marcin.investmentmonitor.reporting.ScanReport
 import pl.marcin.investmentmonitor.reporting.SourceReport
+import pl.marcin.investmentmonitor.registry.DeveloperRegistry
 import pl.marcin.investmentmonitor.source.AggregatorSource
 import pl.marcin.investmentmonitor.source.DiscoverySource
 import pl.marcin.investmentmonitor.source.InvestmentDetailEnricher
@@ -70,6 +78,9 @@ class MonitoringService(
     private val correlationRepository: CorrelationRepository,
     private val correlator: InvestmentCorrelator,
     private val rawHtmlArchiver: RawHtmlArchiver,
+    private val developerCandidateRepository: DeveloperCandidateRepository,
+    private val scorer: DeterministicScorer,
+    private val investmentScoreRepository: InvestmentScoreRepository,
     private val clock: Clock = Clock.systemUTC()
 ) {
 
@@ -89,6 +100,7 @@ class MonitoringService(
 
         val correlations = runCorrelation()
         val aggregatorOnlyDiscoveries = findAggregatorOnlyDiscoveries(aggregatorReports)
+        recordUnknownDeveloperCandidates(aggregatorOnlyDiscoveries)
 
         rawHtmlArchiver.cleanup()
 
@@ -115,7 +127,8 @@ class MonitoringService(
             aggregatorReports = aggregatorReports,
             discoveryReports = discoveryReports,
             correlations = correlations,
-            aggregatorOnlyDiscoveries = aggregatorOnlyDiscoveries
+            aggregatorOnlyDiscoveries = aggregatorOnlyDiscoveries,
+            leadTimes = correlationRepository.findAllWithLeadTime()
         )
     }
 
@@ -165,9 +178,17 @@ class MonitoringService(
         }
 
         val enriched = detailEnricher.enrich(current)
-        val analysis = investmentAnalyzer.analyze(enriched)
+        val locationProfile = locationProfileFor(enriched)
+
+        val scoring = scorer.score(enriched, locationProfile, ReferenceProfiles.DEFAULT)
+        investmentScoreRepository.save(enriched.canonicalKey, scoring, Instant.now(clock))
+
+        val analysis = investmentAnalyzer.analyze(enriched, locationProfile)
         return AnalyzedChange(change.copy(current = enriched), analysis)
     }
+
+    private fun locationProfileFor(investment: Investment): LocationProfile? =
+        investment.location?.let(LocationCatalog::findIn)?.let(LocationProfiles::find)
 
     private fun commitInvestments(sourceId: String, category: SourceCategory, investments: List<Investment>) {
         val seenAt = Instant.now(clock)
@@ -304,6 +325,31 @@ class MonitoringService(
             val location = investment.location?.let(LocationCatalog::findIn)
             location == null || location !in developerLocations
         }
+    }
+
+    /**
+     * Feedback loop for AGENTS.md sections 6/33: when an aggregator
+     * publishes an investment from a developer the system does not yet
+     * know about ([DeveloperRegistry] has no entry for that name), record
+     * a [DeveloperCandidate] for later human review rather than silently
+     * ignoring the discovery or auto-trusting the developer.
+     */
+    private fun recordUnknownDeveloperCandidates(aggregatorOnlyDiscoveries: List<Investment>) {
+        aggregatorOnlyDiscoveries
+            .filter { investment -> DeveloperRegistry.findByName(investment.developer) == null }
+            .filter { investment -> developerCandidateRepository.findByName(investment.developer) == null }
+            .forEach { investment ->
+                developerCandidateRepository.save(
+                    DeveloperCandidate(
+                        developerName = investment.developer,
+                        discoveredUrl = investment.url,
+                        municipality = investment.location?.let(LocationCatalog::findIn),
+                        discoveredFromSource = investment.source,
+                        discoveredAt = Instant.now(clock)
+                    )
+                )
+                logger.info("Recorded new developer candidate '{}' from source '{}'", investment.developer, investment.source)
+            }
     }
 
     /**

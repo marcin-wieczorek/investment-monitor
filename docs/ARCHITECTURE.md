@@ -149,13 +149,101 @@ added to the catalog, not scattered across parsers.
 
 ## Not yet implemented
 
-- Additional discovery sources beyond Gmina Swarzędz (Kleszczewo,
-  Komorniki: real URLs identified, HTML inspected, but blocked by
-  client-side rendering / anti-bot measures in this environment - see
-  `docs/DISCOVERY.md` for the investigation and what would unblock them).
+- Additional discovery sources beyond the six municipalities implemented
+  so far - see `registry/DiscoverySourceRegistry.kt` for the full,
+  per-municipality investigation record (which BIPs are `BLOCKED` and why).
 - Otodom aggregator (requires JS execution to read; deliberately not
   implemented with a headless browser to keep this a lightweight,
   local-first CLI tool - see `docs/DISCOVERY.md`).
 - Additional detail parsers for other Chronos/Greenbud investment sites.
 - Automated test coverage for `InvestmentDetailEnricher` and
   `PolishAreaFormat` edge cases (still covered only indirectly).
+- Per-field developer-candidate deduplication beyond exact-name matching
+  (e.g. fuzzy matching "ABC Development" vs "ABC Development Sp. z o.o.").
+- Per-field provenance: `SourceEvidence` is still recorded once per
+  investment/signal at commit time, not once per individual fact.
+- 7 remaining Tier B `CANDIDATE` developers with a verified website but no
+  adapter yet (Cordia, Ronson, SIVANET, MJ Deweloper, Area Development,
+  Inwestycje Wielkopolski, Vastbouw - see `registry/DeveloperRegistry.kt`).
+- Frontend mutation of a `DeveloperCandidate`'s status (accept/reject) -
+  currently display-only on `/developers`.
+
+## Implemented (phase 6, deterministic scoring pipeline + discovery lead time + watchlist)
+
+- **Deterministic scoring always runs, LLM or not**: `DefaultInvestmentAnalyzer`
+  replaces the old `NoOpInvestmentAnalyzer` - "no LLM configured" no longer
+  means "no scoring happens". It calls `DeterministicScorer` directly
+  against `ReferenceProfiles.DEFAULT` and a `LocationProfile` resolved via
+  `LocationCatalog.findIn()` + `LocationProfiles.find()`, exactly the same
+  deterministic path `OllamaInvestmentAnalyzer` uses for its own
+  score/fallback. The priority/location-score/describe-score conversions
+  are shared via `DeterministicAnalysisSupport` so both analyzers describe
+  an identical score identically.
+- **Scoring is persisted**: `MonitoringService` calls `DeterministicScorer`
+  once per newly detected investment (independent of which `InvestmentAnalyzer`
+  is active) and saves the full `ScoringResult` - including
+  `plotToHouseRatio`, the large-plot bonus flag, and every component score -
+  via `InvestmentScoreRepository`/`investment_score` table
+  (`V6__investment_score_watchlist.sql`), keyed by canonical key like
+  `llm_analysis`. This makes the "how similar is this to what I'm looking
+  for" number queryable and displayable, not just logged once in a report.
+- **Discovery lead time**: `CorrelationRepository.findAllWithLeadTime()`
+  joins `correlation`/`investment`/`investment_signal` to compute
+  `julianday(investment.first_seen_at) - julianday(signal.first_seen_at)`
+  in SQL - a positive value means the discovery signal was detected before
+  the developer published the investment (the core "early detection" KPI,
+  AGENTS.md section 28). `ScanReport.leadTimes` carries this into a new
+  `DISCOVERY LEAD TIME` report section (`ScanReportRenderer`).
+- **Watchlist**: `investment_state` gained a `watched` column (alongside
+  the existing `archived`), with its own upsert query (`setWatched`) and
+  API route (`PUT /api/investments/[id]/watch`), independent of archiving.
+- **Frontend**: investments list gained a colour-coded score badge column
+  (green ≥66%, amber ≥40%, red below), a price column, sorting by score,
+  and a "watched only" filter; the investment detail page gained a full
+  scoring breakdown (progress bars per component, property-type/location-tier/
+  large-plot-bonus badges), a price badge, a plot-to-house-ratio badge, and
+  a watch/unwatch button; `/correlations` gained a lead-time badge per row
+  ("+N days before developer"); the dashboard gained an average discovery
+  lead time stat card.
+
+## Implemented (phase 5, developer/municipality registries + broader coverage)
+
+- **`Developer`/`DeveloperCandidate`/`Municipality`** (`domain/`) make the
+  developer and geographic-coverage concepts first-class, independent of
+  whether a working source adapter exists yet - see [`DeveloperStatus`]
+  and [`MunicipalitySourceStatus`] for the explicit lifecycle states that
+  keep a developer/municipality visible instead of silently disappearing
+  when unimplemented.
+- **`registry.DeveloperRegistry`** (`registry/DeveloperRegistry.kt`) lists
+  every Tier A/B developer from AGENTS.md sections 3/4 with a manually
+  verified website (or `null` + `BLOCKED`/`CANDIDATE` status when no
+  working URL could be found - never an invented one). Mirrored into the
+  `developer_registry` table by `V5__developer_municipality_registry.sql`
+  so the frontend can read it directly.
+- **`registry.MunicipalityRegistry`** lists all 22 target Metropolia
+  Poznań municipalities (`domain/LocationCatalog.kt` gained the 8 that
+  were previously missing: Buk, Oborniki, Pobiedziska, Puszczykowo, Skoki,
+  Stęszew, Szamotuły, Śrem) with per-category (`developer`/`discovery`/
+  `aggregator`) coverage status.
+- **`registry.DiscoverySourceRegistry`** records the detailed municipal
+  BIP investigation outcome (URL looked at, status, and - when blocked - a
+  specific documented reason), which is more detail than
+  `MunicipalityRegistry`'s coverage status alone and is essential context
+  for continuing discovery-source work later.
+- **16 new developer adapters** and **4 new discovery adapters** - see
+  `docs/SOURCES.md` "Implemented developer sources"/"Implemented discovery
+  sources" for the full list, and `registry/DeveloperRegistry.kt`/
+  `registry/DiscoverySourceRegistry.kt` for which developers/municipalities
+  were investigated and found unimplementable (JS SPA, anti-bot, no
+  register, ...).
+- **`DeveloperCandidateRepository`**: `MonitoringService` now records a
+  `DeveloperCandidate` whenever an aggregator-only discovery names a
+  developer not present in `DeveloperRegistry` - the feedback loop
+  described in AGENTS.md sections 6/33, always requiring human review
+  before a candidate becomes a real adapter.
+- **Frontend**: `/developers` (Tier A/B registry + discovered candidates)
+  and `/coverage` (per-municipality source coverage matrix) pages; the
+  investments list now shows a source-category badge per row and a
+  collapsible "advanced filters" panel (source category, property type,
+  status, location, plus range sliders for house area/plot area/price
+  built on Base UI's `Slider` primitive).

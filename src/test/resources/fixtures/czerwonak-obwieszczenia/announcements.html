@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="deklaracja-dostępności" content="http://bip.czerwonak.pl/deklaracja-dostepnosci" />
+    <base href="/" />
+    <title>Gmina Czerwonak BIP - Obwieszczenia 6469</title>
+    <link rel="stylesheet" href="Content/libs/bootstrap/dist/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="Content/libs/bootstrap-select/bootstrap-select.min.css" type="text/css" />
+    <link rel="stylesheet" href="Content/content/icons/fontawesome/css/all.css" type="text/css" />
+    <link rel="stylesheet" href="Content/content/icons/rekord/iconmoon.css" type="text/css" />
+    <link rel="stylesheet" href="Content/content/skin/bip_ugczerwonak/scss/style.css" type="text/css" media="all" />
+    <script src="Content/libs/jquery/dist/jquery.min.js" type="text/javascript"></script>
+    <script src="Content/libs/popper/popper.min.js" type="text/javascript"></script>
+    <script src="Content/libs/bootstrap/dist/js/bootstrap.bundle.min.js" type="text/javascript"></script>
+    <script src="Content/libs/jquery-input-mask/jquery.inputmask.bundle.js" type="text/javascript"></script>
+    <script src="Content/scripts/template.js" type="text/javascript"></script>
+    <script src="Content/scripts/components/layout.js" type="text/javascript"></script>
+    <script src="Content/scripts/handleKeys.js" type="text/javascript"></script>
+    
+    <script>
+        $(function() {
+            var mainSection = document.getElementById('main');
+            var shouldRemoveTopPadding = false; 
+            
+            if (shouldRemoveTopPadding) {
+                removeTopPadding();
+            } else {
+                addTopPadding();
+            }
+            
+            function removeTopPadding() {
+                mainSection.classList.add('remove_top_padding');
+            }
+            
+            function addTopPadding() {
+                mainSection.classList.remove('remove_top_padding');
+            }
+        })
+    </script>
+
+</head>
+
+<body data-customer="bip_ugczerwonak">
+<div class="app-content" style="overflow-x: hidden;">
+    <ul class="nav fixed-top" aria-label="menu nawigacyjne">
+        <li id="goToMainMenu"
+            tabindex="0"
+            onclick="goToMainMenu()"
+            onkeypress="goToMainMenu()"
+            class="cursor_pointer">
+            Przejdź do menu głównego
+        </li>
+        <li id="goToContent"
+            tabindex="0"
+            onclick="goToContent()"
+            onkeypress="goToContent()"
+            class="cursor_pointer">
+            Przejdź do treści
+        </li>
+        <li id="goToDataSearcher"
+            tabindex="0"
+            onclick="goToDataSearcher()"
+            onkeypress="goToDataSearcher()"
+            class="cursor_pointer">
+            Przejdź do wyszukiwarki
+        </li>
+        <li id="goToDeclaration"
+            tabindex="0"
+            onclick="goToDeclaration()"
+            onkeypress="goToDeclaration()"
+            class="cursor_pointer">
+            Przejdź do deklaracji dostępności
+        </li>
+        <li id="goToSiteMap"
+            tabindex="0"
+            onclick="goToSiteMap()"
+            onkeypress="goToSiteMap()"
+            class="cursor_pointer">
+            Przejdź do mapy strony
+        </li>
+    </ul>
+        <div id="cookies_policy">
+        <div class="container cookies__container mb-2 mt-2 p-0">
+            <div class="row col-12 m-0 pb-3 pt-3">
+                <div class="col-12 col-md-9">
+                    <p class="m-0">Nasza strona wykorzystuje pliki cookies.</p>
+                    <p class="m-0">Korzystanie z witryny oznacza zgodę na ich zapis lub wykorzystanie.</p>
+                    <p class="m-0">Więcej informacji można znaleźć w <a class="font-weight-bold" href="/polityka-cookies">Polityce Cookies.</a></p>
+                </div>
+                <div class="col-12 col-md-3 mt-2 pt-2" style="text-align: right;">
+                    <button class="btn float-md-right" aria-label="Rozumiem i akceptuję" onclick="acceptCookiesPolicy()">Rozumiem i akceptuję</button>
+                </div>
+            </div>
+        </div>
+        <script src="Content/scripts/components/cookiesPolicy.js" type="text/javascript"></script>
+    </div>
+
+    <header id="header">
+    <div class="container all pl-0">
+        <div class="content-header">
+            <div class="top">
+                <div class="container">
+                    <div class="row justify-content-end">
+                        <div class="col-xl-4 col-md-3 col-sm-12">
+                            <a href="https://www.gov.pl/bip" id="bip_gov" target="_blank"
+                               title="Oficjalna strona Biuletynu Informacji Publicznej - link otwiera się w nowej karcie">
+                                <img id="bipLogo" src="/content/img/bip_logo.png" width="136" height="60" alt="Logo biuletynu informacji publicznej" class="header_logo" title="Biuletyn informacji publicznej">
+                            </a>
+                        </div>
+                        <div class="col-xl-4 col-md-4 col-sm-12 d-flex justify-content-center my-auto order-2 p-0 pt-1 pb-1 pt-md-0 pb-md-0 text-center">
+                            <h1 tabindex="0">
+                                Gmina Czerwonak
+                            </h1>
+                        </div>
+                        <div class="col-xl-4 col-md-5 col-sm-12 d-flex justify-content-end my-auto order-md-3 text-right wcag">
+                            <span role="button"
+                                  tabindex="0"
+                                  title="Resetuj czcionkę"
+                                  id="fontzero"
+                                  aria-label="Resetuj czcionkę">
+                                A
+                            </span>
+                            <span role="button"
+                                  tabindex="0"
+                                  title="Powiększ czcionkę"
+                                  id="fontup"
+                                  aria-label="Powiększ czcionkę">
+                                A+
+                            </span>
+                            <span role="button"
+                                  tabindex="0"
+                                  title="Zmniejsz czcionkę"
+                                  id="fontdown"
+                                  aria-label="Zmniejsz czcionkę">
+                                A-
+                            </span>
+                            <span role="button"
+                                  tabindex="0"
+                                  title="Wysoki kontrast"
+                                  id="kontrast"
+                                  aria-label="Wysoki kontrast">
+                                <i class="fa fa-low-vision" aria-hidden="true"></i>
+                            </span>
+                            <span role="button"
+                                  tabindex="0"
+                                  title="Deklaracja dostępności"
+                                  id="deklaracja"
+                                  aria-label="Deklaracja dostępności">
+                                <i class="fa fa-wheelchair" aria-hidden="true"></i>
+                            </span>
+                            <span role="button"
+                                  tabindex="0"
+                                  title="Idź do strony głównej"
+                                  id="homePage"
+                                  aria-label="Idź do strony głównej">
+                                <i class="fa fa-home" aria-hidden="true"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<script src="Content/scripts/components/header.js" type="text/javascript"></script>
+    <div class="container" id="container-wrapper">
+        <div class="row">
+            <div class="col-lg-3 left-sidebar pl-0">
+                <span class="icon icon-menu" id="toggleRwd"></span>
+<div class="left-sidebar noselect" id="main-menu" tabindex="0">
+    <nav class="nav">
+                <ul class="main-nav mb-0" role="presentation">
+                    <li class="parent" data-name="Urz&#x105;d Gminy">
+                        <div class="children-handler">
+                            <i class="far fa-list-alt"></i>
+                            <h5 tabindex="0" class="d-inline font-weight-normal" style="font-size: 16px">Urz&#x105;d Gminy</h5>
+                        </div>
+                        <ul class="nav flex-column children mb-0" role="presentation">
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5677"
+                                           data-start-page="False"
+                                           href="/5677">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Dane adresowe</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5857"
+                                           data-start-page="False"
+                                           href="/5857">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Kierownictwo Urz&#x119;du</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link"
+                                           target="_blank"
+                                           href="https://ups.czerwonak.pl/pl/mieszkaniec/kontakt">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Wydzia&#x142;y i Biura</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link"
+                                           target="_blank"
+                                           href="https://eurzad.czerwonak.pl">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Portal Interesanta</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5577"
+                                           data-start-page="False"
+                                           href="/5577">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Procedury i formularze za&#x142;atwiania spraw w Urz&#x119;dzie</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6011"
+                                           data-start-page="False"
+                                           href="/6011">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Przyjmowanie skarg i wniosk&#xF3;w</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="7117"
+                                           data-start-page="False"
+                                           href="/7117">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Dost&#x119;pno&#x15B;&#x107;</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link"
+                                           target="_blank"
+                                           href="http://pbip.czerwonak.pl">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>ARCHIWUM BIP</span>
+                                        </a>
+                                </li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="main-nav mb-0" role="presentation">
+                    <li class="parent" data-name="Gmina Czerwonak">
+                        <div class="children-handler">
+                            <i class="far fa-list-alt"></i>
+                            <h5 tabindex="0" class="d-inline font-weight-normal" style="font-size: 16px">Gmina Czerwonak</h5>
+                        </div>
+                        <ul class="nav flex-column children mb-0" role="presentation">
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6014"
+                                           data-start-page="False"
+                                           href="/6014">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Statut Gminy</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6649"
+                                           data-start-page="False"
+                                           href="/6649">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Dokumenty strategiczne</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6863"
+                                           data-start-page="False"
+                                           href="/6863">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Raport o stanie gminy</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6016"
+                                           data-start-page="False"
+                                           href="/6016">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Finanse</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6017"
+                                           data-start-page="False"
+                                           href="/6017">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Podatki i op&#x142;aty</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6019"
+                                           data-start-page="False"
+                                           href="/6019">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Gospodarka przestrzenna</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6021"
+                                           data-start-page="False"
+                                           href="/6021">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Maj&#x105;tek gminy</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6657"
+                                           data-start-page="False"
+                                           href="/6657">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Ochrona &#x15B;rodowiska</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6658"
+                                           data-start-page="False"
+                                           href="/6658">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Budowa i eksploatacja dr&#xF3;g</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="7121"
+                                           data-start-page="False"
+                                           href="/7121">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Polityka zdrowotna</span>
+                                        </a>
+                                </li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="main-nav mb-0" role="presentation">
+                    <li class="parent" data-name="Rada Gminy">
+                        <div class="children-handler">
+                            <i class="far fa-list-alt"></i>
+                            <h5 tabindex="0" class="d-inline font-weight-normal" style="font-size: 16px">Rada Gminy</h5>
+                        </div>
+                        <ul class="nav flex-column children mb-0" role="presentation">
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="7306"
+                                           data-start-page="False"
+                                           href="/7306">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Kadencja 2024-2029</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6025"
+                                           data-start-page="False"
+                                           href="/6025">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Kadencja 2018-2024</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6646"
+                                           data-start-page="False"
+                                           href="/6646">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Komunikaty</span>
+                                        </a>
+                                </li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="main-nav mb-0" role="presentation">
+                    <li class="parent" data-name="Prawo lokalne">
+                        <div class="children-handler">
+                            <i class="far fa-list-alt"></i>
+                            <h5 tabindex="0" class="d-inline font-weight-normal" style="font-size: 16px">Prawo lokalne</h5>
+                        </div>
+                        <ul class="nav flex-column children mb-0" role="presentation">
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6039"
+                                           data-start-page="False"
+                                           href="/6039">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Uchwa&#x142;y Rady Gminy i projekty uchwa&#x142;</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6043"
+                                           data-start-page="False"
+                                           href="/6043">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Zarz&#x105;dzenia W&#xF3;jta</span>
+                                        </a>
+                                </li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="main-nav mb-0" role="presentation">
+                    <li class="parent" data-name="Jednostki gminy">
+                        <div class="children-handler">
+                            <i class="far fa-list-alt"></i>
+                            <h5 tabindex="0" class="d-inline font-weight-normal" style="font-size: 16px">Jednostki gminy</h5>
+                        </div>
+                        <ul class="nav flex-column children mb-0" role="presentation">
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6076"
+                                           data-start-page="False"
+                                           href="/6076">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Jednostki organizacyjne gminy</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6078"
+                                           data-start-page="False"
+                                           href="/6078">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>So&#x142;ectwa i Osiedla</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6077"
+                                           data-start-page="False"
+                                           href="/6077">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Instytucje kultury</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6079"
+                                           data-start-page="False"
+                                           href="/6079">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Sp&#xF3;&#x142;ki z udzia&#x142;em gminy</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link"
+                                           target="_blank"
+                                           href="https://czerwonak.pl/pl/mieszkaniec/informacje/1/udzial-w-stowarzyszeniach/380">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Stowarzyszenia i Zwi&#x105;zki z udzia&#x142;em gminy</span>
+                                        </a>
+                                </li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="main-nav mb-0" role="presentation">
+                    <li class="parent" data-name="Rady konsultacyjne">
+                        <div class="children-handler">
+                            <i class="far fa-list-alt"></i>
+                            <h5 tabindex="0" class="d-inline font-weight-normal" style="font-size: 16px">Rady konsultacyjne</h5>
+                        </div>
+                        <ul class="nav flex-column children mb-0" role="presentation">
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6470"
+                                           data-start-page="False"
+                                           href="/6470">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Rada Dzia&#x142;alno&#x15B;ci Po&#x17C;ytku Publicznego</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6471"
+                                           data-start-page="False"
+                                           href="/6471">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Rada Senior&#xF3;w Gminy Czerwonak</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="7262"
+                                           data-start-page="False"
+                                           href="/7262">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>M&#x142;odzie&#x17C;owa Rada Gminy Czerwonak</span>
+                                        </a>
+                                </li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="main-nav mb-0" role="presentation">
+                    <li class="parent" data-name="Przetargi">
+                        <div class="children-handler">
+                            <i class="far fa-list-alt"></i>
+                            <h5 tabindex="0" class="d-inline font-weight-normal" style="font-size: 16px">Przetargi</h5>
+                        </div>
+                        <ul class="nav flex-column children mb-0" role="presentation">
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="7108"
+                                           data-start-page="False"
+                                           href="/7108">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Zam&#xF3;wienia publiczne od 1.01.2021</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6654"
+                                           data-start-page="False"
+                                           href="/6654">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Zam&#xF3;wienia publiczne powy&#x17C;ej 30.000 euro</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6071"
+                                           data-start-page="False"
+                                           href="/6071">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Zam&#xF3;wienia publiczne poni&#x17C;ej 30.000 euro</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6073"
+                                           data-start-page="False"
+                                           href="/6073">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Przetargi dotycz&#x105;ce nieruchomo&#x15B;ci</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6868"
+                                           data-start-page="False"
+                                           href="/6868">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Przetargi jednostek organizacyjnych</span>
+                                        </a>
+                                </li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="main-nav mb-0" role="presentation">
+                    <li class="parent" data-name="Inne dane udost&#x119;pniane publicznie &#x9;">
+                        <div class="children-handler">
+                            <i class="far fa-list-alt"></i>
+                            <h5 tabindex="0" class="d-inline font-weight-normal" style="font-size: 16px">Inne dane udost&#x119;pniane publicznie &#x9;</h5>
+                        </div>
+                        <ul class="nav flex-column children mb-0" role="presentation">
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6423"
+                                           data-start-page="False"
+                                           href="/6423">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>O&#x15B;wiadczenia maj&#x105;tkowe</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6424"
+                                           data-start-page="False"
+                                           href="/6424">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Kontrole</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6425"
+                                           data-start-page="False"
+                                           href="/6425">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Petycje</span>
+                                        </a>
+                                </li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="main-nav mb-0" role="presentation">
+                    <li class="parent" data-name="Prowadzone rejestry i ewidencje">
+                        <div class="children-handler">
+                            <i class="far fa-list-alt"></i>
+                            <h5 tabindex="0" class="d-inline font-weight-normal" style="font-size: 16px">Prowadzone rejestry i ewidencje</h5>
+                        </div>
+                        <ul class="nav flex-column children mb-0" role="presentation">
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6464"
+                                           data-start-page="False"
+                                           href="/6464">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Rejestry</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6851"
+                                           data-start-page="False"
+                                           href="/6851">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Rejestr um&#xF3;w</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6465"
+                                           data-start-page="False"
+                                           href="/6465">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Ewidencje</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6466"
+                                           data-start-page="False"
+                                           href="/6466">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Archiwum</span>
+                                        </a>
+                                </li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="main-nav mb-0" role="presentation">
+                    <li class="parent" data-name="Informacje">
+                        <div class="children-handler">
+                            <i class="far fa-list-alt"></i>
+                            <h5 tabindex="0" class="d-inline font-weight-normal" style="font-size: 16px">Informacje</h5>
+                        </div>
+                        <ul class="nav flex-column children mb-0" role="presentation">
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6468"
+                                           data-start-page="False"
+                                           href="/6468">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Komunikaty</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6469"
+                                           data-start-page="False"
+                                           href="/6469">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Obwieszczenia</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="7188"
+                                           data-start-page="False"
+                                           href="/7188">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Zakup preferencyjny paliwa sta&#x142;ego</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6655"
+                                           data-start-page="False"
+                                           href="/6655">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Dzia&#x142;alno&#x15B;&#x107; po&#x17C;ytku publicznego</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6656"
+                                           data-start-page="False"
+                                           href="/6656">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Konsultacje</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6430"
+                                           data-start-page="False"
+                                           href="/6430">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>&#x141;awnicy</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6497"
+                                           data-start-page="False"
+                                           href="/6497">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Zgromadzenia publiczne</span>
+                                        </a>
+                                </li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="main-nav mb-0" role="presentation">
+                    <li class="parent" data-name="Wybory">
+                        <div class="children-handler">
+                            <i class="far fa-list-alt"></i>
+                            <h5 tabindex="0" class="d-inline font-weight-normal" style="font-size: 16px">Wybory</h5>
+                        </div>
+                        <ul class="nav flex-column children mb-0" role="presentation">
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="7375"
+                                           data-start-page="False"
+                                           href="/7375">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Wybory Prezydenta RP 2025</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="7290"
+                                           data-start-page="False"
+                                           href="/7290">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Wybory samorz&#x105;dowe 2024</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6979"
+                                           data-start-page="False"
+                                           href="/6979">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Wybory Prezydenta RP 28.06.2020</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="7256"
+                                           data-start-page="False"
+                                           href="/7256">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Wybory Parlamentarne 2023</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6882"
+                                           data-start-page="False"
+                                           href="/6882">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Wybory Parlamentarne 2019</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6843"
+                                           data-start-page="False"
+                                           href="/6843">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Wybory do Parlamentu Europejskiego</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6867"
+                                           data-start-page="False"
+                                           href="/6867">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Wybory do Izb Rolnicznych</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="7248"
+                                           data-start-page="False"
+                                           href="/7248">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Podzia&#x142; na okr&#x119;gi i obwody g&#x142;osowania</span>
+                                        </a>
+                                </li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="main-nav mb-0" role="presentation">
+                    <li class="parent" data-name="Spisy powszechne">
+                        <div class="children-handler">
+                            <i class="far fa-list-alt"></i>
+                            <h5 tabindex="0" class="d-inline font-weight-normal" style="font-size: 16px">Spisy powszechne</h5>
+                        </div>
+                        <ul class="nav flex-column children mb-0" role="presentation">
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6988"
+                                           data-start-page="False"
+                                           href="/6988">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Powszechny spis rolny</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="7090"
+                                           data-start-page="False"
+                                           href="/7090">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Narodowy Spis Powszechny Ludno&#x15B;ci i Mieszka&#x144; 2021</span>
+                                        </a>
+                                </li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="main-nav mb-0" role="presentation">
+                    <li class="parent" data-name="Dost&#x119;p do Informacji Publicznej">
+                        <div class="children-handler">
+                            <i class="far fa-list-alt"></i>
+                            <h5 tabindex="0" class="d-inline font-weight-normal" style="font-size: 16px">Dost&#x119;p do Informacji Publicznej</h5>
+                        </div>
+                        <ul class="nav flex-column children mb-0" role="presentation">
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6480"
+                                           data-start-page="False"
+                                           href="/6480">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Udost&#x119;pnianie informacji publicznej w Urz&#x119;dzie Gminy Czerwonak</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6481"
+                                           data-start-page="False"
+                                           href="/6481">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Ponowne wykorzystywanie informacji sektora publicznego w Urz&#x119;dzie Gminy</span>
+                                        </a>
+                                </li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="main-nav mb-0" role="presentation">
+                    <li class="parent" data-name="Praca">
+                        <div class="children-handler">
+                            <i class="far fa-list-alt"></i>
+                            <h5 tabindex="0" class="d-inline font-weight-normal" style="font-size: 16px">Praca</h5>
+                        </div>
+                        <ul class="nav flex-column children mb-0" role="presentation">
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6483"
+                                           data-start-page="False"
+                                           href="/6483">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Oferty pracy</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6484"
+                                           data-start-page="False"
+                                           href="/6484">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Program praktyk w Urz&#x119;dzie Gminy Czerwonak</span>
+                                        </a>
+                                </li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="main-nav mb-0" role="presentation">
+                    <li class="parent" data-name="Informacje o BIP">
+                        <div class="children-handler">
+                            <i class="far fa-list-alt"></i>
+                            <h5 tabindex="0" class="d-inline font-weight-normal" style="font-size: 16px">Informacje o BIP</h5>
+                        </div>
+                        <ul class="nav flex-column children mb-0" role="presentation">
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5571"
+                                           data-start-page="False"
+                                           href="/5571">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Redakcja biuletynu</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5573"
+                                           data-start-page="False"
+                                           href="/5573">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Informacje wy&#x142;&#x105;czone</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5570"
+                                           data-start-page="False"
+                                           href="/5570">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Obja&#x15B;nienia skr&#xF3;t&#xF3;w</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5612"
+                                           data-start-page="False"
+                                           href="/5612">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Pe&#x142;na historia zmian</span>
+                                        </a>
+                                </li>
+                        </ul>
+                    </li>
+                </ul>
+            <script src="Content/scripts/components/mainMenu.js" type="text/javascript"></script>
+    </nav>
+</div>
+
+
+            </div>
+            <div class="col-lg-9 content" id="content">
+                <main>
+                    <div class="content-heading">
+    <div class="row h-100">
+        <div class="col-12 col-md-12 col-lg-8 mr-auto">
+                <h2 class="pb-0 pt-1" tabindex="0">
+                    Informacje
+                </h2>
+                <h3 class="small pl-4 m-0 pb-2 ml-1" id="historyPath">
+                            <span class="historyPathElement" tabindex="0" data-id="6469">Obwieszczenia</span>
+                </h3>
+        </div>
+        <div class="col-12 col-lg-1 my-auto share text-center">
+            <span role="button"
+                  class="d-lg-block"
+                  title="Drukuj stronę"
+                  aria-label="Drukuj stronę"
+                  id="print"
+                  tabindex="0">
+                <i class="icon-print" aria-hidden="true"></i>
+            </span>
+            <span role="button"
+                  class=""
+                  id="dropdownMenu2"
+                  data-toggle="dropdown"
+                  tabindex="0"
+                  aria-label="Menu udostępnień"
+                  aria-expanded="false">
+                <i class="icon-squares pl-1" aria-hidden="true"></i>
+            </span>
+            <div class="dropdown-menu dropdown-menu-right" id="dropdownItems" role="listbox">
+                <a class="shareFb dropdown-item fb-ic mr-3 m-0"
+                   role="option"
+                   tabindex="0"
+                   href="/">
+                    <i class="fab fa-facebook-f"></i>
+                    udostępnij na facebook
+                </a>
+                <a class="shareGoogle dropdown-item m-0"
+                   role="option"
+                   tabindex="0"
+                   href="/">
+                    <i class="fab fa-google-plus-g"></i>
+                    udostępnij na Google+
+                </a>
+                <a class="sendMail dropdown-item m-0"
+                   role="option"
+                   tabindex="0"
+                   href="/">
+                    <i class="fas fa-paper-plane"></i>
+                    wyślij pocztą email
+                </a>
+            </div>
+        </div>
+        <div class="col-8 col-lg-3 col-md-8 my-auto search">
+            <div class="row md-form">
+                <label for="data-searcher" class="sr-only">Wpisz tekst do wyszukania</label>
+                <input class="col-9 form-control"
+                       type="text"
+                       placeholder="Szukaj"
+                       id="data-searcher"
+                       tabindex="0">
+                <a href="/"
+                   tabindex="0"
+                   class="col-2 my-auto"
+                   title="Szukaj"
+                   role="button">
+                    <span class="sr-only">Szukaj</span>
+                    <i class="fas fa-search"></i>
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="Content/scripts/components/historyBar.js" type="text/javascript"></script>
+                    <div class="main" id="main" tabindex="0">
+                        
+    <ul class="list" role="presentation">
+
+    </ul>
+        <ul class="submenu" role="presentation">
+                <li>
+
+                        <a class="z-depth-1 hoverable row justify-content-between"
+                           title="2026 rok"
+                           href="/7415">
+                            <span class="col">
+                                2026 rok
+                            </span>
+                            <span class="col-auto text-right">
+                                <i class="fas fa-long-arrow-alt-right"></i>
+                            </span>
+                        </a>
+                </li>
+                <li>
+
+                        <a class="z-depth-1 hoverable row justify-content-between"
+                           title="2025 rok"
+                           href="/7350">
+                            <span class="col">
+                                2025 rok
+                            </span>
+                            <span class="col-auto text-right">
+                                <i class="fas fa-long-arrow-alt-right"></i>
+                            </span>
+                        </a>
+                </li>
+                <li>
+
+                        <a class="z-depth-1 hoverable row justify-content-between"
+                           title="Polowania zbiorowe w 2025 r."
+                           href="/7356">
+                            <span class="col">
+                                Polowania zbiorowe w 2025 r.
+                            </span>
+                            <span class="col-auto text-right">
+                                <i class="fas fa-long-arrow-alt-right"></i>
+                            </span>
+                        </a>
+                </li>
+                <li>
+
+                        <a class="z-depth-1 hoverable row justify-content-between"
+                           title="2024 rok"
+                           href="/7282">
+                            <span class="col">
+                                2024 rok
+                            </span>
+                            <span class="col-auto text-right">
+                                <i class="fas fa-long-arrow-alt-right"></i>
+                            </span>
+                        </a>
+                </li>
+                <li>
+
+                        <a class="z-depth-1 hoverable row justify-content-between"
+                           title="2023 rok"
+                           href="/7211">
+                            <span class="col">
+                                2023 rok
+                            </span>
+                            <span class="col-auto text-right">
+                                <i class="fas fa-long-arrow-alt-right"></i>
+                            </span>
+                        </a>
+                </li>
+                <li>
+
+                        <a class="z-depth-1 hoverable row justify-content-between"
+                           title="Polowania zbiorowe w 2024 r."
+                           href="/7329">
+                            <span class="col">
+                                Polowania zbiorowe w 2024 r.
+                            </span>
+                            <span class="col-auto text-right">
+                                <i class="fas fa-long-arrow-alt-right"></i>
+                            </span>
+                        </a>
+                </li>
+                <li>
+
+                        <a class="z-depth-1 hoverable row justify-content-between"
+                           title="2022 rok"
+                           href="/7144">
+                            <span class="col">
+                                2022 rok
+                            </span>
+                            <span class="col-auto text-right">
+                                <i class="fas fa-long-arrow-alt-right"></i>
+                            </span>
+                        </a>
+                </li>
+                <li>
+
+                        <a class="z-depth-1 hoverable row justify-content-between"
+                           title="2021 rok"
+                           href="/7064">
+                            <span class="col">
+                                2021 rok
+                            </span>
+                            <span class="col-auto text-right">
+                                <i class="fas fa-long-arrow-alt-right"></i>
+                            </span>
+                        </a>
+                </li>
+                <li>
+
+                        <a class="z-depth-1 hoverable row justify-content-between"
+                           title="2020 rok"
+                           href="/6919">
+                            <span class="col">
+                                2020 rok
+                            </span>
+                            <span class="col-auto text-right">
+                                <i class="fas fa-long-arrow-alt-right"></i>
+                            </span>
+                        </a>
+                </li>
+                <li>
+
+                        <a class="z-depth-1 hoverable row justify-content-between"
+                           title="Polowania zbiorowe w 2021 r."
+                           href="/7104">
+                            <span class="col">
+                                Polowania zbiorowe w 2021 r.
+                            </span>
+                            <span class="col-auto text-right">
+                                <i class="fas fa-long-arrow-alt-right"></i>
+                            </span>
+                        </a>
+                </li>
+                <li>
+
+                        <a class="z-depth-1 hoverable row justify-content-between"
+                           title="Polowania zbiorowe w 2020 r."
+                           href="/6912">
+                            <span class="col">
+                                Polowania zbiorowe w 2020 r.
+                            </span>
+                            <span class="col-auto text-right">
+                                <i class="fas fa-long-arrow-alt-right"></i>
+                            </span>
+                        </a>
+                </li>
+                <li>
+
+                        <a class="z-depth-1 hoverable row justify-content-between"
+                           title="2019 rok"
+                           href="/6492">
+                            <span class="col">
+                                2019 rok
+                            </span>
+                            <span class="col-auto text-right">
+                                <i class="fas fa-long-arrow-alt-right"></i>
+                            </span>
+                        </a>
+                </li>
+        </ul>
+
+<div id="toPrint" class="col-12">
+<ul class="pagination float-right pb-2">
+  <li><a tabindex="-1" class="&#xA;              page-link active router_link&#xA;            " href="http://bip.czerwonak.pl/6469/strona/1"><span class="sr-only">Aktualna strona nr 1</span><span class="bip_strony">1</span></a></li>
+  <li><a tabindex="-1" class="&#xA;              page-link router_link&#xA;            " href="http://bip.czerwonak.pl/6469/strona/2"><span class="sr-only">Przejdź do strony nr 2</span>2</a></li>
+  <li><a tabindex="-1" class="&#xA;              page-link router_link&#xA;            " href="http://bip.czerwonak.pl/6469/strona/3"><span class="sr-only">Przejdź do strony nr 3</span>3</a></li>
+  <li><a tabindex="-1" class="&#xA;              page-link router_link&#xA;            " href="http://bip.czerwonak.pl/6469/strona/4"><span class="sr-only">Przejdź do strony nr 4</span>4</a></li>
+  <li><a tabindex="-1" class="&#xA;              page-link router_link&#xA;            " href="http://bip.czerwonak.pl/6469/strona/5"><span class="sr-only">Przejdź do strony nr 5</span>5</a></li>
+</ul>
+<div class="row w-100 m-0">
+  <div class="list list_date-sym w-100 mx-auto mt-1 mb-1">
+    <div class="row date_sym mx-auto pb-1">
+      <div class="col-4 pl-1" tabindex="0">
+          Symbol:
+          <span class="text-uppercase">31027.2026</span></div>
+      <div class="col-8 text-right pr-1" tabindex="0">2026-07-14</div>
+    </div>
+    <div class="row pl-1 pt-2">
+      <div class="col-12 font-weight-bold"><a class="router_link" tabindex="0" href="6469/dokument/42032">obwieszczenie Wójta Gminy Czerwonak o wydaniu decyzji WRO.6831.123.2025</a></div>
+    </div>
+  </div>
+  <div class="list list_date-sym w-100 mx-auto mt-1 mb-1">
+    <div class="row date_sym mx-auto pb-1">
+      <div class="col-4 pl-1" tabindex="0">
+          Symbol:
+          <span class="text-uppercase">30748.2026</span></div>
+      <div class="col-8 text-right pr-1" tabindex="0">2026-07-09</div>
+    </div>
+    <div class="row pl-1 pt-2">
+      <div class="col-12 font-weight-bold"><a class="router_link" tabindex="0" href="6469/dokument/41940">obwieszczenie o wydaniu decyzji WRO.6831.121.2025</a></div>
+    </div>
+  </div>
+  <div class="list list_date-sym w-100 mx-auto mt-1 mb-1">
+    <div class="row date_sym mx-auto pb-1">
+      <div class="col-4 pl-1" tabindex="0">
+          Symbol:
+          <span class="text-uppercase">30747.2026</span></div>
+      <div class="col-8 text-right pr-1" tabindex="0">2026-07-09</div>
+    </div>
+    <div class="row pl-1 pt-2">
+      <div class="col-12 font-weight-bold"><a class="router_link" tabindex="0" href="6469/dokument/41938">obwieszczenie Wójta Gminy Czerwonak w sprawie wydanej decyzji nr WRO.6831.60.2025</a></div>
+    </div>
+  </div>
+  <div class="list list_date-sym w-100 mx-auto mt-1 mb-1">
+    <div class="row date_sym mx-auto pb-1">
+      <div class="col-4 pl-1" tabindex="0">
+          Symbol:
+          <span class="text-uppercase">30890.2025</span></div>
+      <div class="col-8 text-right pr-1" tabindex="0">2025-12-04</div>
+    </div>
+    <div class="row pl-1 pt-2">
+      <div class="col-12 font-weight-bold"><a class="router_link" tabindex="0" href="6469/dokument/39392">informacja o podjęciu uchwały nr 215/XVIII/2025 Rady Gminy Czerwonak z dnia 20 listopada 2025 r. w sprawie scalenia i podziału nieruchomości położonych w Czerwonaku w rejonie ulicy Błękitnej</a></div>
+    </div>
+  </div>
+  <div class="list list_date-sym w-100 mx-auto mt-1 mb-1">
+    <div class="row date_sym mx-auto pb-1">
+      <div class="col-4 pl-1" tabindex="0">
+          Symbol:
+          <span class="text-uppercase">WOŚ.6220.8.2025</span></div>
+      <div class="col-8 text-right pr-1" tabindex="0">2025-11-26</div>
+    </div>
+    <div class="row pl-1 pt-2">
+      <div class="col-12 font-weight-bold"><a class="router_link" tabindex="0" href="6469/dokument/39300">Obwieszczenie dla stron postępowania o zebranych materiałach przed wydaniem decyzji o środowiskowych uwarunkowaniach dla przedsięwzięcia polegającego na  „Budowie budynku technicznego przeznaczonego na kotłownię parowo-termalna wyposażoną w kocioł parowy 
+i podgrzewacze oleju termalnego oraz wydzielenie w istniejącej infrastrukturze pomieszczenia przeznaczonego na kotłownię parową wyposażoną w dwa kotły parowe zlokalizowanego w hali produkcyjnej na terenie Zakładów Drobiarskich „Koziegłowy” sp. z o.o. przy ul. Piaskowej 3 
+w Koziegłowach”</a></div>
+    </div>
+  </div>
+  <div class="list list_date-sym w-100 mx-auto mt-1 mb-1">
+    <div class="row date_sym mx-auto pb-1">
+      <div class="col-4 pl-1" tabindex="0">
+          Symbol:
+          <span class="text-uppercase">29790.2025</span></div>
+      <div class="col-8 text-right pr-1" tabindex="0">2025-11-21</div>
+    </div>
+    <div class="row pl-1 pt-2">
+      <div class="col-12 font-weight-bold"><a class="router_link" tabindex="0" href="6469/dokument/39275">Obwieszczeni Starosty Poznańskiego w sprawie budowy i przebudowy ulicy Dziewicza Góra i Leśnej w Czerwonaku</a></div>
+    </div>
+  </div>
+  <div class="list list_date-sym w-100 mx-auto mt-1 mb-1">
+    <div class="row date_sym mx-auto pb-1">
+      <div class="col-4 pl-1" tabindex="0">
+          Symbol:
+          <span class="text-uppercase">WOŚ.6220.31.2025</span></div>
+      <div class="col-8 text-right pr-1" tabindex="0">2025-10-09</div>
+    </div>
+    <div class="row pl-1 pt-2">
+      <div class="col-12 font-weight-bold"><a class="router_link" tabindex="0" href="6469/dokument/38849">obwieszczenie dot. wszczęcia postępowania o wydanie decyzji o środowiskowych uwarunkowaniach dla przedsięwzięcia polegającego na budowie stacji paliw płynnych wraz z zapleczem technicznym, budynkiem socjalno-handlowym, myjnią automatyczną, obiektami reklamowymi wraz z pylonem reklamowym, drogami wewnętrznymi, stanowiskami postojowymi wraz z niezbędną infrastrukturą techniczną na działce nr 258/177, ob. Owińska</a></div>
+    </div>
+  </div>
+  <div class="list list_date-sym w-100 mx-auto mt-1 mb-1">
+    <div class="row date_sym mx-auto pb-1">
+      <div class="col-4 pl-1" tabindex="0">
+          Symbol:
+          <span class="text-uppercase">WOŚ.6220.29.2025</span></div>
+      <div class="col-8 text-right pr-1" tabindex="0">2025-09-02</div>
+    </div>
+    <div class="row pl-1 pt-2">
+      <div class="col-12 font-weight-bold"><a class="router_link" tabindex="0" href="6469/dokument/38526">Obwieszczenie o wszczęciu postępowania administracyjnego w przedmiocie wydania decyzji o środowiskowych uwarunkowaniach dla przedsięwzięcia polegającego na zabudowie mieszkaniowej jednorodzinnej wraz z infrastrukturą towarzyszącą na działce oznaczonej numerem ewidencyjnym 21/1, arkusz 3, obręb Kliny, gmina Czerwonak</a></div>
+    </div>
+  </div>
+  <div class="list list_date-sym w-100 mx-auto mt-1 mb-1">
+    <div class="row date_sym mx-auto pb-1">
+      <div class="col-4 pl-1" tabindex="0">
+          Symbol:
+          <span class="text-uppercase">16636.2025</span></div>
+      <div class="col-8 text-right pr-1" tabindex="0">2025-04-08</div>
+    </div>
+    <div class="row pl-1 pt-2">
+      <div class="col-12 font-weight-bold"><a class="router_link" tabindex="0" href="6469/dokument/37058">obwieszczenie dla stron postępowania o zebranych materiałach przed wydaniem decyzji  środowiskowej„Budowa nowej hali na terenie istniejącego zakładu na dz. nr 516 obr. Bolechowo-Osiedle, gm. Czerwonak”.
+Wnioskodawca:  El-Cab sp. z. o.o. ul. Obornicka 37, 62-005 Bolechowo-Osiedle</a></div>
+    </div>
+  </div>
+  <div class="list list_date-sym w-100 mx-auto mt-1 mb-1">
+    <div class="row date_sym mx-auto pb-1">
+      <div class="col-4 pl-1" tabindex="0">
+          Symbol:
+          <span class="text-uppercase">15732.2025</span></div>
+      <div class="col-8 text-right pr-1" tabindex="0">2025-03-25</div>
+    </div>
+    <div class="row pl-1 pt-2">
+      <div class="col-12 font-weight-bold"><a class="router_link" tabindex="0" href="6469/dokument/36959">Obwieszczenie Starosty Poznańskiego - ZRID ścieżka pieszo-rowerowa na odcinku Trakt-Kliny</a></div>
+    </div>
+  </div>
+</div>
+<ul class="pagination float-right pb-2 pt-4">
+  <li><a tabindex="0" class="&#xA;              page-link active router_link&#xA;            " href="http://bip.czerwonak.pl/6469/strona/1"><span class="sr-only">Aktualna strona nr 1</span><span class="bip_strony">1</span></a></li>
+  <li><a tabindex="0" class="&#xA;              page-link router_link&#xA;            " href="http://bip.czerwonak.pl/6469/strona/2"><span class="sr-only">Przejdź do strony nr 2</span>2</a></li>
+  <li><a tabindex="0" class="&#xA;              page-link router_link&#xA;            " href="http://bip.czerwonak.pl/6469/strona/3"><span class="sr-only">Przejdź do strony nr 3</span>3</a></li>
+  <li><a tabindex="0" class="&#xA;              page-link router_link&#xA;            " href="http://bip.czerwonak.pl/6469/strona/4"><span class="sr-only">Przejdź do strony nr 4</span>4</a></li>
+  <li><a tabindex="0" class="&#xA;              page-link router_link&#xA;            " href="http://bip.czerwonak.pl/6469/strona/5"><span class="sr-only">Przejdź do strony nr 5</span>5</a></li>
+</ul>    <div class="col-12 errors">
+    </div>
+</div>
+
+
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+    <footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-12 col-md-6">
+        <div class="media row">
+              <div class="col-3">
+                  <img class="mr-3 my-auto" src="Customers/bip_ugczerwonak/files/logo-W.png" id="footerLogo" alt="">
+              </div>
+          <div class="media-body text-center text-lg-left col-9">
+            <p tabindex="0" class="mt-0 mb-2 font-weight-bolder text-white text-center text-lg-left" style="font-size: 1rem">Gmina Czerwonak</p>
+            <p>
+              <span tabindex="0">ul. &#x179;r&#xF3;dlana 39</span>
+              <br>
+              <span tabindex="0">62-004 Czerwonak</span>
+            </p>
+            <p>
+              <span tabindex="0">61 65 44 204</span>
+              <br>
+              <span tabindex="0">61 8120 270</span>
+              <br>
+              <span tabindex="0">
+                e-mail: <a tabindex="0" href="mailto:kancelaria@czerwonak.pl">kancelaria@czerwonak.pl</a></span>
+            </p>
+
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6 col-lg-3 pt-2 pt-md-0">
+        <h6 tabindex="0" class="mt-0 text-center text-lg-left text-white font-weight-bolder">Godziny urzędowania:</h6>
+        <table class="default mx-auto mx-lg-0 footer_table text-center text-lg-left" role="presentation">
+          <tbody>
+          <tr tabindex="0">
+            <td class="pr-5" style="width: 130px;">
+              Poniedziałek
+            </td>
+            <td>
+              9:00 - 17:00
+            </td>
+          </tr>
+          <tr tabindex="0">
+            <td>
+              Wtorek
+            </td>
+            <td>
+              7:30 - 15:00
+            </td>
+          </tr>
+          <tr tabindex="0">
+            <td>
+              Środa
+            </td>
+            <td>
+              7:30 - 15:00
+            </td>
+          </tr>
+          <tr tabindex="0">
+            <td>
+              Czwartek
+            </td>
+            <td>
+              7:30 - 15:00
+            </td>
+          </tr>
+          <tr tabindex="0">
+            <td>
+              Piątek
+            </td>
+            <td>
+              7:30 - 15:00
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+        <div class="col-12 col-lg-3 pt-4 pt-lg-0">
+            <h6 tabindex="0" class="mt-0 text-center text-lg-left font-weight-bolder text-white">Zobacz również:</h6>
+                <ul class="default mx-auto mx-lg-0 nopoint text-center text-lg-left" role="presentation">
+                <li>
+                    <a tabindex="0" href="/deklaracja-dostepnosci" title="Strona z deklaracją dostępności">
+                        <i class="icon-external"></i> Deklaracja dostępności
+                    </a>
+                </li>
+                <li>
+                    <a tabindex="0" href="http://czerwonak.pl" title="Strona urzędu" target="_blank">
+                        <i class="icon-external"></i> Strona urzędu
+                    </a>
+                </li>
+                <li>
+                    <a tabindex="0" href="https://www.gov.pl/bip" title="Oficjalna strona Bip - link otwiera się w nowej karcie" target="_blank">
+                        <i class="icon-external"></i> Oficjalna strona BIP
+                    </a>
+                </li>
+                    <li>
+                        <a tabindex="0" href="https://eurzad.czerwonak.pl" title="Strona e-urzędu" target="_blank">
+                            <i class="icon-external"></i> E-urząd
+                        </a>
+                    </li>
+            </ul>
+        </div>
+
+      <div class="col-12">
+        <hr>
+      </div>
+      <div class="col-12">
+        <p class="autor text-left">
+          <span tabindex="0">Licznik odwiedzin:</span>
+          <span tabindex="0">15868780</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="Content/scripts/components/footer.js" type="text/javascript"></script>
+</div>
+
+</body>
+</html>

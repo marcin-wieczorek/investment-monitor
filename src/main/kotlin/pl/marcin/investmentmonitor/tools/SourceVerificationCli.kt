@@ -1,13 +1,34 @@
 package pl.marcin.investmentmonitor.tools
 
 import pl.marcin.investmentmonitor.scraping.JsoupPageFetcher
+import pl.marcin.investmentmonitor.source.AgrobexSource
 import pl.marcin.investmentmonitor.source.AggregatorSource
+import pl.marcin.investmentmonitor.source.ATALSource
+import pl.marcin.investmentmonitor.source.AtanerSource
 import pl.marcin.investmentmonitor.source.ChronosSource
+import pl.marcin.investmentmonitor.source.DeveliaSource
 import pl.marcin.investmentmonitor.source.DiscoverySource
+import pl.marcin.investmentmonitor.source.DudaSource
+import pl.marcin.investmentmonitor.source.EBFSource
+import pl.marcin.investmentmonitor.source.GGWSource
 import pl.marcin.investmentmonitor.source.GreenbudSource
 import pl.marcin.investmentmonitor.source.InvestmentSource
+import pl.marcin.investmentmonitor.source.JaksBudSource
+import pl.marcin.investmentmonitor.source.JakonInwestSource
+import pl.marcin.investmentmonitor.source.KonimpexSource
+import pl.marcin.investmentmonitor.source.LineaSource
+import pl.marcin.investmentmonitor.source.MurapolSource
+import pl.marcin.investmentmonitor.source.PekabexSource
+import pl.marcin.investmentmonitor.source.RobygSource
+import pl.marcin.investmentmonitor.source.SagarisSource
+import pl.marcin.investmentmonitor.source.SpraviaSource
+import pl.marcin.investmentmonitor.source.UWISource
 import pl.marcin.investmentmonitor.source.aggregator.RynekPierwotnySource
+import pl.marcin.investmentmonitor.source.discovery.CzerwonakObwieszczeniaSource
+import pl.marcin.investmentmonitor.source.discovery.PoznanUlicpSource
+import pl.marcin.investmentmonitor.source.discovery.SuchyLasNppSource
 import pl.marcin.investmentmonitor.source.discovery.SwarzedzWzSource
+import pl.marcin.investmentmonitor.source.discovery.TarnowoPodgorneWzSource
 import pl.marcin.investmentmonitor.validation.SourceValidator
 
 /**
@@ -19,8 +40,17 @@ import pl.marcin.investmentmonitor.validation.SourceValidator
  */
 fun main() {
     val fetcher = JsoupPageFetcher()
-    val developerSources: List<InvestmentSource> = listOf(ChronosSource(fetcher), GreenbudSource(fetcher))
-    val discoverySources: List<DiscoverySource> = listOf(SwarzedzWzSource(fetcher))
+    val developerSources: List<InvestmentSource> = listOf(
+        ChronosSource(fetcher), GreenbudSource(fetcher), JakonInwestSource(fetcher), AgrobexSource(fetcher),
+        LineaSource(fetcher), DudaSource(fetcher), AtanerSource(fetcher), UWISource(fetcher),
+        KonimpexSource(fetcher), PekabexSource(fetcher), MurapolSource(fetcher), DeveliaSource(fetcher),
+        ATALSource(fetcher), RobygSource(fetcher), EBFSource(fetcher), GGWSource(fetcher),
+        SpraviaSource(fetcher), JaksBudSource(fetcher), SagarisSource(fetcher)
+    )
+    val discoverySources: List<DiscoverySource> = listOf(
+        SwarzedzWzSource(fetcher), CzerwonakObwieszczeniaSource(fetcher), TarnowoPodgorneWzSource(fetcher),
+        SuchyLasNppSource(fetcher), PoznanUlicpSource(fetcher)
+    )
     val aggregatorSources: List<AggregatorSource> = listOf(RynekPierwotnySource(fetcher))
     val validator = SourceValidator()
 

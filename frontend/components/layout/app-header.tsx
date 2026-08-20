@@ -14,6 +14,8 @@ const breadcrumbKeys: Record<string, string> = {
   "/investments": "nav.investments",
   "/signals": "nav.signals",
   "/correlations": "nav.correlations",
+  "/developers": "nav.developers",
+  "/coverage": "nav.coverage",
   "/sources": "nav.sources",
   "/history": "nav.history",
 };

@@ -44,7 +44,17 @@ object LocationProfiles {
         LocationProfile("Gruszczyn", DevelopmentTier.A, growthScore = 7, infrastructureScore = 5, transportScore = 6, familyScore = 8),
         LocationProfile("Gortatowo", DevelopmentTier.B, growthScore = 6, infrastructureScore = 4, transportScore = 5, familyScore = 7),
         LocationProfile("Paczkowo", DevelopmentTier.B, growthScore = 6, infrastructureScore = 5, transportScore = 6, familyScore = 7),
-        LocationProfile("Kobylnica", DevelopmentTier.B, growthScore = 6, infrastructureScore = 5, transportScore = 6, familyScore = 7)
+        LocationProfile("Kobylnica", DevelopmentTier.B, growthScore = 6, infrastructureScore = 5, transportScore = 6, familyScore = 7),
+        // Remaining Metropolia Poznań municipalities (AGENTS.md geographic coverage section) -
+        // further out, lower growth/infrastructure scores until source coverage says otherwise.
+        LocationProfile("Buk", DevelopmentTier.B, growthScore = 5, infrastructureScore = 5, transportScore = 5, familyScore = 7),
+        LocationProfile("Oborniki", DevelopmentTier.B, growthScore = 5, infrastructureScore = 5, transportScore = 5, familyScore = 6),
+        LocationProfile("Pobiedziska", DevelopmentTier.B, growthScore = 6, infrastructureScore = 5, transportScore = 6, familyScore = 7),
+        LocationProfile("Puszczykowo", DevelopmentTier.B, growthScore = 5, infrastructureScore = 6, transportScore = 6, familyScore = 8),
+        LocationProfile("Skoki", DevelopmentTier.B, growthScore = 4, infrastructureScore = 4, transportScore = 4, familyScore = 6),
+        LocationProfile("Stęszew", DevelopmentTier.B, growthScore = 5, infrastructureScore = 5, transportScore = 5, familyScore = 7),
+        LocationProfile("Szamotuły", DevelopmentTier.B, growthScore = 5, infrastructureScore = 5, transportScore = 5, familyScore = 6),
+        LocationProfile("Śrem", DevelopmentTier.B, growthScore = 5, infrastructureScore = 5, transportScore = 5, familyScore = 6)
     )
 
     private val byName: Map<String, LocationProfile> = ALL.associateBy { it.name.lowercase() }

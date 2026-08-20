@@ -36,6 +36,21 @@ export function formatArea(
   return `${t("investments.areaFrom")} ${formatNumber(min!)} m²`;
 }
 
+export function formatPrice(
+  min: number | null,
+  max: number | null,
+  t: (key: string) => string
+): string | null {
+  if (min == null && max == null) return null;
+  if (min != null && max != null) {
+    return min === max
+      ? `${formatNumber(min)} zł`
+      : `${formatNumber(min)}–${formatNumber(max)} zł`;
+  }
+  if (max != null) return `${t("investments.areaUpTo")} ${formatNumber(max)} zł`;
+  return `${t("investments.areaFrom")} ${formatNumber(min!)} zł`;
+}
+
 function formatNumber(value: number): string {
-  return Number.isInteger(value) ? String(value) : value.toFixed(2).replace(/\.?0+$/, "");
+  return Number.isInteger(value) ? value.toLocaleString("pl-PL") : value.toFixed(2).replace(/\.?0+$/, "");
 }

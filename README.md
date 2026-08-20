@@ -54,10 +54,16 @@ sources -> fetch -> parse -> validate -> diff -> enrich (new only)
   likely describe the same project (same location, developer name
   mentioned, ...) — never LLM-driven.
 - **Analyze** — a numeric `DeterministicScorer` compares an investment
-  against a `ReferenceInvestmentProfile` and `LocationProfile`. An
-  optional local LLM (Ollama) adds qualitative interpretation
-  (priority/reasoning) on top, with a fully deterministic fallback when
-  it's unavailable or misconfigured.
+  against a `ReferenceInvestmentProfile` and `LocationProfile`, and always
+  runs (and is persisted, and shown in the dashboard) even with no LLM
+  configured. An optional local LLM (Ollama) adds qualitative
+  interpretation (priority/reasoning) on top, with a fully deterministic
+  fallback when it's unavailable or misconfigured.
+
+Discovery lead time — how many days before a developer publishes an
+investment the system already had an official/public signal for it — is
+computed for every correlation and shown both in the console report and
+on `/correlations`/the dashboard (see `docs/ARCHITECTURE.md` phase 6).
 
 ## Business scope
 
@@ -71,15 +77,21 @@ full scope and the extensible location-profile model.
 
 | Category | Source | Area | Notes |
 |---|---|---|---|
-| Developer | [Chronos Development](https://www.chronos.poznan.pl) | Poznań area | Each investment lives on its own external domain |
-| Developer | [Greenbud Development](https://www.greenbud.com.pl) | Swarzędz / Poznań area | Publishes location and house/plot area directly on the list page |
-| Discovery | Gmina Swarzędz BIP — zoning conditions ("warunki zabudowy") | Gmina Swarzędz | Real, verified municipal register; see `docs/DISCOVERY.md` |
+| Developer | 18 developers (Chronos, Greenbud, ATAL, Agrobex, Spravia, Duda, Develia, Jakon, ROBYG, Linea, Murapol, Ataner, Konimpex, Pekabex, EBF, GGW, JakśBud, UWI, Sagaris) | Poznań metro area | See `registry/DeveloperRegistry.kt` for the full Tier A/B priority list, verified URLs, and status of every developer investigated |
+| Discovery | Swarzędz, Czerwonak, Tarnowo Podgórne, Suchy Las, Poznań BIP registers | 5 municipalities | Zoning-conditions/planning-announcement registers; see `registry/DiscoverySourceRegistry.kt` for full municipal coverage investigation |
 | Aggregator | [RynekPierwotny.pl](https://www.rynekpierwotny.pl) — new houses, Poznań | Poznań metro | Completeness/cross-check only, never primary identity |
 
-Several other discovery/aggregator candidates were investigated and found
-**not currently implementable without either fake selectors or a headless
-browser** (Kleszczewo/Komorniki BIP, Otodom) — see `docs/DISCOVERY.md` and
-`docs/SOURCES.md` for exactly why, and what would be needed to add them.
+Developer and municipality registries (`registry/DeveloperRegistry.kt`,
+`registry/MunicipalityRegistry.kt`) track **every** priority developer and
+target municipality explicitly, whether or not a working source adapter
+exists yet — see the `/developers` and `/coverage` dashboard pages.
+
+Many other developer/discovery/aggregator candidates were investigated
+and found **not currently implementable without either fake selectors or
+a headless browser** (JS SPAs, anti-bot fingerprinting, AJAX-hydrated
+listings, WAF-blocked BIPs, ...) — see `docs/SOURCES.md` "Investigated
+but not implemented" for exactly why, and what would be needed to add
+them.
 
 Adding a new source means writing and fixture-testing a new parser — see
 [`docs/SOURCES.md`](docs/SOURCES.md) for the checklist.
@@ -121,8 +133,11 @@ Ollama setup and configuration.
 A Next.js dashboard lives in [`frontend/`](frontend/) — it reads the same
 SQLite database directly (no separate API layer, via Node's built-in
 `node:sqlite`) to browse investments, discovery signals, cross-source
-correlations, source health (by category), run history, and trigger a
-scan from the browser. Dark/light mode and an English/Polish language
+correlations, source health (by category), developer/geographic coverage,
+run history, and trigger a scan from the browser. The investments list
+shows a source-category badge per row and a collapsible filter panel
+(source, property type, status, location, and range sliders for house
+area/plot area/price). Dark/light mode and an English/Polish language
 toggle are built in.
 
 Requires Node 22.5+.
@@ -137,20 +152,29 @@ See [`frontend/README.md`](frontend/README.md) for full setup and details.
 
 ## Project status
 
-- **Done** — Chronos + Greenbud developer parsers; one verified discovery
-  source (Gmina Swarzędz zoning-conditions register) and one verified
-  aggregator source (RynekPierwotny); deterministic diff for both
-  investments and signals; fail-closed validation; deterministic
-  cross-source correlation; provenance/evidence tracking; raw HTML
-  archival with retention; deterministic reference-profile scoring with
-  explicit large-plot handling; local Ollama LLM integration with
-  graceful fallback; a Next.js dashboard covering all of the above.
-- **Explicitly not done** — Kleszczewo/Komorniki BIP discovery (blocked
-  by client-side rendering / anti-bot measures in this environment, not
-  by lack of effort — see `docs/DISCOVERY.md`), Otodom aggregator
-  (requires JS execution, deliberately not added to avoid a headless
-  browser dependency), per-field provenance (currently evidence is
-  recorded per investment/signal, not per individual fact).
+- **Done** — 18 verified developer parsers, 5 verified discovery sources
+  (municipal zoning/planning registers) and one verified aggregator
+  source (RynekPierwotny); explicit `DeveloperRegistry`/
+  `MunicipalityRegistry`/`DiscoverySourceRegistry` tracking every priority
+  developer and target municipality regardless of implementation status;
+  developer-candidate discovery feedback loop from aggregator-only finds;
+  deterministic diff for both investments and signals; fail-closed
+  validation; deterministic cross-source correlation; provenance/evidence
+  tracking; raw HTML archival with retention; deterministic
+  reference-profile scoring that always runs and is persisted, with
+  explicit large-plot handling and a discovery-lead-time metric per
+  correlation; local Ollama LLM integration with graceful fallback; a
+  Next.js dashboard covering all of the above plus developer/geographic
+  coverage pages, a score/price-aware investment filter panel, and a
+  watchlist.
+- **Explicitly not done** — several BIPs and developer sites investigated
+  and found technically unimplementable (JS SPAs, anti-bot fingerprinting,
+  AJAX-hydrated listings, WAF-blocked BIPs — see `docs/SOURCES.md`),
+  Otodom aggregator (requires JS execution, deliberately not added to
+  avoid a headless browser dependency), per-field provenance (currently
+  evidence is recorded per investment/signal, not per individual fact), 7
+  remaining Tier B candidate developers with a verified URL but no
+  adapter yet (see `registry/DeveloperRegistry.kt`).
 
 ## License
 

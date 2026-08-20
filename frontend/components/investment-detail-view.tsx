@@ -3,7 +3,18 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Archive, ArchiveRestore, Clock, ExternalLink, Home, LandPlot, MapPin } from "lucide-react";
+import {
+  ArrowLeft,
+  Archive,
+  ArchiveRestore,
+  Clock,
+  ExternalLink,
+  Home,
+  LandPlot,
+  MapPin,
+  Star,
+  Wallet,
+} from "lucide-react";
 import Link from "next/link";
 import { useI18n } from "@/lib/i18n";
 import { Button } from "@/components/ui/button";
@@ -12,13 +23,36 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { JsonAccordion } from "@/components/json-accordion";
-import { formatArea, formatRelativeTime } from "@/lib/utils";
+import { cn, formatArea, formatPrice, formatRelativeTime } from "@/lib/utils";
 import type { CorrelationRow, InvestmentWithState, SourceEvidenceRow } from "@/lib/types";
 
 interface InvestmentDetailViewProps {
   investment: InvestmentWithState;
   evidence: SourceEvidenceRow[];
   correlations: CorrelationRow[];
+}
+
+function ScoreBar({ label, value }: { label: string; value: number | null }) {
+  const { t } = useI18n();
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-muted-foreground">{label}</span>
+        <span className="font-mono tabular-nums text-muted-foreground">
+          {value == null ? t("investments.notPublished") : `${Math.round(value * 100)}%`}
+        </span>
+      </div>
+      <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+        <div
+          className={cn(
+            "h-full rounded-full",
+            value == null ? "bg-transparent" : value >= 0.66 ? "bg-emerald-500" : value >= 0.4 ? "bg-amber-500" : "bg-rose-500"
+          )}
+          style={{ width: `${Math.round((value ?? 0) * 100)}%` }}
+        />
+      </div>
+    </div>
+  );
 }
 
 export function InvestmentDetailView({ investment, evidence, correlations }: InvestmentDetailViewProps) {
@@ -30,9 +64,12 @@ export function InvestmentDetailView({ investment, evidence, correlations }: Inv
   const [noteSaved, setNoteSaved] = useState(false);
   const [archived, setArchived] = useState(investment.archived);
   const [togglingArchive, setTogglingArchive] = useState(false);
+  const [watched, setWatched] = useState(investment.watched);
+  const [togglingWatch, setTogglingWatch] = useState(false);
 
   const houseArea = formatArea(investment.house_area_min, investment.house_area_max, t);
   const plotArea = formatArea(investment.plot_area_min, investment.plot_area_max, t);
+  const price = formatPrice(investment.price_min, investment.price_max, t);
 
   async function saveNote() {
     setSavingNote(true);
@@ -63,6 +100,22 @@ export function InvestmentDetailView({ investment, evidence, correlations }: Inv
       router.refresh();
     } finally {
       setTogglingArchive(false);
+    }
+  }
+
+  async function toggleWatch() {
+    setTogglingWatch(true);
+    try {
+      const next = !watched;
+      await fetch(`/api/investments/${investment.id}/watch`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ watched: next }),
+      });
+      setWatched(next);
+      router.refresh();
+    } finally {
+      setTogglingWatch(false);
     }
   }
 
@@ -112,6 +165,15 @@ export function InvestmentDetailView({ investment, evidence, correlations }: Inv
                 {t("investments.visitSite")}
               </Button>
               <Button
+                variant={watched ? "default" : "outline"}
+                size="sm"
+                onClick={toggleWatch}
+                disabled={togglingWatch}
+              >
+                <Star className="size-4" />
+                {watched ? t("investments.unwatch") : t("investments.watch")}
+              </Button>
+              <Button
                 variant={archived ? "default" : "outline"}
                 size="sm"
                 onClick={toggleArchive}
@@ -144,11 +206,55 @@ export function InvestmentDetailView({ investment, evidence, correlations }: Inv
                 {plotArea}
               </Badge>
             ) : null}
+            {price ? (
+              <Badge variant="secondary" className="gap-1">
+                <Wallet className="size-3.5" />
+                {price}
+              </Badge>
+            ) : null}
+            {investment.plot_to_house_ratio != null ? (
+              <Badge variant="secondary">
+                {t("investments.plotToHouseRatio")}: {investment.plot_to_house_ratio.toFixed(1)}×
+              </Badge>
+            ) : null}
             {investment.units ? (
               <Badge variant="secondary">
                 {investment.units} {t("investments.units")}
               </Badge>
             ) : null}
+          </div>
+
+          <Separator />
+
+          <div className="space-y-3">
+            <h2 className="text-sm font-medium text-muted-foreground">{t("investments.scoringBreakdown")}</h2>
+            {investment.overall_score == null ? (
+              <p className="text-xs text-muted-foreground">{t("investments.noScore")}</p>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <ScoreBar label={t("investments.overallScore")} value={investment.overall_score} />
+                <ScoreBar label={t("investments.houseAreaScore")} value={investment.house_area_score} />
+                <ScoreBar label={t("investments.plotAreaScore")} value={investment.plot_area_score} />
+                <ScoreBar label={t("investments.priceScoreLabel")} value={investment.price_score} />
+              </div>
+            )}
+            <div className="flex flex-wrap gap-2">
+              {investment.property_type_match != null ? (
+                <Badge variant="outline" className={investment.property_type_match ? "border-emerald-500/30 text-emerald-500 dark:text-emerald-400" : "border-border text-muted-foreground"}>
+                  {t("investments.propertyTypeMatch")}
+                </Badge>
+              ) : null}
+              {investment.location_tier_match != null ? (
+                <Badge variant="outline" className={investment.location_tier_match ? "border-emerald-500/30 text-emerald-500 dark:text-emerald-400" : "border-border text-muted-foreground"}>
+                  {t("investments.locationTierMatch")}
+                </Badge>
+              ) : null}
+              {investment.large_plot_bonus ? (
+                <Badge variant="outline" className="border-emerald-500/30 text-emerald-500 dark:text-emerald-400">
+                  {t("investments.largePlotBonus")}
+                </Badge>
+              ) : null}
+            </div>
           </div>
 
           <Separator />

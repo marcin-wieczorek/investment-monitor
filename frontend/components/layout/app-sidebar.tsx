@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, LayoutDashboard, History, Radio, Radar, Link2 } from "lucide-react";
+import { Building2, LayoutDashboard, History, Radio, Radar, Link2, Users, Map } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
 import { useSidebar } from "@/lib/sidebar-context";
@@ -13,6 +13,8 @@ const navItems = [
   { href: "/investments", key: "nav.investments" as const, icon: Building2 },
   { href: "/signals", key: "nav.signals" as const, icon: Radar },
   { href: "/correlations", key: "nav.correlations" as const, icon: Link2 },
+  { href: "/developers", key: "nav.developers" as const, icon: Users },
+  { href: "/coverage", key: "nav.coverage" as const, icon: Map },
   { href: "/sources", key: "nav.sources" as const, icon: Radio },
   { href: "/history", key: "nav.history" as const, icon: History },
 ];

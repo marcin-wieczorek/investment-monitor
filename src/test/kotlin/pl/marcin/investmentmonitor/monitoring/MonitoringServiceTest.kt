@@ -2,18 +2,25 @@ package pl.marcin.investmentmonitor.monitoring
 
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
 import org.junit.jupiter.api.Test
-import pl.marcin.investmentmonitor.analysis.NoOpInvestmentAnalyzer
+import pl.marcin.investmentmonitor.analysis.DefaultInvestmentAnalyzer
+import pl.marcin.investmentmonitor.analysis.DeterministicScorer
+import pl.marcin.investmentmonitor.analysis.ScoringResult
 import pl.marcin.investmentmonitor.archival.RawHtmlArchiver
 import pl.marcin.investmentmonitor.correlation.InvestmentCorrelator
 import pl.marcin.investmentmonitor.detection.ChangeDetector
 import pl.marcin.investmentmonitor.domain.Correlation
+import pl.marcin.investmentmonitor.domain.DeveloperCandidate
+import pl.marcin.investmentmonitor.domain.DeveloperCandidateStatus
 import pl.marcin.investmentmonitor.domain.Investment
 import pl.marcin.investmentmonitor.domain.InvestmentSignal
 import pl.marcin.investmentmonitor.domain.SourceEvidence
 import pl.marcin.investmentmonitor.persistence.CorrelationRepository
+import pl.marcin.investmentmonitor.persistence.DeveloperCandidateRepository
 import pl.marcin.investmentmonitor.persistence.EvidenceRepository
 import pl.marcin.investmentmonitor.persistence.InvestmentRepository
+import pl.marcin.investmentmonitor.persistence.InvestmentScoreRepository
 import pl.marcin.investmentmonitor.persistence.MonitoringRunRepository
 import pl.marcin.investmentmonitor.persistence.RunStatus
 import pl.marcin.investmentmonitor.persistence.SignalRepository
@@ -79,6 +86,29 @@ private class InMemoryCorrelationRepository : CorrelationRepository {
     override fun save(correlation: Correlation) { saved += correlation }
     override fun findByInvestment(investmentId: Long) = saved.filter { it.investmentId == investmentId }
     override fun exists(investmentId: Long, signalId: Long) = saved.any { it.investmentId == investmentId && it.signalId == signalId }
+    override fun findAllWithLeadTime(): List<pl.marcin.investmentmonitor.persistence.CorrelationLeadTime> = emptyList()
+}
+
+private class InMemoryDeveloperCandidateRepository : DeveloperCandidateRepository {
+    val saved = mutableListOf<DeveloperCandidate>()
+    override fun save(candidate: DeveloperCandidate): Long {
+        saved += candidate
+        return saved.size.toLong()
+    }
+    override fun findAll(): List<DeveloperCandidate> = saved
+    override fun findByName(developerName: String): DeveloperCandidate? = saved.firstOrNull { it.developerName == developerName }
+    override fun updateStatus(id: Long, status: DeveloperCandidateStatus) {
+        val index = saved.indexOfFirst { it.id == id }
+        if (index >= 0) saved[index] = saved[index].copy(status = status)
+    }
+}
+
+private class InMemoryInvestmentScoreRepository : InvestmentScoreRepository {
+    val saved = mutableMapOf<String, ScoringResult>()
+    override fun save(investmentCanonicalKey: String, scoring: ScoringResult, scoredAt: Instant) {
+        saved[investmentCanonicalKey] = scoring
+    }
+    override fun find(investmentCanonicalKey: String): ScoringResult? = saved[investmentCanonicalKey]
 }
 
 private class FakeInvestmentSource(override val id: String, private val investments: List<Investment>) : InvestmentSource {
@@ -104,13 +134,15 @@ class MonitoringServiceTest {
         discoverySources: List<DiscoverySource> = emptyList(),
         aggregatorSources: List<AggregatorSource> = emptyList(),
         evidenceRepository: InMemoryEvidenceRepository = InMemoryEvidenceRepository(),
-        correlationRepository: InMemoryCorrelationRepository = InMemoryCorrelationRepository()
+        correlationRepository: InMemoryCorrelationRepository = InMemoryCorrelationRepository(),
+        developerCandidateRepository: InMemoryDeveloperCandidateRepository = InMemoryDeveloperCandidateRepository(),
+        investmentScoreRepository: InMemoryInvestmentScoreRepository = InMemoryInvestmentScoreRepository()
     ): MonitoringService = MonitoringService(
         sourceRegistry = SourceRegistry(developerSources, discoverySources, aggregatorSources),
         sourceValidator = SourceValidator(),
         changeDetector = ChangeDetector(),
         detailEnricher = InvestmentDetailEnricher(emptyList()) { _ -> "" },
-        investmentAnalyzer = NoOpInvestmentAnalyzer(),
+        investmentAnalyzer = DefaultInvestmentAnalyzer(DeterministicScorer()),
         investmentRepository = InMemoryInvestmentRepository(),
         sourceSnapshotRepository = InMemorySourceSnapshotRepository(),
         monitoringRunRepository = InMemoryMonitoringRunRepository(),
@@ -118,7 +150,10 @@ class MonitoringServiceTest {
         evidenceRepository = evidenceRepository,
         correlationRepository = correlationRepository,
         correlator = InvestmentCorrelator(),
-        rawHtmlArchiver = RawHtmlArchiver(enabled = false, basePath = "unused", retentionDays = 1)
+        rawHtmlArchiver = RawHtmlArchiver(enabled = false, basePath = "unused", retentionDays = 1),
+        developerCandidateRepository = developerCandidateRepository,
+        scorer = DeterministicScorer(),
+        investmentScoreRepository = investmentScoreRepository
     )
 
     @Test
@@ -193,5 +228,42 @@ class MonitoringServiceTest {
         val report = buildService(aggregatorSources = listOf(aggregatorSource)).scan()
 
         report.aggregatorOnlyDiscoveries shouldHaveSize 1
+    }
+
+    @Test
+    fun `records a developer candidate for an aggregator-only investment from an unknown developer`() {
+        val candidateRepository = InMemoryDeveloperCandidateRepository()
+        val aggregatorSource = FakeAggregatorSource(
+            "rynekpierwotny",
+            listOf(testInvestment(name = "AggregatorOnly", developer = "Totally Unknown Developer Sp. z o.o.", location = "Mosina"))
+        )
+        buildService(aggregatorSources = listOf(aggregatorSource), developerCandidateRepository = candidateRepository).scan()
+
+        candidateRepository.saved shouldHaveSize 1
+        candidateRepository.saved.single().developerName shouldBe "Totally Unknown Developer Sp. z o.o."
+    }
+
+    @Test
+    fun `does not record a developer candidate for a developer already in the registry`() {
+        val candidateRepository = InMemoryDeveloperCandidateRepository()
+        val aggregatorSource = FakeAggregatorSource(
+            "rynekpierwotny",
+            listOf(testInvestment(name = "AggregatorOnly", developer = "Chronos Development", location = "Mosina"))
+        )
+        buildService(aggregatorSources = listOf(aggregatorSource), developerCandidateRepository = candidateRepository).scan()
+
+        candidateRepository.saved shouldHaveSize 0
+    }
+
+    @Test
+    fun `persists a deterministic score for a newly detected investment even without an LLM configured`() {
+        val scoreRepository = InMemoryInvestmentScoreRepository()
+        val investment = testInvestment(name = "Aura", location = "Kruszewnia")
+        val source = FakeInvestmentSource("chronos", listOf(investment))
+
+        buildService(developerSources = listOf(source), investmentScoreRepository = scoreRepository).scan()
+
+        val score = scoreRepository.saved[investment.canonicalKey]
+        score shouldNotBe null
     }
 }

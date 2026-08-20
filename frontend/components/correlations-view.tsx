@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { TrendingUp, TrendingDown } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -9,13 +10,35 @@ import { ExpandableTableRow, ExpandChevron } from "@/components/expandable-table
 import { formatRelativeTime } from "@/lib/utils";
 import type { CorrelationRow } from "@/lib/types";
 
-const COLUMNS_COUNT = 5;
+const COLUMNS_COUNT = 6;
 
 const CONFIDENCE_STYLES: Record<string, string> = {
   HIGH: "border-emerald-500/30 text-emerald-500 dark:text-emerald-400",
   MEDIUM: "border-amber-500/30 text-amber-500 dark:text-amber-400",
   LOW: "border-muted-foreground/30 text-muted-foreground",
 };
+
+function LeadTimeBadge({ days }: { days: number | null | undefined }) {
+  const { t } = useI18n();
+  if (days == null) return <span className="text-xs text-muted-foreground">—</span>;
+  if (days > 0) {
+    return (
+      <Badge variant="outline" className="gap-1 border-emerald-500/30 text-emerald-500 dark:text-emerald-400">
+        <TrendingUp className="size-3" />
+        {t("correlations.daysBefore").replace("{days}", String(days))}
+      </Badge>
+    );
+  }
+  if (days < 0) {
+    return (
+      <Badge variant="outline" className="gap-1 border-muted-foreground/30 text-muted-foreground">
+        <TrendingDown className="size-3" />
+        {t("correlations.daysAfter").replace("{days}", String(-days))}
+      </Badge>
+    );
+  }
+  return <Badge variant="outline">{t("correlations.sameDay")}</Badge>;
+}
 
 export function CorrelationsView({ correlations }: { correlations: CorrelationRow[] }) {
   const { t, locale } = useI18n();
@@ -40,6 +63,7 @@ export function CorrelationsView({ correlations }: { correlations: CorrelationRo
                 <TableHead>{t("correlations.signal")}</TableHead>
                 <TableHead>{t("correlations.investment")}</TableHead>
                 <TableHead>{t("correlations.confidence")}</TableHead>
+                <TableHead>{t("correlations.leadTime")}</TableHead>
                 <TableHead className="hidden md:table-cell">{t("history.started")}</TableHead>
                 <TableHead className="w-10" />
               </TableRow>
@@ -73,6 +97,9 @@ export function CorrelationsView({ correlations }: { correlations: CorrelationRo
                       <Badge variant="outline" className={CONFIDENCE_STYLES[correlation.confidence]}>
                         {correlation.confidence}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <LeadTimeBadge days={correlation.lead_time_days} />
                     </TableCell>
                     <TableCell className="hidden text-muted-foreground md:table-cell">
                       {formatRelativeTime(correlation.created_at, locale)}

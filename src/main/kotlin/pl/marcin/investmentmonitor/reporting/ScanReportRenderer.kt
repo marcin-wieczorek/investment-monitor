@@ -26,6 +26,7 @@ object ScanReportRenderer {
         appendChangedInvestments(report)
         appendNewDiscoverySignals(report)
         appendCorrelatedSignals(report)
+        appendDiscoveryLeadTime(report)
         appendAggregatorOnlyDiscoveries(report)
         appendFailures(report)
 
@@ -117,6 +118,25 @@ object ScanReportRenderer {
                     "  ${candidate.signal.title} <-> ${candidate.investment.name} " +
                         "(${candidate.confidence}: ${candidate.reason})"
                 )
+            }
+        }
+        appendLine()
+    }
+
+    private fun StringBuilder.appendDiscoveryLeadTime(report: ScanReport) {
+        appendLine("DISCOVERY LEAD TIME")
+        appendLine(SEPARATOR)
+        if (report.leadTimes.isEmpty()) {
+            appendLine("(none)")
+        } else {
+            report.leadTimes.forEach { leadTime ->
+                val description = when {
+                    leadTime.leadTimeDays == null -> "unknown"
+                    leadTime.leadTimeDays > 0 -> "detected ${leadTime.leadTimeDays} day(s) before developer publication"
+                    leadTime.leadTimeDays < 0 -> "developer published ${-leadTime.leadTimeDays} day(s) before this signal"
+                    else -> "detected the same day as developer publication"
+                }
+                appendLine("  ${leadTime.signalTitle} <-> ${leadTime.investmentName}: $description")
             }
         }
         appendLine()

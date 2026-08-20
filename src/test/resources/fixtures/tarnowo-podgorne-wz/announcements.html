@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="deklaracja-dostępności" content="http://bip2.tarnowo-podgorne.pl/deklaracja-dostepnosci" />
+    <base href="/" />
+    <title>Urz&#x105;d Gminy Tarnowo Podg&#xF3;rne BIP - Og&#x142;oszenia ws. decyzji lokalizacyjnych 6037</title>
+    <link rel="stylesheet" href="Content/libs/bootstrap/dist/css/bootstrap.min.css" type="text/css" />
+    <link rel="stylesheet" href="Content/libs/bootstrap-select/bootstrap-select.min.css" type="text/css" />
+    <link rel="stylesheet" href="Content/content/icons/fontawesome/css/all.css" type="text/css" />
+    <link rel="stylesheet" href="Content/content/icons/rekord/iconmoon.css" type="text/css" />
+    <link rel="stylesheet" href="Content/content/skin/bip_ugtarnowopod/scss/style.css" type="text/css" media="all" />
+    <script src="Content/libs/jquery/dist/jquery.min.js" type="text/javascript"></script>
+    <script src="Content/libs/popper/popper.min.js" type="text/javascript"></script>
+    <script src="Content/libs/bootstrap/dist/js/bootstrap.bundle.min.js" type="text/javascript"></script>
+    <script src="Content/libs/jquery-input-mask/jquery.inputmask.bundle.js" type="text/javascript"></script>
+    <script src="Content/scripts/template.js" type="text/javascript"></script>
+    <script src="Content/scripts/components/layout.js" type="text/javascript"></script>
+    <script src="Content/scripts/handleKeys.js" type="text/javascript"></script>
+    
+    <script>
+        $(function() {
+            var mainSection = document.getElementById('main');
+            var shouldRemoveTopPadding = true; 
+            
+            if (shouldRemoveTopPadding) {
+                removeTopPadding();
+            } else {
+                addTopPadding();
+            }
+            
+            function removeTopPadding() {
+                mainSection.classList.add('remove_top_padding');
+            }
+            
+            function addTopPadding() {
+                mainSection.classList.remove('remove_top_padding');
+            }
+        })
+    </script>
+
+</head>
+
+<body data-customer="bip_ugtarnowo">
+<div class="app-content" style="overflow-x: hidden;">
+    <ul class="nav fixed-top" aria-label="menu nawigacyjne">
+        <li id="goToMainMenu"
+            tabindex="0"
+            onclick="goToMainMenu()"
+            onkeypress="goToMainMenu()"
+            class="cursor_pointer">
+            Przejdź do menu głównego
+        </li>
+        <li id="goToContent"
+            tabindex="0"
+            onclick="goToContent()"
+            onkeypress="goToContent()"
+            class="cursor_pointer">
+            Przejdź do treści
+        </li>
+        <li id="goToDataSearcher"
+            tabindex="0"
+            onclick="goToDataSearcher()"
+            onkeypress="goToDataSearcher()"
+            class="cursor_pointer">
+            Przejdź do wyszukiwarki
+        </li>
+        <li id="goToDeclaration"
+            tabindex="0"
+            onclick="goToDeclaration()"
+            onkeypress="goToDeclaration()"
+            class="cursor_pointer">
+            Przejdź do deklaracji dostępności
+        </li>
+        <li id="goToSiteMap"
+            tabindex="0"
+            onclick="goToSiteMap()"
+            onkeypress="goToSiteMap()"
+            class="cursor_pointer">
+            Przejdź do mapy strony
+        </li>
+    </ul>
+        <div id="cookies_policy">
+        <div class="container cookies__container mb-2 mt-2 p-0">
+            <div class="row col-12 m-0 pb-3 pt-3">
+                <div class="col-12 col-md-9">
+                    <p class="m-0">Nasza strona wykorzystuje pliki cookies.</p>
+                    <p class="m-0">Korzystanie z witryny oznacza zgodę na ich zapis lub wykorzystanie.</p>
+                    <p class="m-0">Więcej informacji można znaleźć w <a class="font-weight-bold" href="/polityka-cookies">Polityce Cookies.</a></p>
+                </div>
+                <div class="col-12 col-md-3 mt-2 pt-2" style="text-align: right;">
+                    <button class="btn float-md-right" aria-label="Rozumiem i akceptuję" onclick="acceptCookiesPolicy()">Rozumiem i akceptuję</button>
+                </div>
+            </div>
+        </div>
+        <script src="Content/scripts/components/cookiesPolicy.js" type="text/javascript"></script>
+    </div>
+
+    <header id="header">
+    <div class="container all pl-0">
+        <div class="content-header">
+            <div class="top">
+                <div class="container">
+                    <div class="row justify-content-end">
+                        <div class="col-xl-4 col-md-3 col-sm-12">
+                            <a href="https://www.gov.pl/bip" id="bip_gov" target="_blank"
+                               title="Oficjalna strona Biuletynu Informacji Publicznej - link otwiera się w nowej karcie">
+                                <img id="bipLogo" src="/content/img/bip_logo.png" width="136" height="60" alt="Logo biuletynu informacji publicznej" class="header_logo" title="Biuletyn informacji publicznej">
+                            </a>
+                        </div>
+                        <div class="col-xl-4 col-md-4 col-sm-12 d-flex justify-content-center my-auto order-2 p-0 pt-1 pb-1 pt-md-0 pb-md-0 text-center">
+                            <h1 tabindex="0">
+                                Urz&#x105;d Gminy Tarnowo Podg&#xF3;rne
+                            </h1>
+                        </div>
+                        <div class="col-xl-4 col-md-5 col-sm-12 d-flex justify-content-end my-auto order-md-3 text-right wcag">
+                            <span role="button"
+                                  tabindex="0"
+                                  title="Resetuj czcionkę"
+                                  id="fontzero"
+                                  aria-label="Resetuj czcionkę">
+                                A
+                            </span>
+                            <span role="button"
+                                  tabindex="0"
+                                  title="Powiększ czcionkę"
+                                  id="fontup"
+                                  aria-label="Powiększ czcionkę">
+                                A+
+                            </span>
+                            <span role="button"
+                                  tabindex="0"
+                                  title="Zmniejsz czcionkę"
+                                  id="fontdown"
+                                  aria-label="Zmniejsz czcionkę">
+                                A-
+                            </span>
+                            <span role="button"
+                                  tabindex="0"
+                                  title="Wysoki kontrast"
+                                  id="kontrast"
+                                  aria-label="Wysoki kontrast">
+                                <i class="fa fa-low-vision" aria-hidden="true"></i>
+                            </span>
+                            <span role="button"
+                                  tabindex="0"
+                                  title="Deklaracja dostępności"
+                                  id="deklaracja"
+                                  aria-label="Deklaracja dostępności">
+                                <i class="fa fa-wheelchair" aria-hidden="true"></i>
+                            </span>
+                            <span role="button"
+                                  tabindex="0"
+                                  title="Idź do strony głównej"
+                                  id="homePage"
+                                  aria-label="Idź do strony głównej">
+                                <i class="fa fa-home" aria-hidden="true"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<script src="Content/scripts/components/header.js" type="text/javascript"></script>
+    <div class="container" id="container-wrapper">
+        <div class="row">
+            <div class="col-lg-3 left-sidebar pl-0">
+                <span class="icon icon-menu" id="toggleRwd"></span>
+<div class="left-sidebar noselect" id="main-menu" tabindex="0">
+    <nav class="nav">
+                <ul class="main-nav mb-0" role="presentation">
+                    <li class="parent" data-name="Organy w&#x142;adzy publicznej">
+                        <div class="children-handler">
+                            <i class="far fa-list-alt"></i>
+                            <h5 tabindex="0" class="d-inline font-weight-normal" style="font-size: 16px">Organy w&#x142;adzy publicznej</h5>
+                        </div>
+                        <ul class="nav flex-column children mb-0" role="presentation">
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5975"
+                                           data-start-page="False"
+                                           href="/5975">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>W&#xF3;jt</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5976"
+                                           data-start-page="False"
+                                           href="/5976">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Rada Gminy</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6063"
+                                           data-start-page="False"
+                                           href="/6063">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>So&#x142;ectwa</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6107"
+                                           data-start-page="False"
+                                           href="/6107">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Organy pomocnicze</span>
+                                        </a>
+                                </li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="main-nav mb-0" role="presentation">
+                    <li class="parent" data-name="Informator urz&#x119;dowy">
+                        <div class="children-handler">
+                            <i class="far fa-list-alt"></i>
+                            <h5 tabindex="0" class="d-inline font-weight-normal" style="font-size: 16px">Informator urz&#x119;dowy</h5>
+                        </div>
+                        <ul class="nav flex-column children mb-0" role="presentation">
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5974"
+                                           data-start-page="False"
+                                           href="/5974">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Informacje podstawowe</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6207"
+                                           data-start-page="False"
+                                           href="/6207">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Urz&#x105;d Gminy Tarnowo Podg&#xF3;rne</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6006"
+                                           data-start-page="False"
+                                           href="/6006">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Planowanie przestrzenne</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6039"
+                                           data-start-page="False"
+                                           href="/6039">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Nieruchomo&#x15B;ci</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6008"
+                                           data-start-page="False"
+                                           href="/6008">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Zam&#xF3;wienia Publiczne</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6009"
+                                           data-start-page="False"
+                                           href="/6009">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Wsp&#xF3;&#x142;praca z organizacjami pozarz&#x105;dowymi</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6010"
+                                           data-start-page="False"
+                                           href="/6010">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Ochrona &#x15B;rodowiska</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6011"
+                                           data-start-page="False"
+                                           href="/6011">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Zgromadzenia publiczne</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6012"
+                                           data-start-page="False"
+                                           href="/6012">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Inne jednostki organizacyjne i sp&#xF3;&#x142;ki gminy</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6013"
+                                           data-start-page="False"
+                                           href="/6013">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Wybory</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6014"
+                                           data-start-page="False"
+                                           href="/6014">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Konsultacje spo&#x142;eczne</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6015"
+                                           data-start-page="False"
+                                           href="/6015">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>O&#x15B;wiadczenia maj&#x105;tkowe</span>
+                                        </a>
+                                </li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="main-nav mb-0" role="presentation">
+                    <li class="parent" data-name="Finanse i bud&#x17C;et">
+                        <div class="children-handler">
+                            <i class="far fa-list-alt"></i>
+                            <h5 tabindex="0" class="d-inline font-weight-normal" style="font-size: 16px">Finanse i bud&#x17C;et</h5>
+                        </div>
+                        <ul class="nav flex-column children mb-0" role="presentation">
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6016"
+                                           data-start-page="False"
+                                           href="/6016">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Bud&#x17C;et Gminy</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6017"
+                                           data-start-page="False"
+                                           href="/6017">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Sprawozdania</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6020"
+                                           data-start-page="False"
+                                           href="/6020">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Maj&#x105;tek Gminy</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6026"
+                                           data-start-page="False"
+                                           href="/6026">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Pomoc publiczna</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6027"
+                                           data-start-page="False"
+                                           href="/6027">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Opinie Regionalnej Izby Obrachunkowej</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6028"
+                                           data-start-page="False"
+                                           href="/6028">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Dotacje</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6029"
+                                           data-start-page="False"
+                                           href="/6029">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Podatki i op&#x142;aty</span>
+                                        </a>
+                                </li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="main-nav mb-0" role="presentation">
+                    <li class="parent" data-name="Dane udost&#x119;pniane publicznie">
+                        <div class="children-handler">
+                            <i class="far fa-list-alt"></i>
+                            <h5 tabindex="0" class="d-inline font-weight-normal" style="font-size: 16px">Dane udost&#x119;pniane publicznie</h5>
+                        </div>
+                        <ul class="nav flex-column children mb-0" role="presentation">
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5986"
+                                           data-start-page="False"
+                                           href="/5986">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Plany, raporty, programy i strategie Gminy</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5987"
+                                           data-start-page="False"
+                                           href="/5987">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Prowadzone rejestry i ewidencje</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6394"
+                                           data-start-page="False"
+                                           href="/6394">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Konkursy i nabory ofert na realizacj&#x119; zada&#x144;</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5988"
+                                           data-start-page="False"
+                                           href="/5988">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Audyty i Kontrole</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5989"
+                                           data-start-page="False"
+                                           href="/5989">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Obwieszczenia i og&#x142;oszenia innych organ&#xF3;w</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6218"
+                                           data-start-page="False"
+                                           href="/6218">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Spisy powszechne</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5573"
+                                           data-start-page="False"
+                                           href="/5573">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Ponowne wykorzystanie informacji sektora publicznego</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6154"
+                                           data-start-page="False"
+                                           href="/6154">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Ochrona danych osobowych i cyberbezpiecze&#x144;stwo</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5992"
+                                           data-start-page="False"
+                                           href="/5992">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Informacje i komunikaty</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5571"
+                                           data-start-page="False"
+                                           href="/5571">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Redakcja biuletynu</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5853"
+                                           data-start-page="False"
+                                           href="/5853">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Instrukcja obs&#x142;ugi</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5570"
+                                           data-start-page="False"
+                                           href="/5570">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Obja&#x15B;nienia skr&#xF3;t&#xF3;w</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6056"
+                                           data-start-page="False"
+                                           href="/6056">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Mapa strony</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5612"
+                                           data-start-page="False"
+                                           href="/5612">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Historia zmian w BIP</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link"
+                                           target="_blank"
+                                           href="http://bip.tarnowo-podgorne.pl/tarnowo/">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Wersja archiwalna BIP</span>
+                                        </a>
+                                </li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="main-nav mb-0" role="presentation">
+                    <li class="parent" data-name="Nabory">
+                        <div class="children-handler">
+                            <i class="far fa-list-alt"></i>
+                            <h5 tabindex="0" class="d-inline font-weight-normal" style="font-size: 16px">Nabory</h5>
+                        </div>
+                        <ul class="nav flex-column children mb-0" role="presentation">
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6174"
+                                           data-start-page="False"
+                                           href="/6174">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Nabory na stanowiska urz&#x119;dnicze</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6173"
+                                           data-start-page="False"
+                                           href="/6173">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Nabory na pozosta&#x142;e stanowiska</span>
+                                        </a>
+                                </li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="main-nav mb-0" role="presentation">
+                    <li class="parent" data-name="Dost&#x119;pno&#x15B;&#x107;">
+                        <div class="children-handler">
+                            <i class="far fa-list-alt"></i>
+                            <h5 tabindex="0" class="d-inline font-weight-normal" style="font-size: 16px">Dost&#x119;pno&#x15B;&#x107;</h5>
+                        </div>
+                        <ul class="nav flex-column children mb-0" role="presentation">
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6232"
+                                           data-start-page="False"
+                                           href="/6232">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Koordynator do spraw dost&#x119;pno&#x15B;ci</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6030"
+                                           data-start-page="False"
+                                           href="/6030">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Obs&#x142;uga klienta z niepe&#x142;nosprawno&#x15B;ci&#x105;</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6032"
+                                           data-start-page="False"
+                                           href="/6032">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Plany i raporty zwi&#x105;zane z dost&#x119;pno&#x15B;ci&#x105;</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6033"
+                                           data-start-page="False"
+                                           href="/6033">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Dost&#x119;pno&#x15B;&#x107; architektoniczna i cyfrowa Urz&#x119;du Gminy</span>
+                                        </a>
+                                </li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="main-nav mb-0" role="presentation">
+                    <li class="parent" data-name="Sygnali&#x15B;ci">
+                        <div class="children-handler">
+                            <i class="far fa-list-alt"></i>
+                            <h5 tabindex="0" class="d-inline font-weight-normal" style="font-size: 16px">Sygnali&#x15B;ci</h5>
+                        </div>
+                        <ul class="nav flex-column children mb-0" role="presentation">
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6493"
+                                           data-start-page="False"
+                                           href="/6493">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Zg&#x142;oszenia zewn&#x119;trzne</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6496"
+                                           data-start-page="False"
+                                           href="/6496">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Zg&#x142;oszenia wewn&#x119;trzne</span>
+                                        </a>
+                                </li>
+                        </ul>
+                    </li>
+                </ul>
+                <ul class="main-nav mb-0" role="presentation">
+                    <li class="parent" data-name="Jak za&#x142;atwi&#x107; spraw&#x119;?">
+                        <div class="children-handler">
+                            <i class="far fa-list-alt"></i>
+                            <h5 tabindex="0" class="d-inline font-weight-normal" style="font-size: 16px">Jak za&#x142;atwi&#x107; spraw&#x119;?</h5>
+                        </div>
+                        <ul class="nav flex-column children mb-0" role="presentation">
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5977"
+                                           data-start-page="False"
+                                           href="/5977">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Urz&#x105;d Stanu Cywilnego</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5978"
+                                           data-start-page="False"
+                                           href="/5978">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Sprawy Obywatelskie</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6205"
+                                           data-start-page="False"
+                                           href="/6205">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Dzia&#x142;alno&#x15B;&#x107; gospodarcza</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6106"
+                                           data-start-page="False"
+                                           href="/6106">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>O&#x15B;wiata</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5979"
+                                           data-start-page="False"
+                                           href="/5979">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Podatki i Op&#x142;aty Lokalne</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5980"
+                                           data-start-page="False"
+                                           href="/5980">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Zagospodarowanie Przestrzenne</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5981"
+                                           data-start-page="False"
+                                           href="/5981">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Gospodarka Nieruchomo&#x15B;ciami</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5982"
+                                           data-start-page="False"
+                                           href="/5982">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Infrastruktura Drogowa</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5983"
+                                           data-start-page="False"
+                                           href="/5983">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Us&#x142;ugi Transportowe &#x2B; TAXI</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5984"
+                                           data-start-page="False"
+                                           href="/5984">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Ochrona &#x15A;rodowiska</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="5985"
+                                           data-start-page="False"
+                                           href="/5985">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Obs&#x142;uga Klienta i Informacja Publiczna</span>
+                                        </a>
+                                </li>
+                                <li class="nav-item">
+                                        <a tabindex="0"
+                                           class="nav-link element"
+                                           data-id="6183"
+                                           data-start-page="False"
+                                           href="/6183">
+                                            <i class="fa fa-hand-point-right"></i>
+                                            <span>Obs&#x142;uga Ksi&#x119;gowa</span>
+                                        </a>
+                                </li>
+                        </ul>
+                    </li>
+                </ul>
+            <script src="Content/scripts/components/mainMenu.js" type="text/javascript"></script>
+    </nav>
+</div>
+
+
+            </div>
+            <div class="col-lg-9 content" id="content">
+                <main>
+                    <div class="content-heading">
+    <div class="row h-100">
+        <div class="col-12 col-md-12 col-lg-8 mr-auto">
+                <h2 class="pb-0 pt-1" tabindex="0">
+                    Informator urz&#x119;dowy
+                </h2>
+                <h3 class="small pl-4 m-0 pb-2 ml-1" id="historyPath">
+                            <a class="historyPathElement" tabindex="0" data-id="6006" href="/6006">Planowanie przestrzenne /</a>
+                            <span class="historyPathElement" tabindex="0" data-id="6037">Og&#x142;oszenia ws. decyzji lokalizacyjnych</span>
+                </h3>
+        </div>
+        <div class="col-12 col-lg-1 my-auto share text-center">
+            <span role="button"
+                  class="d-lg-block"
+                  title="Drukuj stronę"
+                  aria-label="Drukuj stronę"
+                  id="print"
+                  tabindex="0">
+                <i class="icon-print" aria-hidden="true"></i>
+            </span>
+            <span role="button"
+                  class=""
+                  id="dropdownMenu2"
+                  data-toggle="dropdown"
+                  tabindex="0"
+                  aria-label="Menu udostępnień"
+                  aria-expanded="false">
+                <i class="icon-squares pl-1" aria-hidden="true"></i>
+            </span>
+            <div class="dropdown-menu dropdown-menu-right" id="dropdownItems" role="listbox">
+                <a class="shareFb dropdown-item fb-ic mr-3 m-0"
+                   role="option"
+                   tabindex="0"
+                   href="/">
+                    <i class="fab fa-facebook-f"></i>
+                    udostępnij na facebook
+                </a>
+                <a class="shareGoogle dropdown-item m-0"
+                   role="option"
+                   tabindex="0"
+                   href="/">
+                    <i class="fab fa-google-plus-g"></i>
+                    udostępnij na Google+
+                </a>
+                <a class="sendMail dropdown-item m-0"
+                   role="option"
+                   tabindex="0"
+                   href="/">
+                    <i class="fas fa-paper-plane"></i>
+                    wyślij pocztą email
+                </a>
+            </div>
+        </div>
+        <div class="col-8 col-lg-3 col-md-8 my-auto search">
+            <div class="row md-form">
+                <label for="data-searcher" class="sr-only">Wpisz tekst do wyszukania</label>
+                <input class="col-9 form-control"
+                       type="text"
+                       placeholder="Szukaj"
+                       id="data-searcher"
+                       tabindex="0">
+                <a href="/"
+                   tabindex="0"
+                   class="col-2 my-auto"
+                   title="Szukaj"
+                   role="button">
+                    <span class="sr-only">Szukaj</span>
+                    <i class="fas fa-search"></i>
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="Content/scripts/components/historyBar.js" type="text/javascript"></script>
+                    <div class="main" id="main" tabindex="0">
+                        
+    <ul class="list" role="presentation">
+
+    </ul>
+
+<div id="toPrint" class="col-12">
+<ul class="pagination float-right pb-2">
+  <li><a tabindex="-1" class="&#xA;              page-link active router_link&#xA;            " href="http://bip2.tarnowo-podgorne.pl/6037/strona/1"><span class="sr-only">Aktualna strona nr 1</span><span class="bip_strony">1</span></a></li>
+  <li><a tabindex="-1" class="&#xA;              page-link router_link&#xA;            " href="http://bip2.tarnowo-podgorne.pl/6037/strona/2"><span class="sr-only">Przejdź do strony nr 2</span>2</a></li>
+  <li><a tabindex="-1" class="&#xA;              page-link router_link&#xA;            " href="http://bip2.tarnowo-podgorne.pl/6037/strona/3"><span class="sr-only">Przejdź do strony nr 3</span>3</a></li>
+  <li><a tabindex="-1" class="&#xA;              page-link router_link&#xA;            " href="http://bip2.tarnowo-podgorne.pl/6037/strona/4"><span class="sr-only">Przejdź do strony nr 4</span>4</a></li>
+  <li><a tabindex="-1" class="&#xA;              page-link router_link&#xA;            " href="http://bip2.tarnowo-podgorne.pl/6037/strona/5"><span class="sr-only">Przejdź do strony nr 5</span>5</a></li>
+  <li><a tabindex="-1" class="&#xA;              page-link router_link&#xA;            " href="http://bip2.tarnowo-podgorne.pl/6037/strona/6"><span class="sr-only">Przejdź do strony nr 6</span>6</a></li>
+  <li><a tabindex="-1" class="&#xA;              page-link forward router_link&#xA;            " href="http://bip2.tarnowo-podgorne.pl/6037/strona/7"><span class="sr-only">Przejdź do następnej strony</span><span class="fas fa-chevron-right"></span></a></li>
+  <li><a tabindex="-1" class="&#xA;              page-link forward router_link&#xA;            " href="http://bip2.tarnowo-podgorne.pl/6037/strona/26"><span class="sr-only">Przejdź do ostatniej strony</span><span class="fas fa-angle-double-right"></span></a></li>
+</ul>
+<div class="row w-100 m-0">
+  <div class="list list_date-sym w-100 mx-auto mt-1 mb-1">
+    <div class="row date_sym mx-auto pb-1">
+      <div class="col-4 pl-1" tabindex="0">
+          Symbol:
+          <span class="text-uppercase">WZP.6733.20.2026</span></div>
+      <div class="col-8 text-right pr-1" tabindex="0">2026-08-12</div>
+    </div>
+    <div class="row pl-1 pt-2">
+      <div class="col-12 font-weight-bold"><a class="router_link" tabindex="0" href="6037/dokument/34193">Obwieszczenie dot. wszczęcia postępowania w sprawie  ustalenia lokalizacji inwestycji celu publicznego polegającej na budowie sieci kablowej SN-15kV w ramach inwestycji "Przebudowa linii elektroenergetycznej SN-15kV GPZ Tarnowo Podgórne-Sady" na dz. nr 142/1, 143/4, 143/11, 83/3, 78/1, 67/3, 78/2, 153/1, 81/1, 68/1, 82/1, 69/1, 63/1, 70/1, 71/1, 76/2, 146/12, 75/1, 75/2, 76/3 w m. Góra, dz. nr 2/14, 3, 2/6, 10, 2/5 w m. Rumianek w gminie Tarnowo Podgórne oraz na dz. nr 79/3, 80 w m. Dolne Polew gminie Kaźmierz</a></div>
+    </div>
+  </div>
+  <div class="list list_date-sym w-100 mx-auto mt-1 mb-1">
+    <div class="row date_sym mx-auto pb-1">
+      <div class="col-4 pl-1" tabindex="0">
+          Symbol:
+          <span class="text-uppercase">WZP.6733.19.2026</span></div>
+      <div class="col-8 text-right pr-1" tabindex="0">2026-08-03</div>
+    </div>
+    <div class="row pl-1 pt-2">
+      <div class="col-12 font-weight-bold"><a class="router_link" tabindex="0" href="6037/dokument/34167">Obwieszczenie WZP.6733.19.2026 – Jankowice, dz. 204/3, 249/1, 249/2, 280/1, 280/2, 476/11, 476/21 - budowa sieci gazowej ś/c DN 63</a></div>
+    </div>
+  </div>
+  <div class="list list_date-sym w-100 mx-auto mt-1 mb-1">
+    <div class="row date_sym mx-auto pb-1">
+      <div class="col-4 pl-1" tabindex="0">
+          Symbol:
+          <span class="text-uppercase">WZP.6733.18.2026</span></div>
+      <div class="col-8 text-right pr-1" tabindex="0">2026-07-27</div>
+    </div>
+    <div class="row pl-1 pt-2">
+      <div class="col-12 font-weight-bold"><a class="router_link" tabindex="0" href="6037/dokument/34040">obwieszczenie: budowa sieci elektroenergetycznej w Górze</a></div>
+    </div>
+  </div>
+  <div class="list list_date-sym w-100 mx-auto mt-1 mb-1">
+    <div class="row date_sym mx-auto pb-1">
+      <div class="col-4 pl-1" tabindex="0">
+          Symbol:
+          <span class="text-uppercase">WZP.6733.16.2026</span></div>
+      <div class="col-8 text-right pr-1" tabindex="0">2026-07-14</div>
+    </div>
+    <div class="row pl-1 pt-2">
+      <div class="col-12 font-weight-bold"><a class="router_link" tabindex="0" href="6037/dokument/33910">Obwieszczenie dot. wydania decyzji o lokalizacji inwestycji celu publicznego - budowa gazociągu niskiego ciśnienia dn 90 mm PE na dz. nr 630 i 627/5 w m. Przeźmierowo</a></div>
+    </div>
+  </div>
+  <div class="list list_date-sym w-100 mx-auto mt-1 mb-1">
+    <div class="row date_sym mx-auto pb-1">
+      <div class="col-4 pl-1" tabindex="0">
+          Symbol:
+          <span class="text-uppercase">WZP.6733.17.2026</span></div>
+      <div class="col-8 text-right pr-1" tabindex="0">2026-07-13</div>
+    </div>
+    <div class="row pl-1 pt-2">
+      <div class="col-12 font-weight-bold"><a class="router_link" tabindex="0" href="6037/dokument/33901">Obwieszczenie dot. wydania decyzji o ustaleniu  lokalizacji inwestycji celu publicznego – budowa sieci gazowej śv/c DN63 (do 0,5 MPa) - Sierosław, ul. Antracytowa, dz. 57/36, 57/54, 59/16</a></div>
+    </div>
+  </div>
+  <div class="list list_date-sym w-100 mx-auto mt-1 mb-1">
+    <div class="row date_sym mx-auto pb-1">
+      <div class="col-4 pl-1" tabindex="0">
+          Symbol:
+          <span class="text-uppercase">WZP.6733.11.2026</span></div>
+      <div class="col-8 text-right pr-1" tabindex="0">2026-07-07</div>
+    </div>
+    <div class="row pl-1 pt-2">
+      <div class="col-12 font-weight-bold"><a class="router_link" tabindex="0" href="6037/dokument/33828">obwieszczenie: decyzja lokalizacyjna w sprawie budowy sieci elektroenergetycznej nn-0,4kV stanowiącej oświetlenie uliczne na terenie części działki o nr ewid. 65/1</a></div>
+    </div>
+  </div>
+  <div class="list list_date-sym w-100 mx-auto mt-1 mb-1">
+    <div class="row date_sym mx-auto pb-1">
+      <div class="col-4 pl-1" tabindex="0">
+          Symbol:
+          <span class="text-uppercase">WZP.6733.15.2026</span></div>
+      <div class="col-8 text-right pr-1" tabindex="0">2026-07-06</div>
+    </div>
+    <div class="row pl-1 pt-2">
+      <div class="col-12 font-weight-bold"><a class="router_link" tabindex="0" href="6037/dokument/33825">decyzja o lokalizacji inwestycji celu publicznego – Lusowo, ul. Wierzbowa, dz.144, 121/3, 121/52 - budowa sieci gazowej</a></div>
+    </div>
+  </div>
+  <div class="list list_date-sym w-100 mx-auto mt-1 mb-1">
+    <div class="row date_sym mx-auto pb-1">
+      <div class="col-4 pl-1" tabindex="0">
+          Symbol:
+          <span class="text-uppercase">WZP.6733.14.2026</span></div>
+      <div class="col-8 text-right pr-1" tabindex="0">2026-06-24</div>
+    </div>
+    <div class="row pl-1 pt-2">
+      <div class="col-12 font-weight-bold"><a class="router_link" tabindex="0" href="6037/dokument/33720">Obwieszczenie o wydaniu decyzji WZP.6733.14.2026 -w sprawie budowy sieci gazowej o średnicy dn 225 mm (ul. Tarnowska) na terenie części działki nr ewid. 250/3 w miejscowości Jankowice</a></div>
+    </div>
+  </div>
+  <div class="list list_date-sym w-100 mx-auto mt-1 mb-1">
+    <div class="row date_sym mx-auto pb-1">
+      <div class="col-4 pl-1" tabindex="0">
+          Symbol:
+          <span class="text-uppercase">WZP.6733.13.2026</span></div>
+      <div class="col-8 text-right pr-1" tabindex="0">2026-06-24</div>
+    </div>
+    <div class="row pl-1 pt-2">
+      <div class="col-12 font-weight-bold"><a class="router_link" tabindex="0" href="6037/dokument/33712">Obwieszczeni o wydaniu decyzji - WZP.6733.13.2026</a></div>
+    </div>
+  </div>
+  <div class="list list_date-sym w-100 mx-auto mt-1 mb-1">
+    <div class="row date_sym mx-auto pb-1">
+      <div class="col-4 pl-1" tabindex="0">
+          Symbol:
+          <span class="text-uppercase">WZP.6733.8.2026</span></div>
+      <div class="col-8 text-right pr-1" tabindex="0">2026-05-19</div>
+    </div>
+    <div class="row pl-1 pt-2">
+      <div class="col-12 font-weight-bold"><a class="router_link" tabindex="0" href="6037/dokument/33273">Obwieszczenie: decyzja w sprawie budowy sieci kanalizacji sanitarnej na dz. nr 87/3 w Sadach</a></div>
+    </div>
+  </div>
+</div>
+<ul class="pagination float-right pb-2 pt-4">
+  <li><a tabindex="0" class="&#xA;              page-link active router_link&#xA;            " href="http://bip2.tarnowo-podgorne.pl/6037/strona/1"><span class="sr-only">Aktualna strona nr 1</span><span class="bip_strony">1</span></a></li>
+  <li><a tabindex="0" class="&#xA;              page-link router_link&#xA;            " href="http://bip2.tarnowo-podgorne.pl/6037/strona/2"><span class="sr-only">Przejdź do strony nr 2</span>2</a></li>
+  <li><a tabindex="0" class="&#xA;              page-link router_link&#xA;            " href="http://bip2.tarnowo-podgorne.pl/6037/strona/3"><span class="sr-only">Przejdź do strony nr 3</span>3</a></li>
+  <li><a tabindex="0" class="&#xA;              page-link router_link&#xA;            " href="http://bip2.tarnowo-podgorne.pl/6037/strona/4"><span class="sr-only">Przejdź do strony nr 4</span>4</a></li>
+  <li><a tabindex="0" class="&#xA;              page-link router_link&#xA;            " href="http://bip2.tarnowo-podgorne.pl/6037/strona/5"><span class="sr-only">Przejdź do strony nr 5</span>5</a></li>
+  <li><a tabindex="0" class="&#xA;              page-link router_link&#xA;            " href="http://bip2.tarnowo-podgorne.pl/6037/strona/6"><span class="sr-only">Przejdź do strony nr 6</span>6</a></li>
+  <li><a tabindex="0" class="&#xA;              page-link forward router_link&#xA;            " href="http://bip2.tarnowo-podgorne.pl/6037/strona/7"><span class="sr-only">Przejdź do strony nr 7</span><span class="fas fa-chevron-right"></span></a></li>
+  <li><a tabindex="0" class="&#xA;              page-link forward router_link&#xA;            " href="http://bip2.tarnowo-podgorne.pl/6037/strona/26"><span class="sr-only">Przejdź do ostatniej strony</span><span class="fas fa-angle-double-right"></span></a></li>
+</ul>    <div class="col-12 errors">
+    </div>
+</div>
+
+
+                    </div>
+                </main>
+            </div>
+        </div>
+    </div>
+    <footer>
+  <div class="container">
+    <div class="row">
+      <div class="col-12 col-md-6">
+        <div class="media row">
+              <div class="col-3">
+                  <img class="mr-3 my-auto" src="Customers/bip_ugtarnowo/files/logo-W.png" id="footerLogo" alt="">
+              </div>
+          <div class="media-body text-center text-lg-left col-9">
+            <p tabindex="0" class="mt-0 mb-2 font-weight-bolder text-white text-center text-lg-left" style="font-size: 1rem">Urz&#x105;d Gminy Tarnowo Podg&#xF3;rne</p>
+            <p>
+              <span tabindex="0">ul. Pozna&#x144;ska 115</span>
+              <br>
+              <span tabindex="0">62-080 Tarnowo Podg&#xF3;rne</span>
+            </p>
+            <p>
+              <span tabindex="0">61 8959 200</span>
+              <br>
+              <span tabindex="0">61 8146 118</span>
+              <br>
+              <span tabindex="0">
+                e-mail: <a tabindex="0" href="mailto:ug@tarnowo-podgorne.pl">ug@tarnowo-podgorne.pl</a></span>
+            </p>
+
+          </div>
+        </div>
+      </div>
+      <div class="col-12 col-md-6 col-lg-3 pt-2 pt-md-0">
+        <h6 tabindex="0" class="mt-0 text-center text-lg-left text-white font-weight-bolder">Godziny urzędowania:</h6>
+        <table class="default mx-auto mx-lg-0 footer_table text-center text-lg-left" role="presentation">
+          <tbody>
+          <tr tabindex="0">
+            <td class="pr-5" style="width: 130px;">
+              Poniedziałek
+            </td>
+            <td>
+              8:30 - 18:00
+            </td>
+          </tr>
+          <tr tabindex="0">
+            <td>
+              Wtorek
+            </td>
+            <td>
+              7:30 - 15:30
+            </td>
+          </tr>
+          <tr tabindex="0">
+            <td>
+              Środa
+            </td>
+            <td>
+              7:30 - 15:30
+            </td>
+          </tr>
+          <tr tabindex="0">
+            <td>
+              Czwartek
+            </td>
+            <td>
+              7:30 - 15:30
+            </td>
+          </tr>
+          <tr tabindex="0">
+            <td>
+              Piątek
+            </td>
+            <td>
+              7:30 - 14:00
+            </td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+        <div class="col-12 col-lg-3 pt-4 pt-lg-0">
+            <h6 tabindex="0" class="mt-0 text-center text-lg-left font-weight-bolder text-white">Zobacz również:</h6>
+                <ul class="default mx-auto mx-lg-0 nopoint text-center text-lg-left" role="presentation">
+                <li>
+                    <a tabindex="0" href="/deklaracja-dostepnosci" title="Strona z deklaracją dostępności">
+                        <i class="icon-external"></i> Deklaracja dostępności
+                    </a>
+                </li>
+                <li>
+                    <a tabindex="0" href="http://www.tarnowo-podgorne.pl" title="Strona urzędu" target="_blank">
+                        <i class="icon-external"></i> Strona urzędu
+                    </a>
+                </li>
+                <li>
+                    <a tabindex="0" href="https://www.gov.pl/bip" title="Oficjalna strona Bip - link otwiera się w nowej karcie" target="_blank">
+                        <i class="icon-external"></i> Oficjalna strona BIP
+                    </a>
+                </li>
+                    <li>
+                        <a tabindex="0" href="https://eurzad.tarnowo-podgorne.pl" title="Strona e-urzędu" target="_blank">
+                            <i class="icon-external"></i> E-urząd
+                        </a>
+                    </li>
+            </ul>
+        </div>
+
+      <div class="col-12">
+        <hr>
+      </div>
+      <div class="col-12">
+        <p class="autor text-left">
+          <span tabindex="0">Licznik odwiedzin:</span>
+          <span tabindex="0">19333798</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="Content/scripts/components/footer.js" type="text/javascript"></script>
+</div>
+
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-161922218-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+
+        function gtag() { dataLayer.push(arguments); }
+
+        gtag('js', new Date());
+
+        gtag('config', 'UA-161922218-1');
+    </script>
+</body>
+</html>

@@ -4,6 +4,8 @@
     "investments": "Inwestycje",
     "signals": "Sygnały",
     "correlations": "Korelacje",
+    "developers": "Deweloperzy",
+    "coverage": "Pokrycie",
     "history": "Historia",
     "sources": "Źródła"
   },
@@ -23,7 +25,10 @@
     "viewAll": "Zobacz wszystkie",
     "noInvestmentsYet": "Nie wykryto jeszcze żadnych inwestycji. Uruchom skan, aby zacząć.",
     "newInvestmentsChart": "Nowe inwestycje na skan",
-    "scanSuccessChart": "Skuteczność skanowania"
+    "scanSuccessChart": "Skuteczność skanowania",
+    "avgLeadTime": "Śr. wyprzedzenie wykrycia",
+    "leadTimeDays": "{days} dni",
+    "noData": "Brak danych"
   },
   "scan": {
     "runScan": "Uruchom skan",
@@ -59,7 +64,40 @@
     "evidence": "Źródła danych",
     "noEvidence": "Brak zarejestrowanej proweniencji.",
     "correlatedSignals": "Powiązane sygnały discovery",
-    "noCorrelations": "Brak powiązanych sygnałów discovery."
+    "noCorrelations": "Brak powiązanych sygnałów discovery.",
+    "source": "Źródło",
+    "price": "Cena",
+    "allSources": "Wszystkie źródła",
+    "allTypes": "Wszystkie typy",
+    "allStatuses": "Wszystkie statusy",
+    "allLocations": "Wszystkie lokalizacje",
+    "watchedOnly": "Tylko obserwowane",
+    "watched": "Obserwowane",
+    "watch": "Obserwuj",
+    "unwatch": "Przestań obserwować",
+    "score": "Wynik",
+    "scoringBreakdown": "Deterministyczny rozkład oceny",
+    "noScore": "Jeszcze nie oceniono.",
+    "overallScore": "Wynik ogólny",
+    "houseAreaScore": "Dopasowanie metrażu domu",
+    "plotAreaScore": "Dopasowanie działki",
+    "priceScoreLabel": "Dopasowanie ceny",
+    "propertyTypeMatch": "Zgodność typu nieruchomości",
+    "locationTierMatch": "Zgodność poziomu lokalizacji",
+    "largePlotBonus": "Bonus za dużą działkę",
+    "plotToHouseRatio": "Stosunek działka/dom"
+  },
+  "filters": {
+    "advanced": "Filtry zaawansowane",
+    "from": "od",
+    "to": "do",
+    "sort": {
+      "first_seen_at": "Data wykrycia",
+      "price_min": "Cena",
+      "house_area_max": "Metraż domu",
+      "plot_area_max": "Powierzchnia działki",
+      "overall_score": "Wynik"
+    }
   },
   "signals": {
     "title": "Sygnały Discovery",
@@ -79,7 +117,11 @@
     "investment": "Inwestycja",
     "signal": "Sygnał",
     "reason": "Powód",
-    "noResults": "Nie znaleziono jeszcze żadnych korelacji."
+    "noResults": "Nie znaleziono jeszcze żadnych korelacji.",
+    "leadTime": "Wyprzedzenie",
+    "daysBefore": "+{days}d przed deweloperem",
+    "daysAfter": "{days}d po deweloperze",
+    "sameDay": "ten sam dzień"
   },
   "history": {
     "title": "Historia",
@@ -110,5 +152,41 @@
     "dark": "Ciemny",
     "system": "Systemowy",
     "toggleLabel": "Przełącz motyw"
+  },
+  "developers": {
+    "title": "Deweloperzy",
+    "subtitle": "Rejestr wszystkich śledzonych deweloperów, monitorowanych i nie",
+    "tierA": "Tier A",
+    "tierB": "Tier B",
+    "discovered": "Odkryci deweloperzy",
+    "monitored": "monitorowanych",
+    "name": "Nazwa",
+    "status": "Status",
+    "website": "Strona www",
+    "adapter": "Adapter",
+    "municipality": "Gmina",
+    "discoveredFrom": "Odkryto z",
+    "discoveredAt": "Odkryto",
+    "noCandidates": "Nie odkryto jeszcze żadnych kandydatów na deweloperów.",
+    "statusLabel": {
+      "MONITORED": "Monitorowany",
+      "DISCOVERED": "Odkryty",
+      "CANDIDATE": "Kandydat",
+      "NO_CURRENT_INVESTMENTS": "Brak aktualnych inwestycji",
+      "INACTIVE": "Nieaktywny",
+      "BLOCKED": "Zablokowany"
+    }
+  },
+  "coverage": {
+    "title": "Pokrycie Geograficzne",
+    "subtitle": "Pokrycie źródłami dla każdej docelowej gminy Metropolii Poznań",
+    "municipality": "Gmina",
+    "powiat": "Powiat",
+    "status": {
+      "IMPLEMENTED": "Zaimplementowane",
+      "NOT_IMPLEMENTED": "Niezaimplementowane",
+      "BLOCKED": "Zablokowane",
+      "DISABLED": "Wyłączone"
+    }
   }
 }

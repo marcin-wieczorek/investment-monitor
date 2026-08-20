@@ -35,7 +35,7 @@ data class OllamaGenerateResponse(val response: String? = null)
  * responses are all caught and surfaced as `null`, never thrown, so a
  * missing/misconfigured local LLM never breaks a deterministic scan (see
  * docs/ARCHITECTURE.md LLM role section - the analyzer that uses this
- * client falls back to [pl.marcin.investmentmonitor.analysis.NoOpInvestmentAnalyzer]
+ * client falls back to [pl.marcin.investmentmonitor.analysis.DefaultInvestmentAnalyzer]
  * behaviour on any failure).
  */
 @Component

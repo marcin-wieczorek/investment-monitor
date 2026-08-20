@@ -6,6 +6,7 @@ import pl.marcin.investmentmonitor.detection.ChangeType
 import pl.marcin.investmentmonitor.detection.InvestmentChange
 import pl.marcin.investmentmonitor.domain.Investment
 import pl.marcin.investmentmonitor.domain.InvestmentSignal
+import pl.marcin.investmentmonitor.persistence.CorrelationLeadTime
 import pl.marcin.investmentmonitor.validation.ValidationResult
 import java.time.Instant
 
@@ -53,7 +54,9 @@ data class ScanReport(
     val discoveryReports: List<DiscoverySourceReport>,
     val correlations: List<CorrelationCandidate>,
     /** Aggregator-sourced investments newly seen this run with no matching developer-sourced investment. */
-    val aggregatorOnlyDiscoveries: List<Investment>
+    val aggregatorOnlyDiscoveries: List<Investment>,
+    /** Discovery lead time for every persisted correlation, not just this run's new ones (see AGENTS.md section 28). */
+    val leadTimes: List<CorrelationLeadTime> = emptyList()
 ) {
     val newInvestmentCount: Int
         get() = developerReports.sumOf { source -> source.changes.count { it.change.type == ChangeType.NEW } }

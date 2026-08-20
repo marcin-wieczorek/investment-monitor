@@ -1,10 +1,13 @@
 import { getDb } from "@/lib/db";
 import type {
   CorrelationRow,
+  DeveloperCandidateRow,
+  DeveloperRegistryRow,
   InvestmentFilters,
   InvestmentSignalRow,
   InvestmentWithState,
   MonitoringRunRow,
+  MunicipalityRegistryRow,
   SourceEvidenceRow,
   SourceSnapshotRow,
 } from "@/lib/types";
@@ -13,11 +16,23 @@ const BASE_SELECT = `
   SELECT
     i.*,
     COALESCE(s.archived, 0) AS archived,
+    COALESCE(s.watched, 0) AS watched,
     s.reviewed_at AS reviewed_at,
-    n.note AS note
+    n.note AS note,
+    ss.source_category AS source_category,
+    sc.overall_score AS overall_score,
+    sc.property_type_match AS property_type_match,
+    sc.location_tier_match AS location_tier_match,
+    sc.house_area_score AS house_area_score,
+    sc.plot_area_score AS plot_area_score,
+    sc.price_score AS price_score,
+    sc.large_plot_bonus AS large_plot_bonus,
+    sc.plot_to_house_ratio AS plot_to_house_ratio
   FROM investment i
   LEFT JOIN investment_state s ON s.investment_id = i.id
   LEFT JOIN user_note n ON n.investment_id = i.id
+  LEFT JOIN source_snapshot ss ON ss.source = i.source
+  LEFT JOIN investment_score sc ON sc.investment_canonical_key = i.canonical_key
 `;
 
 export function listInvestments(filters: InvestmentFilters = {}): InvestmentWithState[] {
@@ -114,8 +129,28 @@ export function setArchived(investmentId: number, archived: boolean): void {
     reviewedAt: new Date().toISOString(),
   });
 }
+
+export function setWatched(investmentId: number, watched: boolean): void {
+  const db = getDb();
+  db.prepare(
+    `INSERT INTO investment_state (investment_id, watched)
+     VALUES (@investmentId, @watched)
+     ON CONFLICT(investment_id) DO UPDATE SET watched = @watched`
+  ).run({
+    investmentId,
+    watched: watched ? 1 : 0,
+  });
+}
+
 function normalizeRow(row: InvestmentWithState): InvestmentWithState {
-  return { ...row, archived: Boolean(row.archived) };
+  return {
+    ...row,
+    archived: Boolean(row.archived),
+    watched: Boolean(row.watched),
+    property_type_match: row.property_type_match == null ? null : Boolean(row.property_type_match),
+    location_tier_match: row.location_tier_match == null ? null : Boolean(row.location_tier_match),
+    large_plot_bonus: row.large_plot_bonus == null ? null : Boolean(row.large_plot_bonus),
+  };
 }
 
 export function listSignals(limit = 200): InvestmentSignalRow[] {
@@ -162,7 +197,10 @@ const CORRELATION_SELECT = `
   SELECT
     c.*,
     i.name AS investment_name,
-    s.title AS signal_title
+    i.first_seen_at AS investment_first_seen,
+    s.title AS signal_title,
+    s.first_seen_at AS signal_first_seen,
+    CAST(julianday(i.first_seen_at) - julianday(s.first_seen_at) AS INTEGER) AS lead_time_days
   FROM correlation c
   JOIN investment i ON i.id = c.investment_id
   JOIN investment_signal s ON s.id = c.signal_id
@@ -181,5 +219,43 @@ export function listCorrelationsForInvestment(investmentId: number): Correlation
   const rows = db
     .prepare(`${CORRELATION_SELECT} WHERE c.investment_id = ? ORDER BY c.created_at DESC`)
     .all(investmentId) as unknown as CorrelationRow[];
+  return rows.map((row) => ({ ...row }));
+}
+
+/** Average discovery lead time in days across every correlation - the core "early detection" KPI. */
+export function averageDiscoveryLeadTime(): number | null {
+  const db = getDb();
+  const result = db
+    .prepare(
+      `SELECT AVG(CAST(julianday(i.first_seen_at) - julianday(s.first_seen_at) AS REAL)) AS avg_days
+       FROM correlation c
+       JOIN investment i ON i.id = c.investment_id
+       JOIN investment_signal s ON s.id = c.signal_id`
+    )
+    .get() as unknown as { avg_days: number | null };
+  return result.avg_days;
+}
+
+export function listDevelopers(): DeveloperRegistryRow[] {
+  const db = getDb();
+  const rows = db
+    .prepare("SELECT * FROM developer_registry ORDER BY tier, name")
+    .all() as unknown as DeveloperRegistryRow[];
+  return rows.map((row) => ({ ...row }));
+}
+
+export function listDeveloperCandidates(): DeveloperCandidateRow[] {
+  const db = getDb();
+  const rows = db
+    .prepare("SELECT * FROM developer_candidate ORDER BY discovered_at DESC")
+    .all() as unknown as DeveloperCandidateRow[];
+  return rows.map((row) => ({ ...row }));
+}
+
+export function listMunicipalities(): MunicipalityRegistryRow[] {
+  const db = getDb();
+  const rows = db
+    .prepare("SELECT * FROM municipality_registry ORDER BY name")
+    .all() as unknown as MunicipalityRegistryRow[];
   return rows.map((row) => ({ ...row }));
 }

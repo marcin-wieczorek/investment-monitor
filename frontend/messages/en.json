@@ -4,6 +4,8 @@
     "investments": "Investments",
     "signals": "Signals",
     "correlations": "Correlations",
+    "developers": "Developers",
+    "coverage": "Coverage",
     "history": "History",
     "sources": "Sources"
   },
@@ -23,7 +25,10 @@
     "viewAll": "View all",
     "noInvestmentsYet": "No investments detected yet. Run a scan to get started.",
     "newInvestmentsChart": "New investments per scan",
-    "scanSuccessChart": "Scan success rate"
+    "scanSuccessChart": "Scan success rate",
+    "avgLeadTime": "Avg. discovery lead time",
+    "leadTimeDays": "{days} day(s)",
+    "noData": "No data yet"
   },
   "scan": {
     "runScan": "Run scan",
@@ -59,7 +64,40 @@
     "evidence": "Evidence",
     "noEvidence": "No provenance recorded yet.",
     "correlatedSignals": "Correlated discovery signals",
-    "noCorrelations": "No correlated discovery signals yet."
+    "noCorrelations": "No correlated discovery signals yet.",
+    "source": "Source",
+    "price": "Price",
+    "allSources": "All sources",
+    "allTypes": "All property types",
+    "allStatuses": "All statuses",
+    "allLocations": "All locations",
+    "watchedOnly": "Watched only",
+    "watched": "Watched",
+    "watch": "Watch",
+    "unwatch": "Unwatch",
+    "score": "Score",
+    "scoringBreakdown": "Deterministic scoring breakdown",
+    "noScore": "Not scored yet.",
+    "overallScore": "Overall score",
+    "houseAreaScore": "House area fit",
+    "plotAreaScore": "Plot area fit",
+    "priceScoreLabel": "Price fit",
+    "propertyTypeMatch": "Property type match",
+    "locationTierMatch": "Location tier match",
+    "largePlotBonus": "Large plot bonus",
+    "plotToHouseRatio": "Plot/house ratio"
+  },
+  "filters": {
+    "advanced": "Advanced filters",
+    "from": "from",
+    "to": "to",
+    "sort": {
+      "first_seen_at": "First seen",
+      "price_min": "Price",
+      "house_area_max": "House area",
+      "plot_area_max": "Plot area",
+      "overall_score": "Score"
+    }
   },
   "signals": {
     "title": "Discovery Signals",
@@ -79,7 +117,11 @@
     "investment": "Investment",
     "signal": "Signal",
     "reason": "Reason",
-    "noResults": "No correlations found yet."
+    "noResults": "No correlations found yet.",
+    "leadTime": "Lead time",
+    "daysBefore": "+{days}d before developer",
+    "daysAfter": "{days}d after developer",
+    "sameDay": "same day"
   },
   "history": {
     "title": "History",
@@ -110,5 +152,41 @@
     "dark": "Dark",
     "system": "System",
     "toggleLabel": "Toggle theme"
+  },
+  "developers": {
+    "title": "Developers",
+    "subtitle": "Registry of all tracked developers, monitored or not",
+    "tierA": "Tier A",
+    "tierB": "Tier B",
+    "discovered": "Discovered developers",
+    "monitored": "monitored",
+    "name": "Name",
+    "status": "Status",
+    "website": "Website",
+    "adapter": "Adapter",
+    "municipality": "Municipality",
+    "discoveredFrom": "Discovered from",
+    "discoveredAt": "Discovered",
+    "noCandidates": "No developer candidates discovered yet.",
+    "statusLabel": {
+      "MONITORED": "Monitored",
+      "DISCOVERED": "Discovered",
+      "CANDIDATE": "Candidate",
+      "NO_CURRENT_INVESTMENTS": "No current investments",
+      "INACTIVE": "Inactive",
+      "BLOCKED": "Blocked"
+    }
+  },
+  "coverage": {
+    "title": "Geographic Coverage",
+    "subtitle": "Source coverage across every target municipality in Metropolia Poznań",
+    "municipality": "Municipality",
+    "powiat": "Powiat",
+    "status": {
+      "IMPLEMENTED": "Implemented",
+      "NOT_IMPLEMENTED": "Not implemented",
+      "BLOCKED": "Blocked",
+      "DISABLED": "Disabled"
+    }
   }
 }

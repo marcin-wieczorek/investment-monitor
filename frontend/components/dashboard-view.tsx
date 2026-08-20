@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Clock, Sparkles, Activity, Building2, Radar } from "lucide-react";
+import { Clock, Sparkles, Activity, Building2, Radar, Users, Map, TrendingUp } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { StatCard } from "@/components/stat-card";
 import { RecentInvestmentsTable } from "@/components/recent-investments-table";
@@ -9,7 +9,13 @@ import { NewInvestmentsChart } from "@/components/charts/new-investments-chart";
 import { ScanSuccessChart } from "@/components/charts/scan-success-chart";
 import { formatRelativeTime } from "@/lib/utils";
 import { STALE_THRESHOLD_MS } from "@/lib/constants";
-import type { InvestmentWithState, MonitoringRunRow, SourceSnapshotRow } from "@/lib/types";
+import type {
+  DeveloperRegistryRow,
+  InvestmentWithState,
+  MonitoringRunRow,
+  MunicipalityRegistryRow,
+  SourceSnapshotRow,
+} from "@/lib/types";
 
 interface DashboardViewProps {
   recentInvestments: InvestmentWithState[];
@@ -17,6 +23,9 @@ interface DashboardViewProps {
   runs: MonitoringRunRow[];
   totalInvestments: number;
   totalSignals: number;
+  developers: DeveloperRegistryRow[];
+  municipalities: MunicipalityRegistryRow[];
+  avgLeadTimeDays: number | null;
 }
 
 export function DashboardView({
@@ -25,6 +34,9 @@ export function DashboardView({
   runs,
   totalInvestments,
   totalSignals,
+  developers,
+  municipalities,
+  avgLeadTimeDays,
 }: DashboardViewProps) {
   const { t, locale } = useI18n();
   const latestRun = runs[0];
@@ -32,6 +44,9 @@ export function DashboardView({
   const healthySources = sources.filter(
     (s) => Date.now() - new Date(s.captured_at).getTime() < STALE_THRESHOLD_MS
   ).length;
+
+  const monitoredDevelopers = developers.filter((d) => d.status === "MONITORED").length;
+  const developerCoverage = municipalities.filter((m) => m.developer_coverage === "IMPLEMENTED").length;
 
   return (
     <div className="space-y-8">
@@ -70,6 +85,31 @@ export function DashboardView({
           value={`${healthySources}/${sources.length}`}
           tone={healthySources === sources.length ? "success" : "warning"}
         />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Link href="/developers" className="block">
+          <StatCard
+            icon={Users}
+            label={t("developers.monitored")}
+            value={`${monitoredDevelopers} / ${developers.length}`}
+          />
+        </Link>
+        <Link href="/coverage" className="block">
+          <StatCard
+            icon={Map}
+            label={t("sources.developer")}
+            value={`${developerCoverage} / ${municipalities.length}`}
+          />
+        </Link>
+        <Link href="/correlations" className="block">
+          <StatCard
+            icon={TrendingUp}
+            label={t("dashboard.avgLeadTime")}
+            value={avgLeadTimeDays == null ? t("dashboard.noData") : t("dashboard.leadTimeDays").replace("{days}", Math.round(avgLeadTimeDays).toString())}
+            tone={avgLeadTimeDays != null && avgLeadTimeDays > 0 ? "success" : "default"}
+          />
+        </Link>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">

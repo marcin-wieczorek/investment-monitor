@@ -16,7 +16,9 @@ object LocationCatalog {
         "Poznań", "Swarzędz", "Zalasewo", "Rabowice", "Kruszewnia", "Gowarzewo", "Garby",
         "Kleszczewo", "Tulce", "Borówiec", "Kamionki", "Komorniki", "Plewiska", "Dąbrówka",
         "Palędzie", "Dopiewo", "Skórzewo", "Luboń", "Mosina", "Rokietnica", "Suchy Las",
-        "Tarnowo Podgórne", "Czerwonak", "Murowana Goślina", "Kostrzyn"
+        "Tarnowo Podgórne", "Czerwonak", "Murowana Goślina", "Kostrzyn",
+        // Remaining Metropolia Poznań municipalities (AGENTS.md geographic coverage section).
+        "Buk", "Oborniki", "Pobiedziska", "Puszczykowo", "Skoki", "Stęszew", "Szamotuły", "Śrem"
     )
 
     /**

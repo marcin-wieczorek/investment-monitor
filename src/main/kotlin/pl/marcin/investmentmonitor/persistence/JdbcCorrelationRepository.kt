@@ -33,6 +33,15 @@ class JdbcCorrelationRepository(private val jdbcTemplate: JdbcTemplate) : Correl
         jdbcTemplate.query(SELECT_EXISTS, { rs, _ -> rs.getInt(1) }, investmentId, signalId)
             .firstOrNull()?.let { it > 0 } ?: false
 
+    override fun findAllWithLeadTime(): List<CorrelationLeadTime> =
+        jdbcTemplate.query(SELECT_LEAD_TIME) { rs, _ ->
+            CorrelationLeadTime(
+                investmentName = rs.getString("investment_name"),
+                signalTitle = rs.getString("signal_title"),
+                leadTimeDays = rs.getObject("lead_time_days")?.let { (it as Number).toLong() }
+            )
+        }
+
     private companion object {
         val MAPPER = jacksonObjectMapper()
 
@@ -42,6 +51,16 @@ class JdbcCorrelationRepository(private val jdbcTemplate: JdbcTemplate) : Correl
         """
         const val SELECT_BY_INVESTMENT = "SELECT * FROM correlation WHERE investment_id = ?"
         const val SELECT_EXISTS = "SELECT COUNT(*) FROM correlation WHERE investment_id = ? AND signal_id = ?"
+        const val SELECT_LEAD_TIME = """
+            SELECT
+                i.name AS investment_name,
+                s.title AS signal_title,
+                CAST(julianday(i.first_seen_at) - julianday(s.first_seen_at) AS INTEGER) AS lead_time_days
+            FROM correlation c
+            JOIN investment i ON i.id = c.investment_id
+            JOIN investment_signal s ON s.id = c.signal_id
+            ORDER BY c.created_at DESC
+        """
     }
 }
 
