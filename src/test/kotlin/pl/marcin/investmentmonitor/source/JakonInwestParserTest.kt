@@ -3,6 +3,7 @@ package pl.marcin.investmentmonitor.source
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
+import pl.marcin.investmentmonitor.domain.InvestmentStatus
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -28,6 +29,7 @@ class JakonInwestParserTest {
         kornicka.developer shouldBe "Jakon"
         kornicka.location shouldBe "Poznań"
         kornicka.url.toString() shouldBe "https://jakon-inwest.pl/pl/inwestycja-kornicka"
+        kornicka.status shouldBe InvestmentStatus.UNDER_CONSTRUCTION
     }
 
     @Test
@@ -36,5 +38,12 @@ class JakonInwestParserTest {
 
         nowe.location shouldBe "Tarnowo Podgórne"
         nowe.url.toString() shouldBe "https://nowetarnowo.pl"
+        nowe.status shouldBe InvestmentStatus.READY_FOR_HANDOVER
+    }
+
+    @Test
+    fun `maps last-units ribbon to LAST_UNITS`() {
+        val konopnickiej = parser.parse(fixtureHtml).single { it.name == "Osiedle Konopnickiej" }
+        konopnickiej.status shouldBe InvestmentStatus.LAST_UNITS
     }
 }

@@ -3,6 +3,7 @@ package pl.marcin.investmentmonitor.source
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
+import pl.marcin.investmentmonitor.domain.InvestmentStatus
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -28,6 +29,13 @@ class AgrobexParserTest {
         moderno.developer shouldBe "Agrobex"
         moderno.location shouldBe "Środa Wielkopolska"
         moderno.url.toString() shouldBe "https://agrobex.pl/osiedle-moderno/"
+        moderno.status shouldBe InvestmentStatus.READY_FOR_HANDOVER
+    }
+
+    @Test
+    fun `leaves status null when no readiness badge is shown`() {
+        val silesia = parser.parse(fixtureHtml).single { it.name == "Osiedle Silesia 2.0" }
+        silesia.status shouldBe null
     }
 
     @Test

@@ -3,6 +3,7 @@ package pl.marcin.investmentmonitor.source
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
+import pl.marcin.investmentmonitor.domain.InvestmentStatus
 import java.nio.file.Files
 import java.nio.file.Path
 
@@ -28,5 +29,12 @@ class LineaParserTest {
         lesnaPolana.developer shouldBe "Linea"
         lesnaPolana.name shouldBe "os. Dąbrówka – Leśna Polana"
         lesnaPolana.url.toString() shouldBe "https://linea-deweloper.pl/inwestycje/lesna-polana"
+        lesnaPolana.status shouldBe InvestmentStatus.FOR_SALE
+    }
+
+    @Test
+    fun `maps a closed-sale investment to SOLD_OUT`() {
+        val osada = parser.parse(fixtureHtml).single { it.location == "Dąbrówka" }
+        osada.status shouldBe InvestmentStatus.SOLD_OUT
     }
 }

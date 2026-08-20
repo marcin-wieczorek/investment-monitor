@@ -3,6 +3,7 @@ package pl.marcin.investmentmonitor.source
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcin.investmentmonitor.domain.Investment
+import pl.marcin.investmentmonitor.domain.InvestmentStatus
 import java.net.URI
 
 /**
@@ -16,6 +17,10 @@ import java.net.URI
  * separate `application/ld+json` block keyed by URL, not in the card
  * markup itself, so - to keep this parser's extraction logic simple and
  * directly tied to visible card content - they are left null here.
+ *
+ * Each card does carry a `div.investment-tag` readiness label (e.g. "W
+ * realizacji sprzedaż otwarta" / "Zrealizowane sprzedaż zamknięta"),
+ * mapped to [InvestmentStatus] via the "otwarta"/"zamknięta" keyword.
  */
 class LineaParser {
 
@@ -44,9 +49,18 @@ class LineaParser {
             houseArea = null,
             plotArea = null,
             price = null,
-            status = null,
+            status = extractStatus(card),
             imageUrl = link.selectFirst("img")?.absUrl("src")?.takeIf(String::isNotBlank)
         )
+    }
+
+    private fun extractStatus(card: Element): InvestmentStatus? {
+        val text = card.selectFirst("div.investment-tag")?.text()?.trim()?.lowercase() ?: return null
+        return when {
+            text.contains("otwarta") -> InvestmentStatus.FOR_SALE
+            text.contains("zamknięta") || text.contains("zamknieta") -> InvestmentStatus.SOLD_OUT
+            else -> null
+        }
     }
 
     companion object {

@@ -3,6 +3,7 @@ package pl.marcin.investmentmonitor.source
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcin.investmentmonitor.domain.Investment
+import pl.marcin.investmentmonitor.domain.InvestmentStatus
 import java.net.URI
 
 /**
@@ -17,8 +18,11 @@ import java.net.URI
  * no link at all, only a bare heading - such cards are skipped since an
  * [Investment] requires a URL.
  *
- * No area, price or unit data is published on this list page - only a
- * free-text readiness "ribbon" (e.g. "gotowe do odbioru").
+ * No area, price or unit data is published on this list page, but each
+ * card does carry a free-text readiness "ribbon" (`div.ribbon p`, e.g.
+ * "ostatnie wolne mieszkania" / "gotowe do odbioru" / "w trakcie
+ * realizacji" / "inwestycja zakończona"), mapped to [InvestmentStatus] by
+ * keyword.
  */
 class JakonInwestParser {
 
@@ -44,9 +48,20 @@ class JakonInwestParser {
             houseArea = null,
             plotArea = null,
             price = null,
-            status = null,
+            status = extractStatus(card),
             imageUrl = card.selectFirst("img")?.absUrl("src")?.takeIf(String::isNotBlank)
         )
+    }
+
+    private fun extractStatus(card: Element): InvestmentStatus? {
+        val text = card.selectFirst("div.ribbon p")?.text()?.trim()?.lowercase() ?: return null
+        return when {
+            text.contains("ostatni") -> InvestmentStatus.LAST_UNITS
+            text.contains("gotowe") && text.contains("odbioru") -> InvestmentStatus.READY_FOR_HANDOVER
+            text.contains("w trakcie realizacji") -> InvestmentStatus.UNDER_CONSTRUCTION
+            text.contains("zakończona") || text.contains("zakonczona") -> InvestmentStatus.SOLD_OUT
+            else -> null
+        }
     }
 
     companion object {

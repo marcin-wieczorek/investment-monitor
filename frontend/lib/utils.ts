@@ -54,3 +54,43 @@ export function formatPrice(
 function formatNumber(value: number): string {
   return Number.isInteger(value) ? value.toLocaleString("pl-PL") : value.toFixed(2).replace(/\.?0+$/, "");
 }
+
+/** The 6 fields whose presence determines how trustworthy `overall_score` actually is (see DeterministicScorer). */
+const COMPLETENESS_FIELD_COUNT = 6;
+
+interface CompletenessFields {
+  property_type: string | null;
+  house_area_min: number | null;
+  house_area_max: number | null;
+  plot_area_min: number | null;
+  plot_area_max: number | null;
+  price_min: number | null;
+  price_max: number | null;
+  units: number | null;
+  status: string | null;
+}
+
+/**
+ * Fraction (0-1) of the 6 key facts (property type, house area, plot area,
+ * price, unit count, sale status) actually published for this investment.
+ *
+ * Most developer list pages publish only name/location/image - a score
+ * computed from 1 present field out of 5 weighted components looks like a
+ * confident percentage but really only reflects a single dimension (see
+ * AGENTS.md scoring completeness gap / docs/DEEP-ANALYSIS.md). The
+ * frontend uses this to decide when NOT to show `overall_score` as a
+ * trustworthy percentage.
+ */
+export function dataCompleteness(investment: CompletenessFields): number {
+  let present = 0;
+  if (investment.property_type != null) present++;
+  if (investment.house_area_min != null || investment.house_area_max != null) present++;
+  if (investment.plot_area_min != null || investment.plot_area_max != null) present++;
+  if (investment.price_min != null || investment.price_max != null) present++;
+  if (investment.units != null) present++;
+  if (investment.status != null) present++;
+  return present / COMPLETENESS_FIELD_COUNT;
+}
+
+/** Below this fraction, `overall_score` is computed from too little data to display as a trustworthy percentage. */
+export const LOW_COMPLETENESS_THRESHOLD = 2 / COMPLETENESS_FIELD_COUNT;

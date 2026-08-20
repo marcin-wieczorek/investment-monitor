@@ -17,6 +17,7 @@ import pl.marcin.investmentmonitor.detection.InvestmentChange
 import pl.marcin.investmentmonitor.domain.AreaRange
 import pl.marcin.investmentmonitor.domain.Correlation
 import pl.marcin.investmentmonitor.domain.DeveloperCandidate
+import pl.marcin.investmentmonitor.domain.DuplicateConfidence
 import pl.marcin.investmentmonitor.domain.ExtractionMethod
 import pl.marcin.investmentmonitor.domain.Investment
 import pl.marcin.investmentmonitor.domain.InvestmentDuplicate
@@ -108,6 +109,7 @@ class MonitoringService(
 
         val correlations = runCorrelation()
         val duplicates = runDeduplication()
+        runCrossSourceEnrichment(duplicates)
         val aggregatorOnlyDiscoveries = findAggregatorOnlyDiscoveries(aggregatorReports)
         recordUnknownDeveloperCandidates(aggregatorOnlyDiscoveries)
         updateAggregatorOnlyDiscoveryFlags()
@@ -393,6 +395,76 @@ class MonitoringService(
             }
         }
         return candidates
+    }
+
+    // ---------------------------------------------------------------- cross-source enrichment
+
+    /**
+     * Closes data gaps (see AGENTS.md scoring completeness issue: most
+     * developer list pages never publish price/plotArea/propertyType) by
+     * borrowing already-parsed facts from a confirmed same-project
+     * duplicate on another source - e.g. filling in the price RynekPierwotny
+     * published for a developer-sourced investment that has none.
+     *
+     * Deliberately restricted to [DuplicateConfidence.HIGH] pairs only
+     * (never MEDIUM/LOW) - enrichment silently changes what a user sees for
+     * an investment, so it must be at least as certain as an outright
+     * merge, not just "possibly the same project". Never overwrites a
+     * field the target already has: developer-published facts remain
+     * authoritative over borrowed ones (see [SourceCategory] ordering) -
+     * this only ever fills gaps, never contradicts what a source already
+     * published about its own investment.
+     */
+    private fun runCrossSourceEnrichment(duplicates: List<DuplicateCandidate>) {
+        val now = Instant.now(clock)
+        duplicates.filter { it.confidence == DuplicateConfidence.HIGH }.forEach { candidate ->
+            enrichFromPartner(target = candidate.investmentA, partner = candidate.investmentB, seenAt = now)
+            enrichFromPartner(target = candidate.investmentB, partner = candidate.investmentA, seenAt = now)
+        }
+    }
+
+    private fun enrichFromPartner(target: Investment, partner: Investment, seenAt: Instant) {
+        val borrowedFacts = mutableListOf<Pair<String, String>>()
+        val propertyType = target.propertyType ?: partner.propertyType?.also { borrowedFacts += "propertyType" to it.name }
+        val houseArea = target.houseArea ?: partner.houseArea?.also { formatAreaRange(it)?.let { v -> borrowedFacts += "houseArea" to v } }
+        val plotArea = target.plotArea ?: partner.plotArea?.also { formatAreaRange(it)?.let { v -> borrowedFacts += "plotArea" to v } }
+        val price = target.price ?: partner.price?.also { formatPriceRange(it)?.let { v -> borrowedFacts += "price" to v } }
+        if (borrowedFacts.isEmpty()) return
+
+        val enriched = target.copy(propertyType = propertyType, houseArea = houseArea, plotArea = plotArea, price = price)
+        investmentRepository.upsert(enriched, seenAt)
+        logger.info(
+            "Enriched '{}' ({}) with {} borrowed from '{}' ({})",
+            enriched.name, enriched.source, borrowedFacts.map { it.first }, partner.name, partner.source
+        )
+
+        val investmentId = investmentRepository.findIdByCanonicalKey(enriched.canonicalKey) ?: return
+        val partnerCategory = categoryOf(partner.source) ?: return
+        borrowedFacts.forEach { (fieldName, fieldValue) ->
+            evidenceRepository.save(
+                SourceEvidence(
+                    investmentId = investmentId,
+                    signalId = null,
+                    sourceId = partner.source,
+                    sourceCategory = partnerCategory,
+                    capturedAt = seenAt,
+                    url = partner.url,
+                    extractionMethod = ExtractionMethod.PARSER,
+                    fieldName = fieldName,
+                    fieldValue = fieldValue
+                )
+            )
+        }
+
+        val locationProfile = locationProfileFor(enriched)
+        val scoring = scorer.score(enriched, locationProfile, ReferenceProfiles.DEFAULT)
+        investmentScoreRepository.save(enriched.canonicalKey, scoring, seenAt)
+    }
+
+    private fun categoryOf(sourceId: String): SourceCategory? = when (sourceId) {
+        in sourceRegistry.developerSources().map { it.id } -> SourceCategory.DEVELOPER
+        in sourceRegistry.aggregatorSources().map { it.id } -> SourceCategory.AGGREGATOR
+        else -> null
     }
 
     // ---------------------------------------------------------------- aggregator-only discoveries

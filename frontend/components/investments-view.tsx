@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import { RangeSlider } from "@/components/range-slider";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ExpandableTableRow, ExpandChevron } from "@/components/expandable-table-row";
-import { cn, formatArea, formatPrice, formatRelativeTime } from "@/lib/utils";
+import { cn, dataCompleteness, formatArea, formatPrice, formatRelativeTime, LOW_COMPLETENESS_THRESHOLD } from "@/lib/utils";
 import { NEW_THRESHOLD_MS } from "@/lib/constants";
 import type { InvestmentDuplicateRow, InvestmentWithState } from "@/lib/types";
 
@@ -90,9 +90,22 @@ function scoreBadgeClass(score: number): string {
   return "border-rose-500/30 text-rose-500 dark:text-rose-400";
 }
 
-function ScoreBadge({ score }: { score: number | null }) {
+function ScoreBadge({ investment, t }: { investment: InvestmentWithState; t: (key: string) => string }) {
+  const score = investment.overall_score;
   if (score == null) {
     return <span className="text-xs text-muted-foreground">—</span>;
+  }
+  const completeness = dataCompleteness(investment);
+  if (completeness < LOW_COMPLETENESS_THRESHOLD) {
+    return (
+      <Badge
+        variant="outline"
+        className="border-border text-muted-foreground"
+        title={t("investments.insufficientDataTooltip")}
+      >
+        {t("investments.insufficientData")}
+      </Badge>
+    );
   }
   return (
     <Badge variant="outline" className={cn("font-mono tabular-nums", scoreBadgeClass(score))}>
@@ -573,7 +586,7 @@ export function InvestmentsView({ investments, duplicates = [] }: InvestmentsVie
                         {price ?? "—"}
                       </TableCell>
                       <TableCell>
-                        <ScoreBadge score={investment.overall_score} />
+                        <ScoreBadge investment={investment} t={t} />
                       </TableCell>
                       <TableCell className="text-muted-foreground">
                         {formatRelativeTime(investment.first_seen_at, locale)}

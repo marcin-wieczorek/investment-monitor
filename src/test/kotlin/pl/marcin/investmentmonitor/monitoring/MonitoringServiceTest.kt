@@ -430,4 +430,106 @@ class MonitoringServiceTest {
         report.duplicates.isEmpty() shouldBe true
         duplicateRepository.saved.isEmpty() shouldBe true
     }
+
+    @Test
+    fun `enriches a developer investment's missing price from a HIGH-confidence duplicate`() {
+        val investmentRepository = InMemoryInvestmentRepository()
+        val developerSource = FakeInvestmentSource(
+            "chronos",
+            listOf(testInvestment(name = "Tercja", source = "chronos", developer = "Chronos Development", location = "Kruszewnia"))
+        )
+        val aggregatorSource = FakeAggregatorSource(
+            "rynekpierwotny",
+            listOf(
+                testInvestment(
+                    name = "Osiedle Tercja",
+                    source = "rynekpierwotny",
+                    developer = "Chronos Development",
+                    location = "Kruszewnia",
+                    url = java.net.URI("https://rynekpierwotny.pl/osiedle-tercja"),
+                    price = PriceRange(800_000, 900_000)
+                )
+            )
+        )
+
+        buildService(
+            developerSources = listOf(developerSource),
+            aggregatorSources = listOf(aggregatorSource),
+            investmentRepository = investmentRepository
+        ).scan()
+
+        val chronosTercja = investmentRepository.findAll().single { it.source == "chronos" }
+        chronosTercja.price shouldBe PriceRange(800_000, 900_000)
+    }
+
+    @Test
+    fun `never overwrites a field a developer already published via cross-source enrichment`() {
+        val investmentRepository = InMemoryInvestmentRepository()
+        val developerSource = FakeInvestmentSource(
+            "chronos",
+            listOf(
+                testInvestment(
+                    name = "Tercja",
+                    source = "chronos",
+                    developer = "Chronos Development",
+                    location = "Kruszewnia",
+                    price = PriceRange(700_000, 750_000)
+                )
+            )
+        )
+        val aggregatorSource = FakeAggregatorSource(
+            "rynekpierwotny",
+            listOf(
+                testInvestment(
+                    name = "Osiedle Tercja",
+                    source = "rynekpierwotny",
+                    developer = "Chronos Development",
+                    location = "Kruszewnia",
+                    url = java.net.URI("https://rynekpierwotny.pl/osiedle-tercja"),
+                    price = PriceRange(800_000, 900_000)
+                )
+            )
+        )
+
+        buildService(
+            developerSources = listOf(developerSource),
+            aggregatorSources = listOf(aggregatorSource),
+            investmentRepository = investmentRepository
+        ).scan()
+
+        val chronosTercja = investmentRepository.findAll().single { it.source == "chronos" }
+        chronosTercja.price shouldBe PriceRange(700_000, 750_000)
+    }
+
+    @Test
+    fun `does not enrich from a MEDIUM-confidence duplicate`() {
+        val investmentRepository = InMemoryInvestmentRepository()
+        val developerSource = FakeInvestmentSource(
+            "chronos",
+            listOf(testInvestment(name = "AuraEtap1", source = "chronos", developer = "Chronos Development Sp. z o.o.", location = "Kruszewnia"))
+        )
+        val aggregatorSource = FakeAggregatorSource(
+            "rynekpierwotny",
+            listOf(
+                testInvestment(
+                    name = "AuraEtap2",
+                    source = "rynekpierwotny",
+                    developer = "Chronos Development",
+                    location = "Kruszewnia",
+                    url = java.net.URI("https://rynekpierwotny.pl/aura-etap-2"),
+                    price = PriceRange(800_000, 900_000)
+                )
+            )
+        )
+
+        val report = buildService(
+            developerSources = listOf(developerSource),
+            aggregatorSources = listOf(aggregatorSource),
+            investmentRepository = investmentRepository
+        ).scan()
+
+        report.duplicates.single().confidence shouldBe pl.marcin.investmentmonitor.domain.DuplicateConfidence.MEDIUM
+        val chronosAura = investmentRepository.findAll().single { it.source == "chronos" }
+        chronosAura.price shouldBe null
+    }
 }

@@ -23,7 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { JsonAccordion } from "@/components/json-accordion";
-import { cn, formatArea, formatPrice, formatRelativeTime } from "@/lib/utils";
+import { cn, dataCompleteness, formatArea, formatPrice, formatRelativeTime, LOW_COMPLETENESS_THRESHOLD } from "@/lib/utils";
 import type { CorrelationRow, InvestmentDuplicateRow, InvestmentWithState, SourceEvidenceRow } from "@/lib/types";
 
 interface InvestmentDetailViewProps {
@@ -239,9 +239,16 @@ export function InvestmentDetailView({ investment, evidence, correlations, dupli
           <Separator />
 
           <div className="space-y-3">
-            <h2 className="text-sm font-medium text-muted-foreground">{t("investments.scoringBreakdown")}</h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-medium text-muted-foreground">{t("investments.scoringBreakdown")}</h2>
+              <Badge variant="outline" className="gap-1 text-[10px] text-muted-foreground" title={t("investments.dataCompleteness")}>
+                {t("investments.dataCompleteness")}: {Math.round(dataCompleteness(investment) * 6)}/6
+              </Badge>
+            </div>
             {investment.overall_score == null ? (
               <p className="text-xs text-muted-foreground">{t("investments.noScore")}</p>
+            ) : dataCompleteness(investment) < LOW_COMPLETENESS_THRESHOLD ? (
+              <p className="text-xs text-muted-foreground">{t("investments.insufficientDataTooltip")}</p>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2">
                 <ScoreBar label={t("investments.overallScore")} value={investment.overall_score} />
