@@ -67,7 +67,7 @@ function groupEvidenceByField(evidence: SourceEvidenceRow[]): Map<string, Source
 }
 
 export function InvestmentDetailView({ investment, evidence, correlations, duplicates }: InvestmentDetailViewProps) {
-  const { t, locale } = useI18n();
+  const { t, tEnum, locale } = useI18n();
   const router = useRouter();
 
   const [note, setNote] = useState(investment.note ?? "");
@@ -171,6 +171,7 @@ export function InvestmentDetailView({ investment, evidence, correlations, dupli
               <Button
                 variant="outline"
                 size="sm"
+                nativeButton={false}
                 render={<a href={investment.url} target="_blank" rel="noreferrer" />}
               >
                 <ExternalLink className="size-4" />
@@ -364,7 +365,7 @@ export function InvestmentDetailView({ investment, evidence, correlations, dupli
                           : "border-amber-500/30 text-amber-500 dark:text-amber-400"
                       }
                     >
-                      {correlation.confidence}
+                      {tEnum("confidence", correlation.confidence)}
                     </Badge>
                     <span className="min-w-0 flex-1">{correlation.signal_title}</span>
                   </div>
@@ -400,7 +401,7 @@ export function InvestmentDetailView({ investment, evidence, correlations, dupli
                               : "border-border text-muted-foreground"
                         }
                       >
-                        {duplicate.confidence}
+                        {tEnum("confidence", duplicate.confidence)}
                       </Badge>
                       <span className="font-mono text-muted-foreground">{otherSource}</span>
                       <Link href={`/investments/${otherId}`} className="min-w-0 flex-1 truncate hover:underline">

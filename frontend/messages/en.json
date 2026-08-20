@@ -232,5 +232,45 @@
       "BLOCKED": "Blocked",
       "DISABLED": "Disabled"
     }
+  },
+  "enum": {
+    "signalType": {
+      "BUILDING_PERMIT": "Building permit",
+      "ZONING_DECISION": "Zoning decision",
+      "WZ_DECISION": "Zoning conditions (WZ)",
+      "MPZP_CHANGE": "Spatial plan change",
+      "PLANNING_APPLICATION": "Planning application",
+      "LAND_DEVELOPMENT_SIGNAL": "Land development signal",
+      "ENVIRONMENTAL_DECISION": "Environmental decision",
+      "MUNICIPAL_INVESTMENT_SIGNAL": "Municipal investment signal",
+      "DEVELOPER_LAND_ACQUISITION_SIGNAL": "Land acquisition signal",
+      "OTHER": "Other"
+    },
+    "investmentStatus": {
+      "PRE_SALE": "Pre-sale",
+      "FOR_SALE": "For sale",
+      "LAST_UNITS": "Last units",
+      "READY_FOR_HANDOVER": "Ready for handover",
+      "UNDER_CONSTRUCTION": "Under construction",
+      "SOLD_OUT": "Sold out",
+      "UNKNOWN": "Unknown"
+    },
+    "propertyType": {
+      "TERRACED": "Terraced house",
+      "SEMI_DETACHED": "Semi-detached house",
+      "DETACHED": "Detached house",
+      "APARTMENT": "Apartment",
+      "UNKNOWN": "Unknown"
+    },
+    "confidence": {
+      "HIGH": "High",
+      "MEDIUM": "Medium",
+      "LOW": "Low"
+    },
+    "runStatus": {
+      "RUNNING": "Running",
+      "SUCCESS": "Success",
+      "PARTIAL_FAILURE": "Partial failure"
+    }
   }
 }

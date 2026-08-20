@@ -25,7 +25,7 @@ const ALL_TYPES = "__all__";
 const COLUMNS_COUNT = 5;
 
 export function SignalsView({ signals }: SignalsViewProps) {
-  const { t, locale } = useI18n();
+  const { t, tEnum, locale } = useI18n();
   const [search, setSearch] = useState("");
   const [signalType, setSignalType] = useState<string>(ALL_TYPES);
   const [expandedId, setExpandedId] = useState<number | null>(null);
@@ -85,13 +85,13 @@ export function SignalsView({ signals }: SignalsViewProps) {
         </div>
         <Select value={signalType} onValueChange={(value) => setSignalType(value ?? ALL_TYPES)}>
           <SelectTrigger className="w-56">
-            <SelectValue>{(value: string) => (value === ALL_TYPES ? t("signals.type") : value)}</SelectValue>
+            <SelectValue>{(value: string) => (value === ALL_TYPES ? t("signals.type") : tEnum("signalType", value))}</SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value={ALL_TYPES}>{t("signals.type")}</SelectItem>
             {signalTypes.map((type) => (
               <SelectItem key={type} value={type}>
-                {type}
+                {tEnum("signalType", type)}
               </SelectItem>
             ))}
           </SelectContent>
@@ -164,7 +164,7 @@ export function SignalsView({ signals }: SignalsViewProps) {
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2">
                           <Badge variant="outline" className="w-fit">
-                            {signal.signal_type}
+                            {tEnum("signalType", signal.signal_type)}
                           </Badge>
                           {relatedSignals.length > 0 ? (
                             <Badge variant="secondary" className="w-fit text-[10px]">

@@ -232,5 +232,45 @@
       "BLOCKED": "Zablokowane",
       "DISABLED": "Wyłączone"
     }
+  },
+  "enum": {
+    "signalType": {
+      "BUILDING_PERMIT": "Pozwolenie na budowę",
+      "ZONING_DECISION": "Decyzja lokalizacyjna",
+      "WZ_DECISION": "Warunki zabudowy (WZ)",
+      "MPZP_CHANGE": "Zmiana planu zagospodarowania",
+      "PLANNING_APPLICATION": "Wniosek planistyczny",
+      "LAND_DEVELOPMENT_SIGNAL": "Sygnał zabudowy terenu",
+      "ENVIRONMENTAL_DECISION": "Decyzja środowiskowa",
+      "MUNICIPAL_INVESTMENT_SIGNAL": "Inwestycja gminna",
+      "DEVELOPER_LAND_ACQUISITION_SIGNAL": "Nabycie gruntu przez dewelopera",
+      "OTHER": "Inne"
+    },
+    "investmentStatus": {
+      "PRE_SALE": "Przedsprzedaż",
+      "FOR_SALE": "W sprzedaży",
+      "LAST_UNITS": "Ostatnie lokale",
+      "READY_FOR_HANDOVER": "Gotowe do odbioru",
+      "UNDER_CONSTRUCTION": "W trakcie realizacji",
+      "SOLD_OUT": "Sprzedane",
+      "UNKNOWN": "Nieznany"
+    },
+    "propertyType": {
+      "TERRACED": "Zabudowa szeregowa",
+      "SEMI_DETACHED": "Bliźniak",
+      "DETACHED": "Dom wolnostojący",
+      "APARTMENT": "Mieszkanie",
+      "UNKNOWN": "Nieznany"
+    },
+    "confidence": {
+      "HIGH": "Wysoka",
+      "MEDIUM": "Średnia",
+      "LOW": "Niska"
+    },
+    "runStatus": {
+      "RUNNING": "W trakcie",
+      "SUCCESS": "Sukces",
+      "PARTIAL_FAILURE": "Częściowa awaria"
+    }
   }
 }

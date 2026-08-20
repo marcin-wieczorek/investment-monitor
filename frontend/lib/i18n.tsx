@@ -22,6 +22,14 @@ interface I18nContextValue {
   locale: Locale;
   setLocale: (locale: Locale) => void;
   t: (key: string) => string;
+  /**
+   * Translates a raw backend enum value (e.g. `signal_type: "WZ_DECISION"`,
+   * `status: "READY_FOR_HANDOVER"`) via `enum.<category>.<value>` - falls
+   * back to the raw value itself (not the dotted key) if no translation
+   * exists yet, so a newly-added Kotlin enum constant never regresses to
+   * showing a literal i18n key in the UI.
+   */
+  tEnum: (category: string, value: string) => string;
 }
 
 const I18nContext = createContext<I18nContextValue | null>(null);
@@ -61,7 +69,15 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     [locale]
   );
 
-  const value = useMemo(() => ({ locale, setLocale, t }), [locale, setLocale, t]);
+  const tEnum = useCallback(
+    (category: string, value: string) => {
+      const key = `enum.${category}.${value}`;
+      return resolve(dictionaries[locale], key) ?? resolve(dictionaries.en, key) ?? value;
+    },
+    [locale]
+  );
+
+  const value = useMemo(() => ({ locale, setLocale, t, tEnum }), [locale, setLocale, t, tEnum]);
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }

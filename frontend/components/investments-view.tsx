@@ -121,7 +121,7 @@ function numericBounds(values: Array<number | null>): [number, number] {
 }
 
 export function InvestmentsView({ investments, duplicates = [] }: InvestmentsViewProps) {
-  const { t, locale } = useI18n();
+  const { t, tEnum, locale } = useI18n();
   const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
   const [developer, setDeveloper] = useState<string>(ALL);
@@ -317,13 +317,13 @@ export function InvestmentsView({ investments, duplicates = [] }: InvestmentsVie
 
               <Select value={propertyType} onValueChange={(value) => setPropertyType(value ?? ALL)}>
                 <SelectTrigger className="w-44">
-                  <SelectValue>{(value: string) => (value === ALL ? t("investments.allTypes") : value)}</SelectValue>
+                  <SelectValue>{(value: string) => (value === ALL ? t("investments.allTypes") : tEnum("propertyType", value))}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={ALL}>{t("investments.allTypes")}</SelectItem>
                   {propertyTypes.map((pt) => (
                     <SelectItem key={pt} value={pt}>
-                      {pt}
+                      {tEnum("propertyType", pt)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -331,13 +331,13 @@ export function InvestmentsView({ investments, duplicates = [] }: InvestmentsVie
 
               <Select value={status} onValueChange={(value) => setStatus(value ?? ALL)}>
                 <SelectTrigger className="w-44">
-                  <SelectValue>{(value: string) => (value === ALL ? t("investments.allStatuses") : value)}</SelectValue>
+                  <SelectValue>{(value: string) => (value === ALL ? t("investments.allStatuses") : tEnum("investmentStatus", value))}</SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value={ALL}>{t("investments.allStatuses")}</SelectItem>
                   {statuses.map((s) => (
                     <SelectItem key={s} value={s}>
-                      {s}
+                      {tEnum("investmentStatus", s)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -490,7 +490,7 @@ export function InvestmentsView({ investments, duplicates = [] }: InvestmentsVie
                                         : "border-amber-500/30 text-amber-500 dark:text-amber-400"
                                     )}
                                   >
-                                    {confidence}
+                                    {tEnum("confidence", confidence)}
                                   </Badge>
                                   <span className="font-mono text-muted-foreground">{sibling.source}</span>
                                   <Link

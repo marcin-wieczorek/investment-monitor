@@ -41,7 +41,7 @@ function LeadTimeBadge({ days }: { days: number | null | undefined }) {
 }
 
 export function CorrelationsView({ correlations }: { correlations: CorrelationRow[] }) {
-  const { t, locale } = useI18n();
+  const { t, tEnum, locale } = useI18n();
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   return (
@@ -95,7 +95,7 @@ export function CorrelationsView({ correlations }: { correlations: CorrelationRo
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={CONFIDENCE_STYLES[correlation.confidence]}>
-                        {correlation.confidence}
+                        {tEnum("confidence", correlation.confidence)}
                       </Badge>
                     </TableCell>
                     <TableCell>

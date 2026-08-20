@@ -12,7 +12,7 @@ import type { MonitoringRunRow } from "@/lib/types";
 const COLUMNS_COUNT = 6;
 
 export function HistoryView({ runs }: { runs: MonitoringRunRow[] }) {
-  const { t, locale } = useI18n();
+  const { t, tEnum, locale } = useI18n();
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   return (
@@ -67,7 +67,7 @@ export function HistoryView({ runs }: { runs: MonitoringRunRow[] }) {
                               : "border-amber-500/30 text-amber-500 dark:text-amber-400"
                           }
                         >
-                          {run.status}
+                          {tEnum("runStatus", run.status)}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
