@@ -22,6 +22,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ExpandableTableRow, ExpandChevron } from "@/components/expandable-table-row";
 import { cn, dataCompleteness, formatArea, formatPrice, formatRelativeTime, LOW_COMPLETENESS_THRESHOLD } from "@/lib/utils";
 import { NEW_THRESHOLD_MS } from "@/lib/constants";
+import { normalizeToGmina } from "@/lib/location-groups";
 import type { InvestmentDuplicateRow, InvestmentWithState } from "@/lib/types";
 
 interface InvestmentsViewProps {
@@ -168,7 +169,10 @@ export function InvestmentsView({ investments, duplicates = [] }: InvestmentsVie
     [investments]
   );
   const locations = useMemo(
-    () => Array.from(new Set(investments.map((i) => i.location).filter((v): v is string => v != null))).sort(),
+    () =>
+      Array.from(
+        new Set(investments.map((i) => normalizeToGmina(i.location)).filter((v): v is string => v != null))
+      ).sort(),
     [investments]
   );
 
@@ -198,7 +202,7 @@ export function InvestmentsView({ investments, duplicates = [] }: InvestmentsVie
       if (sourceCategory !== ALL && investment.source_category !== sourceCategory) return false;
       if (propertyType !== ALL && investment.property_type !== propertyType) return false;
       if (status !== ALL && investment.status !== status) return false;
-      if (location !== ALL && investment.location !== location) return false;
+      if (location !== ALL && normalizeToGmina(investment.location) !== location) return false;
       if (search) {
         const haystack = `${investment.name} ${investment.location ?? ""}`.toLowerCase();
         if (!haystack.includes(search.toLowerCase())) return false;
