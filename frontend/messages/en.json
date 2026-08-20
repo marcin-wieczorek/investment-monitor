@@ -98,6 +98,7 @@
     "allLocations": "All locations",
     "watchedOnly": "Watched only",
     "aggregatorOnly": "Aggregator-only discovery",
+    "aggregatorOnlyTooltip": "Investments the aggregator found in a location no developer source covers yet - different from filtering by source category below.",
     "watched": "Watched",
     "watch": "Watch",
     "unwatch": "Unwatch",
@@ -120,6 +121,9 @@
     "advanced": "Advanced filters",
     "from": "from",
     "to": "to",
+    "sortBy": "Sort by",
+    "sortDescending": "Descending (click for ascending)",
+    "sortAscending": "Ascending (click for descending)",
     "sort": {
       "first_seen_at": "First seen",
       "price_min": "Price",

@@ -281,10 +281,32 @@ export function InvestmentsView({ investments, duplicates = [] }: InvestmentsVie
             <Switch checked={showWatchedOnly} onCheckedChange={setShowWatchedOnly} />
             {t("investments.watchedOnly")}
           </label>
-          <label className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Switch checked={showAggregatorOnly} onCheckedChange={setShowAggregatorOnly} />
-            {t("investments.aggregatorOnly")}
-          </label>
+
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-muted-foreground">{t("filters.sortBy")}</span>
+            <Select value={sortField} onValueChange={(value) => setSortField((value as SortField) ?? "first_seen_at")}>
+              <SelectTrigger className="w-40">
+                <SelectValue>{(value: string) => t(`filters.sort.${value}` as "filters.sort.first_seen_at")}</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="first_seen_at">{t("filters.sort.first_seen_at")}</SelectItem>
+                <SelectItem value="price_min">{t("filters.sort.price_min")}</SelectItem>
+                <SelectItem value="house_area_max">{t("filters.sort.house_area_max")}</SelectItem>
+                <SelectItem value="plot_area_max">{t("filters.sort.plot_area_max")}</SelectItem>
+                <SelectItem value="overall_score">{t("filters.sort.overall_score")}</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              size="icon-sm"
+              onClick={() => setSortDesc((prev) => !prev)}
+              title={sortDesc ? t("filters.sortDescending") : t("filters.sortAscending")}
+              aria-label={sortDesc ? t("filters.sortDescending") : t("filters.sortAscending")}
+            >
+              {sortDesc ? <ArrowDown className="size-3.5" /> : <ArrowUp className="size-3.5" />}
+            </Button>
+          </div>
+
           <Button
             variant="outline"
             size="sm"
@@ -314,6 +336,14 @@ export function InvestmentsView({ investments, duplicates = [] }: InvestmentsVie
                   <SelectItem value="AGGREGATOR">{t("sources.aggregator")}</SelectItem>
                 </SelectContent>
               </Select>
+
+              <label
+                className="flex items-center gap-2 text-sm text-muted-foreground"
+                title={t("investments.aggregatorOnlyTooltip")}
+              >
+                <Switch checked={showAggregatorOnly} onCheckedChange={setShowAggregatorOnly} />
+                {t("investments.aggregatorOnly")}
+              </label>
 
               <Select value={propertyType} onValueChange={(value) => setPropertyType(value ?? ALL)}>
                 <SelectTrigger className="w-44">
@@ -354,19 +384,6 @@ export function InvestmentsView({ investments, duplicates = [] }: InvestmentsVie
                       {loc}
                     </SelectItem>
                   ))}
-                </SelectContent>
-              </Select>
-
-              <Select value={sortField} onValueChange={(value) => setSortField((value as SortField) ?? "first_seen_at")}>
-                <SelectTrigger className="w-44">
-                  <SelectValue>{(value: string) => t(`filters.sort.${value}` as "filters.sort.first_seen_at")}</SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="first_seen_at">{t("filters.sort.first_seen_at")}</SelectItem>
-                  <SelectItem value="price_min">{t("filters.sort.price_min")}</SelectItem>
-                  <SelectItem value="house_area_max">{t("filters.sort.house_area_max")}</SelectItem>
-                  <SelectItem value="plot_area_max">{t("filters.sort.plot_area_max")}</SelectItem>
-                  <SelectItem value="overall_score">{t("filters.sort.overall_score")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -419,7 +436,7 @@ export function InvestmentsView({ investments, duplicates = [] }: InvestmentsVie
           {t("investments.noResults")}
         </p>
       ) : (
-        <div className="rounded-xl border border-border bg-card">
+        <div className="overflow-x-auto rounded-xl border border-border bg-card">
           <Table>
             <TableHeader>
               <TableRow>
@@ -429,16 +446,7 @@ export function InvestmentsView({ investments, duplicates = [] }: InvestmentsVie
                 <TableHead className="hidden lg:table-cell">{t("investments.houseArea")}</TableHead>
                 <TableHead className="hidden lg:table-cell">{t("investments.price")}</TableHead>
                 <TableHead>{t("investments.score")}</TableHead>
-                <TableHead>
-                  <button
-                    type="button"
-                    onClick={() => setSortDesc((prev) => !prev)}
-                    className="inline-flex items-center gap-1 hover:text-foreground"
-                  >
-                    {t("investments.firstSeen")}
-                    {sortDesc ? <ArrowDown className="size-3.5" /> : <ArrowUp className="size-3.5" />}
-                  </button>
-                </TableHead>
+                <TableHead>{t("investments.firstSeen")}</TableHead>
                 <TableHead className="w-10" />
               </TableRow>
             </TableHeader>
