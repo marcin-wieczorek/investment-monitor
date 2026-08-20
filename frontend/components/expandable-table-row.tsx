@@ -10,6 +10,8 @@ interface ExpandableTableRowProps {
   onToggle: () => void;
   columnsCount: number;
   data: unknown;
+  /** Optional extra content rendered above the raw JSON dump when expanded. */
+  expandedExtra?: ReactNode;
   children: ReactNode;
 }
 
@@ -19,6 +21,7 @@ export function ExpandableTableRow({
   onToggle,
   columnsCount,
   data,
+  expandedExtra,
   children,
 }: ExpandableTableRowProps) {
   return (
@@ -29,6 +32,7 @@ export function ExpandableTableRow({
       {isOpen ? (
         <TableRow className="hover:bg-transparent">
           <TableCell colSpan={columnsCount} className="whitespace-normal bg-muted/30 p-0">
+            {expandedExtra}
             <pre className="max-h-96 overflow-auto p-4 font-mono text-xs leading-relaxed text-foreground/90">
               {JSON.stringify(data, null, 2)}
             </pre>

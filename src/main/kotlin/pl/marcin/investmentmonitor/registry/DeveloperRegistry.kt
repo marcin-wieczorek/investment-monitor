@@ -1,6 +1,7 @@
 package pl.marcin.investmentmonitor.registry
 
 import pl.marcin.investmentmonitor.domain.Developer
+import pl.marcin.investmentmonitor.domain.DeveloperNameMatcher
 import pl.marcin.investmentmonitor.domain.DeveloperStatus
 import pl.marcin.investmentmonitor.domain.DeveloperTier
 import java.net.URI
@@ -62,14 +63,12 @@ object DeveloperRegistry {
         developer("fb_antczak", "FB Antczak", null, DeveloperTier.B, DeveloperStatus.BLOCKED, emptySet(), null)
     )
 
-    private val byNormalizedName: Map<String, Developer> = ALL.associateBy { normalize(it.name) }
+    private val byNormalizedName: Map<String, Developer> = ALL.associateBy { DeveloperNameMatcher.normalize(it.name) }
 
-    /** Looks up a registered developer by (fuzzy, case/whitespace-insensitive) name match. */
-    fun findByName(name: String): Developer? = byNormalizedName[normalize(name)]
+    /** Looks up a registered developer by (fuzzy, legal-suffix/case/whitespace-insensitive) name match. */
+    fun findByName(name: String): Developer? = byNormalizedName[DeveloperNameMatcher.normalize(name)]
 
     fun find(id: String): Developer? = ALL.firstOrNull { it.id == id }
-
-    private fun normalize(name: String): String = name.trim().lowercase()
 
     private fun developer(
         id: String,

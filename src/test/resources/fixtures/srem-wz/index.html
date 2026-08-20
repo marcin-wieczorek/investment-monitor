@@ -1,0 +1,2281 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+	<title>Obwieszczenia, komunikaty - Urząd Miejski w Śremie</title>
+	<meta name="robots" content="index, follow">
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="canonical" href="http://bip.srem.pl/public/?id=73563">
+	
+	
+	<link rel="shortcut icon" href="/favicon.ico">	
+	<link rel="stylesheet" type="text/css" href="/css/fontgoogle.css">
+	<link rel="stylesheet" type="text/css" href="/css/common.css">
+	<link rel="stylesheet" type="text/css" href="/css/110/style.css">
+	<script type="text/javascript" src="/js/jquery-1.7.1.min.js"></script>
+	<script type="text/javascript" src="/js/mobile_nav.js"></script>
+	<script type="text/javascript" src="/js/powieksz_pomniejsz.js"></script>
+	<script type="text/javascript" src="/js/wersja_kontrastowa.js"></script>
+	<script type="text/javascript" src="/js/wywolanie_wersji_dla_niedowidzacych.js"></script>	
+		
+	<style type="text/css">
+		#hidden_label {
+			display: none;
+		}
+	</style>
+	<script type="text/javascript">
+		 function setCookie(name, value, expire) {
+	         document.cookie = name + "=" + escape(value) + ((expire == null) ? "" : ("; expires=" + expire.toGMTString()));
+	     }
+	     function checkCookie(name) {
+	         if (document.cookie != "") {
+	             var toCookie = document.cookie.split("; ");
+	             for (i = 0; i < toCookie.length; i++) {
+	                 var CookieName = toCookie[i].split("=")[0];
+	                 var CookieValue = toCookie[i].split("=")[1];
+	                 if (CookieName == name)
+	                     return unescape(CookieValue);
+	             }
+	         }
+	     }
+	     function removeCookieAlert() {
+	         var CookieAlert = document.getElementById('CookieAlert');
+	         CookieAlert.remove();
+	         var expire = new Date();
+	         expire.setMonth(expire.getMonth() + 1);
+	         setCookie('agreeCookies', 'yes', expire);
+	     }
+	
+        $(document).ready(function () {
+            var regulujCzcionkeCookie = new Font('2'); //1 = +/- 1px
+            if (regulujCzcionkeCookie.actualFontSize == 'aBig' || regulujCzcionkeCookie.actualFontSize == 'aMedium') {
+                switch (regulujCzcionkeCookie.actualFontSize) {
+                    case 'aBig':
+                        regulujCzcionkeCookie.upperFont('reload');
+                        break;
+                    case 'aMedium':
+                        regulujCzcionkeCookie.mediumFont('reload');
+                        break;
+                }
+            }
+            var contrast1 = new Contrast('4', 'noContrast', '', '');
+            var contrast2 = new Contrast('1', 'contrast2', 'white', 'black');
+            var contrast3 = new Contrast('2', 'contrast3', 'yellow', 'black');
+            var contrast4 = new Contrast('3', 'contrast4', 'black', 'yellow');
+
+            if (getCookieRs('contrast') == 'noContrast') {
+                contrast1.setStartContrast();
+            }
+            if (getCookieRs('contrast') == 'contrast2') {
+                contrast2.setStartContrast();
+            }
+            if (getCookieRs('contrast') == 'contrast3') {
+                contrast3.setStartContrast();
+            }
+            if (getCookieRs('contrast') == 'contrast4') {
+                contrast4.setStartContrast();
+            }
+
+            document.getElementById('contrast1').addEventListener('click', function () {
+                contrast1.getContrast(regulujCzcionkeCookie.actualFontSize);
+            }, false);
+
+            document.getElementById('contrast2').addEventListener('click', function () {
+                contrast2.getContrast(regulujCzcionkeCookie.actualFontSize);
+            }, false);
+
+            document.getElementById('contrast3').addEventListener('click', function () {
+                contrast3.getContrast(regulujCzcionkeCookie.actualFontSize);
+            }, false);
+
+            document.getElementById('contrast4').addEventListener('click', function () {
+                contrast4.getContrast(regulujCzcionkeCookie.actualFontSize);
+            }, false);
+
+            //Tworzenie Objektu reguluj czcionkę i nadanie mu wartości
+            var regulujCzcionke = new Font('2'); //1 = +/- 1px
+
+            //wywołania powiększania/pomniejszania czcionek
+            document.getElementById('aMedium').addEventListener('click', function () {
+                regulujCzcionke.mediumFont();
+            }, false);
+
+            document.getElementById('aBig').addEventListener('click', function () {
+                regulujCzcionke.upperFont();
+            }, false);
+
+            document.getElementById('aReset').addEventListener('click', function () {
+                regulujCzcionke.resetFont();
+            }, false);            
+            
+            document.getElementById('search').addEventListener('click', function () {
+            	document.getElementById('search').setAttribute('value', '');
+            }, false);
+        });
+    </script>
+</head>
+<body>
+	<div class="skip">
+		<a class="content2" href="#left_menu">Przejdź do lewego menu</a>
+		<a class="content2" href="#right_menu">Przejdź do prawego menu</a>
+		<a class="content2" href="#content">Przejdź do treści</a>
+		<a class="content2" href="#stopka">Przejdź do stopki</a>
+	</div>
+	<div id="backDrop"></div>
+	<div id="top_toggler_belt">
+		<span id="open-left-nav">&#9776; Menu</span>
+		<span id="open-right-nav">Prawe Menu ☰ </span>
+	</div>
+		
+	<div id="all">
+		<div id="top">
+		<div id="top_menu">
+			<a href="https://www.gov.pl/bip" target="_blank" title="link do serwisu zewnętrznego otwierany w nowym oknie">
+				<img src="/images/logo_bip.png" id="logo_bip" alt="Oficjalne logo BIP">
+			</a>
+			<nav>
+				<div id="menu">
+					<a href="/public/" title="link do strony głównej">Strona główna</a>
+					<a href="/public/?id=628" title="link do instrukcji">Instrukcja</a>
+					<a href="//www.srem.pl" target="_blank" title="link do serwisu zewnętrznego otwierany w nowym oknie">Strona www</a>
+					<a href="/public/?id=661" title="link do redakcji serwisu">Redakcja</a>
+					<a href="/public/rejestrzmian/" title="link do rejestru zmian">Rejestr zmian</a>
+					
+					<a href="/public/stat/?id_menu=73563">Statystyki stron</a>
+										
+										
+					
+				</div>
+			</nav>
+		</div>
+		<div id="top_header">
+			<div class="top_header_name" id="top_header_name">Urząd Miejski w Śremie</div>
+			<div class="herb">
+				<img style="width:52px; height: 56px;" src="/public/herb">
+			</div>
+		</div>
+		
+		
+		
+		
+		<div id="top_belt">
+			<div class="additionsWrapper">
+				<p id="data">Czwartek 20.08.2026</p>
+				<div id="topUtilities">
+					<div id="contrastButtonBox">
+						<a href="#" id="contrast1" class="contrastButton" title="Przywrócenie oryginalnego kontrastu" tabindex="0">A</a>
+						<a href="#" id="contrast2" class="contrastButton" title="Kontrast - biały tekst na czarnym tle" tabindex="0">A</a>
+						<a href="#" id="contrast3" class="contrastButton" title="Kontrast - żółty tekst na czarnym tle" tabindex="0">A</a>
+						<a href="#" id="contrast4" class="contrastButton" title="Kontrast - czarny tekst na żółtym tle" tabindex="0">A</a>
+					</div>
+					<div id="fontsizer">
+						<div class="fsizer" id="fsizer">
+							<a href="#" id="aReset" class="fsactive" title="Przywrócenie oryginalnej wielkości czcionki ekranowej" tabindex="0">A</a> 
+							<a href="#" id="aMedium" title="Średnie powiększenie wielkości czcionki ekranowej" tabindex="0">A+</a> 
+							<a href="#" id="aBig" title="Duże powiększenie wielkości czcionki ekranowej" tabindex="0">A++</a> 
+							<br style="clear: both">
+						</div>
+					</div>
+				</div>
+			</div>
+			<div id="szukaj">
+				<form onsubmit="if (this.elements['search'].value.replace(/^\s*/, '').replace(/\s*$/, '') == '') { alert('Wprowadź poszukiwane słowo.'); return false; } else { this.submit(); }" action="/public/search" method="post">
+					<label id="szukajLabel" for="search">Wyszukiwanie treści w serwisie:</label>
+					<input id="search" type="text" value="Wyszukaj treści na stronie" name="search" class="szukaj_area" autocomplete="new-password">
+					<input type="image" name="szukaj" src="/images/100/szukaj_button.png" id="szukaj_button" alt="Uruchom wyszukiwanie w serwisie" >
+					<input type="hidden" id="isAdvanced" name="isAdvanced" value="podstawowe">
+				</form>
+				<a href="/public/searchAdvanced" id="zaaw">zaawansowane</a>
+			</div>
+		</div>
+	</div>	
+		<div id="middle">
+			
+			<div><div class="menu menu-pion" id="left_menu">
+    <button id="close-left-nav" class="closebtn">&times;</button>
+    <div>
+        <p class="lev1">Menu</p>
+        <ul class="menu">
+            <li class="lev2"><p>Urząd Miejski w Śremie</p>
+                <ul>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=42706">Wiadomości, komunikaty</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=215262">Informator dla osób ze szczególnymi potrzebami</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" target="_blank" title="Link do serwisu zewnętrznego otwierany w nowym oknie"  href="https://obywatel.gov.pl">Serwis OBYWATEL.GOV.PL</a>
+                        
+                        
+                        
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" target="_blank" title="Link do serwisu zewnętrznego otwierany w nowym oknie"  href="https://www.gov.pl/web/e-doreczenia">e-Doręczenia</a>
+                        
+                        
+                        
+                        
+                     </li>
+                    <li>
+                        
+                        <a class="lev3" href="/public/?id=226678">Spis telefonów Urzędu Miejskiego</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=669">Dane adresowe</a>
+                        
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=59749">Oferty pracy </a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=189930">Poradnictwo prawne dla mieszkańców</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=59241">Struktura Organizacyjna Urzędu</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=59185">Wybory</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=231811">Zgłaszanie naruszeń prawa</a>
+                        
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=33467">Audyt i kontrole </a>
+                        
+                     </li>
+                </ul>
+            </li>
+            <li class="lev2"><p>Zamówienia Publiczne</p>
+                <ul>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=1161">Ogłoszenia o zamówieniach</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" target="_blank" title="Link do serwisu zewnętrznego otwierany w nowym oknie"  href="https://platformazakupowa.pl/pn/srem">Platforma Zakupowa</a>
+                        
+                        
+                        
+                        
+                     </li>
+                </ul>
+            </li>
+            <li class="lev2"><p>Jak załatwić sprawę ? - Poradnik klienta</p>
+                <ul>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=223209">Akceptacja faktury elektronicznej</a>
+                        
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=44270">Dowody osobiste</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=176022">Dotacje, dofinansowania, stypendia</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=189450">Działalność gospodarcza</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=43414">Edukacja</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=221005">Usługi społeczne</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=176812">Ewidencja Ludności </a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=633">Gospodarka komunalna</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=197954">Konsultacje społeczne</a>
+                        
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=176859">Mieszkania komunalne</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=177764">Nieruchomości</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=178325">Obowiązek obrony RP</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=220833">Obywatelska inicjatywa uchwałodawcza</a>
+                        
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=238580">OC gminy Śrem</a>
+                        
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=177630">Ochrona Środowiska</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=100014">Patronat Burmistrza Śremu</a>
+                        
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=178338">Planowanie i zagospodarowanie przestrzenne</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=666">Podatki i opłaty</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=150268">Rejestr Wyborców</a>
+                        
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=635">Rejestracja stanu cywilnego</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=182679">Rolnictwo</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=43377">Zezwolenie na usunięcie drzew lub krzewów</a>
+                        
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=175884">Rozpatrywanie petycji</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=43723">Rozpatrywanie skarg</a>
+                        
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=186041">Transport</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=222547">Turystyka</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=59404">Tytuł &quot;Honorowy Obywatel Śremu&quot;</a>
+                        
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=176583">Udostępnianie danych, informacji publicznej oraz ponowne ich wykorzystanie</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=231590">Wnioski do budżetu gminy</a>
+                        
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=100022">Wydawanie materiałów promocyjnych</a>
+                        
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=43378">Zajęcie pasa drogowego i uzgodnienia drogowe</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=227359">Zastrzeżenie numeru PESEL </a>
+                        
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=179558">Zaświadczenia</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" target="_blank" title="Link do serwisu zewnętrznego otwierany w nowym oknie"  href="http://zbiorki.gov.pl/">Zbiórki publiczne</a>
+                        
+                        
+                        
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=668">Zezwolenia na alkohol</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=634">Zgromadzenia i działalność kulturalna</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=225955">Organizacja imprez masowych</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=238922">Organizacja zlotów motoryzacyjnych</a>
+                        
+                        
+                     </li>
+                </ul>
+            </li>
+            <li class="lev2"><p>Oświadczenia majątkowe</p>
+                <ul>
+                    <li>
+                        
+                        <a class="lev3" href="/public/?id=64210">Druk oświadczenia majątkowego</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=42122">Rada Miejska</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=225424">Kierownictwo Urzędu Miejskiego</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=42025">Kierownicy jednostek organizacyjnych gminy, placówek oświatowych i spółek prawa handlowego</a>
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=42975">Pracownicy urzędu i jednostek organizacyjnych upoważnieni do wydawania decyzji administracyjnych</a>
+                        
+                     </li>
+                </ul>
+            </li>
+            <li class="lev2"><p>Rejestry </p>
+                <ul>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" target="_blank" title="Link do serwisu zewnętrznego otwierany w nowym oknie"  href="https://prod.ceidg.gov.pl">Centralna Ewidencja i Informacja o Działalności Gospodarczej</a>
+                        
+                        
+                        
+                        
+                     </li>
+                    <li>
+                        <a class="lev3" title="Podgląd pliku otworzy się w nowej karcie" target="_blank"  href="/public/getFile?id=474783">Wykaz rejestrów prowadzonych w wersji papierowej</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                     </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=88892">Rejestry prowadzone w wersji elektronicznej</a>
+                        
+                     </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+			<div>
+	    
+	    
+	    
+	    
+	    
+	    
+	    <div><div class="content">
+    <ol id="breadcrumbs">
+        <li><a href="/">Strona główna</a></li>
+        <li>
+            <a href="/public/?id=178094">Planowanie przestrzenne</a>
+            
+        </li>
+        <li>
+            
+            <div>Obwieszczenia, komunikaty</div>
+        </li>
+    </ol>
+    <div id="content" role="main">
+        <div class="table_content">
+            <h1 id="pageHeader">Obwieszczenia, komunikaty</h1>
+            <div class="td_content podkategoria">
+                <ul>
+                    <li class="element_podkategorii">
+                        <div>
+                            <div>
+                                <a href="/public/?id=238338" class="nazwa_pliku nourl">Obwieszczenia, komunikaty 2026 r.</a>
+                                <span></span>
+                            </div>
+                            
+                        </div>
+                        
+                    </li>
+                    <li class="element_podkategorii">
+                        <div>
+                            <div>
+                                <a href="/public/?id=233249" class="nazwa_pliku nourl">Obwieszczenia, komunikaty 2025 r.</a>
+                                <span></span>
+                            </div>
+                            
+                        </div>
+                        
+                    </li>
+                    <li class="element_podkategorii">
+                        <div>
+                            <div>
+                                <a href="/public/?id=227878" class="nazwa_pliku nourl">Obwieszczenia, komunikaty 2024 r.</a>
+                                <span></span>
+                            </div>
+                            
+                        </div>
+                        
+                    </li>
+                    <li class="element_podkategorii">
+                        <div>
+                            <div>
+                                <a href="/public/?id=223142" class="nazwa_pliku nourl">Obwieszczenia, komunikaty 2023 r.</a>
+                                <span></span>
+                            </div>
+                            
+                        </div>
+                        
+                    </li>
+                    <li class="element_podkategorii">
+                        <div>
+                            <div>
+                                <a href="/public/?id=217685" class="nazwa_pliku nourl">Obwieszczenia, komunikaty 2022 r.</a>
+                                <span></span>
+                            </div>
+                            
+                        </div>
+                        
+                    </li>
+                    <li class="element_podkategorii">
+                        <div>
+                            <div>
+                                <a href="/public/?id=210464" class="nazwa_pliku nourl">Obwieszczenia, komunikaty 2021 r.</a>
+                                <span></span>
+                            </div>
+                            
+                        </div>
+                        
+                    </li>
+                    <li class="element_podkategorii">
+                        <div>
+                            <div>
+                                <a href="/public/?id=200594" class="nazwa_pliku nourl">Obwieszczenia, komunikaty 2020 r.</a>
+                                <span></span>
+                            </div>
+                            
+                        </div>
+                        
+                    </li>
+                    <li class="element_podkategorii">
+                        <div>
+                            <div>
+                                <a href="/public/?id=188143" class="nazwa_pliku nourl">Obwieszczenia, komunikaty 2019 r.</a>
+                                <span></span>
+                            </div>
+                            
+                        </div>
+                        
+                    </li>
+                    <li class="element_podkategorii">
+                        <div>
+                            <div>
+                                <a href="/public/?id=177403" class="nazwa_pliku nourl">Obwieszczenia, komunikaty 2018 r.</a>
+                                <span></span>
+                            </div>
+                            
+                        </div>
+                        
+                    </li>
+                    <li class="element_podkategorii">
+                        <div>
+                            <div>
+                                <a href="/public/?id=164613" class="nazwa_pliku nourl">Obwieszczenia, komunikaty 2017 r.</a>
+                                <span></span>
+                            </div>
+                            
+                        </div>
+                        
+                    </li>
+                    <li class="element_podkategorii">
+                        <div>
+                            <div>
+                                <a href="/public/?id=153473" class="nazwa_pliku nourl">Obwieszczenia, komunikaty 2016 r.</a>
+                                <span></span>
+                            </div>
+                            
+                        </div>
+                        
+                    </li>
+                    <li class="element_podkategorii">
+                        <div>
+                            <div>
+                                <a href="/public/?id=141809" class="nazwa_pliku nourl">Obwieszczenia, komunikaty 2015.</a>
+                                <span></span>
+                            </div>
+                            
+                        </div>
+                        
+                    </li>
+                    <li class="element_podkategorii">
+                        <div>
+                            <div>
+                                <a href="/public/?id=130739" class="nazwa_pliku nourl">Obwieszczenia, komunikaty 2014.</a>
+                                <span></span>
+                            </div>
+                            
+                        </div>
+                        
+                    </li>
+                    <li class="element_podkategorii">
+                        <div>
+                            <div>
+                                <a href="/public/?id=120272" class="nazwa_pliku nourl">Obwieszczenia, komunikaty 2013r.</a>
+                                <span></span>
+                            </div>
+                            
+                        </div>
+                        
+                    </li>
+                    <li class="element_podkategorii">
+                        <div>
+                            <div>
+                                <a href="/public/?id=109473" class="nazwa_pliku nourl">Obwieszczenia, komunikaty 2012r.</a>
+                                <span></span>
+                            </div>
+                            
+                        </div>
+                        
+                    </li>
+                    <li class="element_podkategorii">
+                        <div>
+                            <div>
+                                <a href="/public/?id=98747" class="nazwa_pliku nourl">Obwieszczenia, komunikaty 2011r.</a>
+                                <span></span>
+                            </div>
+                            
+                        </div>
+                        
+                    </li>
+                    <li class="element_podkategorii">
+                        <div>
+                            <div>
+                                <a href="/public/?id=86509" class="nazwa_pliku nourl">Obwieszczenia, komunikaty 2010r.</a>
+                                <span></span>
+                            </div>
+                            
+                        </div>
+                        
+                    </li>
+                    <li class="element_podkategorii">
+                        <div>
+                            <div>
+                                <a href="/public/?id=73120" class="nazwa_pliku nourl">Obwieszczenia, komunikaty 2009 r. </a>
+                                <span></span>
+                            </div>
+                            
+                        </div>
+                        
+                    </li>
+                    <li class="element_podkategorii">
+                        <div>
+                            <div>
+                                <a href="/public/?id=62194" class="nazwa_pliku nourl">Obwieszczenia, komunikaty 2008 r. </a>
+                                <span></span>
+                            </div>
+                            
+                        </div>
+                        
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="table_content stopka-ikony">
+            <div class="td_content">
+                
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <a id="drukuj"
+                   title="Łącze pozwala przejść do wersji dokumentu nadającej się do druku. Drukowanie wymaga dodatkowego wyboru akcji."
+                   href="/public/print/?id=73563" target="_blank">DRUKUJ TĘ STRONĘ
+                    <img src="/images/opis_print.gif" alt="Obrazek drukarki">
+                </a>&nbsp;&nbsp;&nbsp;
+            </div>
+        </div>
+    </div>
+</div></div>
+	    
+	    
+	    
+	    
+	    
+	    
+	    	    
+	    
+	    	    
+	    
+	    
+	    
+	    
+	    
+	    
+	    
+	    
+	    
+	    
+	   
+	    	   	 	
+	    
+    </div>
+			<div><div class="menu menu-pion" id="right_menu">
+	<button id="close-right-nav" class="closebtn">&times;</button>
+    <div>
+        <p class="lev1">Menu</p>
+        <ul class="menu">
+            <li class="lev2"><p>Gmina Śrem</p>
+                <ul>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=59442">Organy i zadania gminy</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=221486">Podstawy prawne</a>
+                        
+                    </li>
+                    <li>
+                        <a class="lev3" title="Podgląd pliku otworzy się w nowej karcie" target="_blank"  href="/public/getFile?id=554327">Strategia Rozwoju Gminy Śrem na lata 2021-2028</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=59441">Budżet</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=42694">Sołectwa</a>
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        <a class="lev3" href="/public/?id=194364">Raport o stanie gminy</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        <a class="lev3" href="/public/?id=239012">Miejski plan adaptacji do zmian klimatu</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=33469">Informacja o stanie gminy</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=144683">Dane statystyczne</a>
+                        
+                    </li>
+                </ul>
+            </li>
+            <li class="lev2"><p>Burmistrz</p>
+                <ul>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=59365">Burmistrz Śremu</a>
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=43166">Zarządzenia Burmistrza</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=44254">Sprawozdania Burmistrza z bieżącej działalności</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        <a class="lev3" target="_blank" title="Link do serwisu zewnętrznego otwierany w nowym oknie" href="https://bip.srem.pl/public/?id=236181">Petycje kierowane do Burmistrza</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                </ul>
+            </li>
+            <li class="lev2"><p>Rada Miejska</p>
+                <ul>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=42711">Komunikaty Rady Miejskiej </a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=823">Skład Rady Miejskiej</a>
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=42717">Protokoły z Sesji Rady Miejskiej</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=45703">Projekty uchwał, obwieszczeń i stanowisk na sesje Rady Miejskiej w Śremie</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=42700">Uchwały Rady Miejskiej </a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=187126">Imienne wykazy głosowań radnych</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=112372">Obwieszczenia Rady Miejskiej</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        <a class="lev3" target="_blank" title="Link do serwisu zewnętrznego otwierany w nowym oknie" href="https://bip.srem.pl/public/?id=236182">Petycje kierowane do Rady Miejskiej</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=164954">Plany pracy i sprawozdania Rady Miejskiej</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=109089">Prawo miejscowe i gminne</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=61439">Sprawozdania z realizacji Uchwał</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=42718">Stanowiska Rady Miejskiej</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=169071">Apele Rady Miejskiej</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=53435">Interpelacje i zapytania radnych</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=59316">Komisje Rady Miejskiej</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        <a class="lev3" target="_blank" title="Link do serwisu zewnętrznego otwierany w nowym oknie" href="http://srem.esesja.pl/">Esesja - system zarządzania pracami Rady Miejskiej w Śremie</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        <a class="lev3" target="_blank" title="Link do serwisu zewnętrznego otwierany w nowym oknie" href="https://transmisja.esesja.pl/sremmiasto">Internetowa transmisja obrad</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                </ul>
+            </li>
+            <li class="lev2"><p>Nieruchomości</p>
+                <ul>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=147380">Serwisy mapowe</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=1162">Zbycie i najem nieruchomości</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=62901">Wykaz prac szacunkowych i geodezyjnych</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=63973">Zabytki</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=239304">Rewitalizacja</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=180043">Kąpieliska</a>
+                        
+                    </li>
+                    <li>
+                        
+                        <a class="lev3" href="/public/?id=209213">Informacje dla inwestorów/przedsiębiorców</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        <a class="lev3" title="Podgląd pliku otworzy się w nowej karcie" target="_blank"  href="/public/getFile?id=621059">Wykaz ulic</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                </ul>
+            </li>
+            <li class="lev2"><p>Planowanie przestrzenne</p>
+                <ul>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=228335">Plan ogólny gminy</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=73563">Obwieszczenia, komunikaty</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=45108">Studium uwarunkowań i kierunków zagospodarowania przestrzennego gminy</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=45111">Miejscowe plany zagospodarowania przestrzennego</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=231312">Wnioski o sporządzenie lub zmianę POG lub mpzp oraz wnioski o uchwalenie ZPI</a>
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        <a class="lev3" target="_blank" title="Link do serwisu zewnętrznego otwierany w nowym oknie" href="http://sip.srem.pl">System Informacji Przestrzennej gminy Śrem</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=213812">Gminna Komisja Urbanistyczno - Architektoniczna</a>
+                        
+                    </li>
+                </ul>
+            </li>
+            <li class="lev2"><p>Ochrona Środowiska</p>
+                <ul>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=107724">Ogłoszenia dot. środowiska</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        <a class="lev3" target="_blank" title="Link do serwisu zewnętrznego otwierany w nowym oknie" href="https://srodowisko.gison.pl/srem">Dane o środowisku</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        <a class="lev3" target="_blank" title="Link do serwisu zewnętrznego otwierany w nowym oknie" href="https://wykaz.ekoportal.pl/CardList.seam?urzad=Urz%C4%85d+Miejski+w+%C5%9Aremie">Wykaz informacji o Środowisku (archiwum)</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        <a class="lev3" target="_blank" title="Link do serwisu zewnętrznego otwierany w nowym oknie" href="http://bazaoos.gdos.gov.pl/web/guest/home">Baza danych o ocenach oddziaływania na środowisko</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=184499">Formy ochrony przyrody</a>
+                        
+                    </li>
+                    <li>
+                        
+                        <a class="lev3" href="/public/?id=64470">Programy, plany, sprawozdania</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=214851">Aglomeracja Śrem</a>
+                        
+                        
+                        
+                    </li>
+                </ul>
+            </li>
+            <li class="lev2"><p>Gospodarka komunalna</p>
+                <ul>
+                    <li>
+                        
+                        <a class="lev3" href="/public/?id=230708">Sprzątanie ulic - harmonogram</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        <a class="lev3" href="/public/?id=227779">Ochrona przed bezdomnymi zwierzętami</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=137311">Odbiór nieczystości ciekłych i odpadów komunalnych</a>
+                        
+                    </li>
+                </ul>
+            </li>
+            <li class="lev2"><p>Edukacja</p>
+                <ul>
+                    <li>
+                        
+                        <a class="lev3" href="/public/?id=166073">Informacja o stanie oświaty</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=104828">Żłobki, kluby dziecięce, opiekun dzienny</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=166075">Przedszkola</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=166078">Szkoły podstawowe</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=236795">Zespoły Szkolno-Przedszkolne</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=223710">Inna forma wychowania publicznego</a>
+                        
+                    </li>
+                    <li>
+                        
+                        <a class="lev3" href="/public/?id=166074">Finansowanie placówek niesamorządowych</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                </ul>
+            </li>
+            <li class="lev2"><p>Kontakty i współpraca</p>
+                <ul>
+                    <li>
+                        
+                        
+                        
+                        <a class="lev3" target="_blank" title="Link do serwisu zewnętrznego otwierany w nowym oknie" href="https://srem.engo.org.pl/">Generator eNGO Konkursy ofert </a>
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=203812">Śremska Rada Seniorów</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=203698">Śremska Rada Sportu</a>
+                        
+                    </li>
+                    <li>
+                        <a class="lev3" title="Podgląd pliku otworzy się w nowej karcie" target="_blank"  href="/public/getFile?id=564335">Strategia Rozwoju Sportu w gminie Śrem na lata 2022-2028</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        <a class="lev3" href="/public/?id=191656">Rada Rowerowa Miasta Śrem</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=57666">Miasta partnerskie</a>
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        <a class="lev3" href="/public/?id=147359">Współpraca zagraniczna</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=644">Przynależność Gminy do stowarzyszeń</a>
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=58304">Współpraca z organizacjami pozarządowymi</a>
+                        
+                    </li>
+                    <li>
+                        
+                        <a class="lev3" href="/public/?id=223205">Ewidencja obiektów innych niż hotelowe</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                </ul>
+            </li>
+            <li class="lev2"><p>Gminne jednostki organizacyjne</p>
+                <ul>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=42695">Jednostki kultury</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=44757">Jednostki pomocy społecznej i opiekuńczej, ochrony porządku publicznego</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=641">Spółki prawa handlowego gminy</a>
+                        
+                    </li>
+                </ul>
+            </li>
+            <li class="lev2"><p>Biuletyn Informacji Publicznej</p>
+                <ul>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=234815">Informacje o zakresie działalności</a>
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=221985">RODO</a>
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=123028">Polityka Prywatności</a>
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=661">Redakcja Biuletynu</a>
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=147736">Deklaracja Dostępności Cyfrowej</a>
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        <a class="lev3" href="/public/?id=218378">Plan działania na rzecz poprawy zapewnienia dostępności osobom ze szczególnymi potrzebami</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        <a class="lev3" href="/public/?id=228109">Raport o stanie zapewniania dostępności podmiotu publicznego</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=660">Dostęp do Informacji Publicznej</a>
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        
+                        
+                        <a class="lev3" href="/public/?id=628">Instrukcja korzystania z BIP</a>
+                        
+                        
+                        
+                        
+                    </li>
+                    <li>
+                        
+                        
+                        
+                        <a class="lev3" target="_blank" title="Link do serwisu zewnętrznego otwierany w nowym oknie" href="https://moje.cert.pl/komunikaty/">Komunikaty cyberbezpieczeństwa</a>
+                        
+                        
+                        
+                        
+                        
+                        
+                    </li>
+                </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+		</div>
+		<div id="wysokosc">&nbsp;</div>
+		<div><div id="stopka">
+		<div id="stopka_links">
+			<a href="/public/stat/" target="_blank">Statystyki serwisu</a> | 
+			<a href="/public/?id=628" title="link do instrukcji">Instrukcja  korzystania z BIP</a>
+			| Wersja <span >3.0.43 WCAG 2.1 AA</span> (<span >30.04.2026 14:38:16</span>)
+		</div>
+		<div id="stopka_odwiedziny">
+			liczba odwiedzin: <span>8999450</span>
+		</div>
+	</div></div>
+	</div>
+</body>
+</html>

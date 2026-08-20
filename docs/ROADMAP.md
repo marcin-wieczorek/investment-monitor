@@ -96,15 +96,46 @@ prioritized above those.
 
 ## Lower-priority / explicitly deferred (see AGENTS.md + docs/ARCHITECTURE.md)
 
-- Additional discovery sources beyond the 5 implemented municipalities -
-  see `registry/DiscoverySourceRegistry.kt` for the full blocked/
-  not-implemented list and documented reasons per municipality.
-- Otodom aggregator (requires headless browser, deliberately out of
-  scope).
-- Fuzzy developer-candidate deduplication (currently exact-name match
-  only via `DeveloperRegistry.findByName`/`DeveloperCandidateRepository.findByName`).
-- Signal-to-signal correlation (grouping filing stages of the same
-  zoning case by shared `reference`).
+- **Done**: 2 more discovery sources implemented - `srem-wz` (Gmina Śrem
+  BIP, a two-step fetch since its register is split one page per calendar
+  year - see `SremWzSource`/`SremWzParser` KDoc) and
+  `murowana-goslina-obwieszczenia` (Gmina Murowana Goślina BIP). All other
+  previously `BLOCKED`/`NOT_IMPLEMENTED` municipalities were re-verified
+  live; several (Kleszczewo, Dopiewo, Skoki, Stęszew) turned out to have
+  migrated off their old JS-SPA/dead platforms to real server-rendered
+  sites, but no adapter could be built yet for them this session (see
+  `registry.DiscoverySourceRegistry` for the specific reason per
+  municipality - re-check Dopiewo/Skoki again in the future, they're the
+  closest to being real).
+  - **Found and fixed a real bug while doing this**: `LocationCatalog.findIn`
+    used `\b` word boundaries, which Java defines using ASCII `[a-zA-Z0-9_]`
+    only - so it silently failed to match the *majority* of this catalog's
+    own entries (`Poznań`, `Śrem`, `Łowęcin`, ...) whenever adjacent to
+    punctuation/whitespace, since their boundary characters are Polish
+    diacritics. Fixed with explicit `\p{L}`/`\p{N}` lookarounds instead of
+    `\b`. This affects every call site (aggregator-only-discovery
+    location matching, developer-candidate municipality assignment, every
+    discovery parser's `location` field) - a correctness win beyond just
+    the two new sources.
+- **Done**: Otodom explicitly skipped, per project decision to never add
+  a headless-browser dependency (AGENTS.md/docs/ARCHITECTURE.md) - not
+  re-investigated.
+- **Done**: fuzzy developer-candidate deduplication -
+  `domain.DeveloperNameMatcher` strips common Polish legal-entity suffixes
+  (`Sp. z o.o.`, `S.A.`, `Sp. k.`, spelled-out forms, ...) before
+  comparing, used by both `DeveloperRegistry.findByName` and
+  `DeveloperCandidateRepository.findByName` so "ABC Development" and "ABC
+  Development Sp. z o.o." are recognized as the same developer.
+- **Done**: signal-to-signal correlation - `/signals` groups signals
+  client-side by `source:reference` (multiple filing stages of the same
+  case, e.g. "wszczęcie postępowania" -> "decyzja końcowa", share one
+  case reference within a single source's own numbering scheme). Shows a
+  "N stages" badge per row and, when expanded, a chronological case
+  history list. No backend/scan-time work needed - this is a plain
+  reference-equality group-by over data already fetched, not a
+  fuzzy/feature-based match like investment<->signal correlation, so it
+  stays purely presentational (`ExpandableTableRow` gained an optional
+  `expandedExtra` slot for this).
 
 ## Working conventions to preserve
 

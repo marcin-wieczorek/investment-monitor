@@ -131,25 +131,26 @@ added to the catalog, not scattered across parsers.
 
 ## Known scope limitations (deliberately not built yet)
 
-- **Signal-to-signal correlation**: only signal-to-investment correlation
-  is implemented. Grouping multiple discovery signals that share the same
-  case `reference` (e.g. different filing stages of the same zoning case)
-  as "the same case" is possible client-side (the `reference` field is
-  already present) but not yet a first-class `Correlation` type.
+Signal-to-signal correlation (grouping filing stages of the same zoning
+case by shared `reference`) is implemented client-side in `/signals`
+(see "Implemented (phase 8, ...)" below) rather than as a first-class
+`Correlation` type - a plain reference-equality group-by needs no
+scan-time matching, unlike deterministic investment<->signal correlation.
 
 ## Not yet implemented
 
-- Additional discovery sources beyond the six municipalities implemented
+- Additional discovery sources beyond the eight municipalities implemented
   so far - see `registry/DiscoverySourceRegistry.kt` for the full,
-  per-municipality investigation record (which BIPs are `BLOCKED` and why).
+  per-municipality investigation record (which BIPs are `BLOCKED`/
+  `NOT_IMPLEMENTED` and why; Dopiewo and Skoki are the closest to real -
+  both migrated to a real server-rendered platform but content wasn't
+  parseable yet as of the last check).
 - Otodom aggregator (requires JS execution to read; deliberately not
   implemented with a headless browser to keep this a lightweight,
   local-first CLI tool - see `docs/DISCOVERY.md`).
 - Additional detail parsers for other Chronos/Greenbud investment sites.
 - Automated test coverage for `InvestmentDetailEnricher` and
   `PolishAreaFormat` edge cases (still covered only indirectly).
-- Per-field developer-candidate deduplication beyond exact-name matching
-  (e.g. fuzzy matching "ABC Development" vs "ABC Development Sp. z o.o.").
 
 ## Implemented (phase 6, deterministic scoring pipeline + discovery lead time + watchlist)
 
@@ -275,3 +276,41 @@ added to the catalog, not scattered across parsers.
   `/developers`, `/coverage`) instead of duplicating it. No new backend
   queries were needed - `listDevelopers`/`listMunicipalities`/`listSources`/
   `listCorrelations` already exposed everything required.
+
+## Implemented (phase 8, deferred-work cleanup: more discovery sources + fuzzy dedup + signal correlation)
+
+- **2 more discovery sources**: `srem-wz` (Gmina Śrem BIP, two-step fetch
+  since its register is split one page per calendar year rather than a
+  single evergreen feed) and `murowana-goslina-obwieszczenia` (Gmina
+  Murowana Goślina BIP, mixes zoning-conditions and public-purpose siting
+  decisions on one feed). All previously `BLOCKED`/`NOT_IMPLEMENTED`
+  municipalities were re-verified live rather than assumed still blocked;
+  several turned out to have migrated to real server-rendered platforms
+  (Kleszczewo, Dopiewo, Skoki) but no adapter could be built for them yet
+  - see `docs/SOURCES.md` "Investigated but not implemented" for the
+  updated per-municipality findings.
+- **`LocationCatalog.findIn` bugfix**: found while building the two
+  sources above - it used `\b` word boundaries, which Java defines using
+  ASCII `[a-zA-Z0-9_]` only, so it silently failed to match most of its
+  own catalog (`Poznań`, `Śrem`, `Łowęcin`, ...) whenever adjacent to
+  punctuation/whitespace in real text, since Polish diacritics aren't
+  ASCII word characters. Fixed with explicit `\p{L}`/`\p{N}` Unicode
+  lookarounds. Affects every call site: aggregator-only-discovery
+  location matching, developer-candidate municipality assignment, and
+  every discovery parser's `location` field.
+- **Fuzzy developer-candidate deduplication**: `domain.DeveloperNameMatcher`
+  strips common Polish legal-entity suffixes (`Sp. z o.o.`, `S.A.`,
+  `Sp. k.`, spelled-out forms, ...) before comparing names, used by both
+  `DeveloperRegistry.findByName` and `DeveloperCandidateRepository.findByName`
+  so "ABC Development" and "ABC Development Sp. z o.o." are recognized as
+  the same developer instead of producing a duplicate candidate.
+- **Signal-to-signal correlation**: `/signals` groups signals client-side
+  by `source:reference` - multiple filing stages of the same case share
+  one case reference within a single source's own numbering scheme.
+  Shows a "N stages" badge per row and, when expanded, a chronological
+  case-history list (`ExpandableTableRow` gained an optional
+  `expandedExtra` slot for this). No scan-time/backend work needed - this
+  is a plain reference-equality group-by over already-fetched data, not a
+  fuzzy/feature-based match like investment<->signal correlation.
+- Otodom explicitly stayed out of scope per the project's no-headless-browser
+  constraint - re-confirmed, not re-implemented.

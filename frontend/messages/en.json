@@ -121,7 +121,9 @@
     "detected": "Detected",
     "reference": "Reference",
     "source": "Source",
-    "noResults": "No discovery signals recorded yet."
+    "noResults": "No discovery signals recorded yet.",
+    "stages": "{count} stages",
+    "caseHistory": "Case history ({count} filing stages, same reference)"
   },
   "correlations": {
     "title": "Correlations",

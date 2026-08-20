@@ -59,19 +59,21 @@ Aggregators are a completeness/cross-check layer only (see
 
 Documented explicitly per the project's "no fake implementations" rule -
 these were investigated with real HTTP requests against the live sites,
-not guessed:
+not guessed. Re-verified in full (not just spot-checked) as part of the
+"additional discovery sources" deferred-work session; findings updated
+where the underlying site changed:
 
 | Source | Category | Finding |
 |---|---|---|
-| Kleszczewo BIP, Dopiewo BIP, Buk BIP, Oborniki BIP, Pobiedziska BIP, Szamotuły BIP, Skoki BIP | Discovery | All run the Nefeni (`nowoczesnagmina.pl`) JavaScript SPA platform with no discoverable public JSON API; content only exists after JS execution. |
-| Komorniki BIP (`bip2.komorniki.pl`) | Discovery | Server-rendered (verified: HTML + working RSS feed), but the specific "Obwieszczenia" (planning announcements) section actively blocks repeated automated requests (WAF/rate-limiting observed in testing, HTTP 429). The archival BIP has a real WZ register but is explicitly marked archival. |
-| Luboń BIP | Discovery | Returns HTTP 429 (rate limiting/WAF). |
-| Kostrzyn BIP, Rokietnica BIP | Discovery | Consistent transport errors on both HTTP and HTTPS. |
-| Stęszew BIP | Discovery | Only an archival BIP is reachable; the current BIP URL returns transport errors. |
-| Kórnik BIP | Discovery | Planning page exists (Drupal 11) but obwieszczenia/WZ listing URLs return 404; needs further URL discovery before a parser can be built. |
-| Śrem BIP | Discovery | Planning section only contains application forms/instructions, no register of issued decisions. |
-| Mosina BIP | Discovery | BIP root page is a near-empty redirect stub; no discoverable WZ register. |
-| Murowana Goślina BIP, Puszczykowo BIP | Discovery | SSR sites with planning sections, but no confirmed WZ/obwieszczenia register structure verified yet. |
+| Buk BIP, Oborniki BIP (now `bip.umoborniki.nv.pl`), Pobiedziska BIP, Szamotuły BIP | Discovery | Re-verified: HTTP 200 but an empty response body - still effectively a JS SPA shell with no server-rendered content. |
+| Komorniki BIP (`bip2.komorniki.pl`) | Discovery | Re-verified: now returns HTTP 403 (was 429) - still a WAF/anti-bot block. The archival BIP has a real WZ register but is explicitly marked archival. |
+| Luboń BIP | Discovery | Re-verified: now returns HTTP 403 (was 429) - still a WAF/anti-bot block. |
+| Kostrzyn BIP, Rokietnica BIP | Discovery | Re-verified: consistent transport/DNS errors on both HTTP and HTTPS. |
+| Kórnik BIP | Discovery | Re-verified: still a JS-hydrated Drupal 11 site - both the planning page and the obwieszczenia list return an effectively empty server-rendered shell. |
+| Mosina BIP | Discovery | Re-verified: `bip.mosina.pl` is now just a directory of subsite tiles; the real BIP at `bip.um.mosina.pl` is server-rendered but its "Planowanie przestrzenne" section only has MPZP/studium static pages, no obwieszczenia/case register. |
+| Puszczykowo BIP | Discovery | Re-verified: migrated to a WOKISS-hosted BIP with a real, server-rendered "Postępowania administracyjne" register - but every entry found so far is public-purpose infrastructure (water/sewer network), not residential warunki zabudowy, and it publishes no per-item date. |
+| Kleszczewo BIP, Dopiewo BIP, Skoki BIP | Discovery | Re-verified: all three migrated off the old Nefeni (`nowoczesnagmina.pl`) JS SPA to a real, server-rendered Next.js BIP platform (`bip-api.{municipality}.pl`). Dopiewo has a dedicated "Decyzje o warunkach zabudowy" category but its article list isn't in the server-rendered HTML (client-side-fetched from its API); Skoki has a real combined celu-publiczne/warunki-zabudowy register but currently only one (non-residential) entry; Kleszczewo's "Obwieszczenia i ogłoszenia" category only surfaced non-residential notices this session. Worth re-checking Dopiewo/Skoki again later - they're the closest to being real. |
+| Stęszew BIP | Discovery | Re-verified: reachable again (no longer a transport error) with a real "Zagospodarowanie Przestrzenne" section, but it only links to MPZP/studium/environmental pages - no obwieszczenia or case register found. |
 | Otodom | Aggregator | Modern client-side-rendered listing; would require a headless browser (Selenium/Playwright) to read reliably, which this project deliberately avoids as a dependency for a local-first CLI tool. |
 | PWD Deweloper (`pwd.com.pl`) | Developer | JavaScript fingerprinting (FingerprintJS) anti-bot protection serves only a JS-based redirect/challenge page; no content reachable without executing JS. |
 | Archicom / Echo Residential (`archicom.pl`) | Developer | Client-side-rendered React/PWA storefront ("Oops! JavaScript is disabled" with no fallback content). |
@@ -80,7 +82,7 @@ not guessed:
 | Villa, Budimex, Novaform, Cavallia, BTM, Constructa Plus, Virke, SGI, FB Antczak | Developer | No verifiable Poznań-area developer found under this name (wrong company, defunct/rebranded domain, unrelated business, or unreachable domain) - see `registry.DeveloperRegistry` for per-developer notes. |
 
 If any of these become accessible in the future (Komorniki's WAF rules
-change, Kleszczewo publishes a documented API, etc.), implement them
+change, Dopiewo's API becomes documented, etc.), implement them
 following the same standard as `SwarzedzWzSource`/`RynekPierwotnySource`:
 real fixture, real parser, real tests, `verifySources` passing.
 
@@ -124,11 +126,30 @@ Notes on the last seven (Phase E, all Tier B):
 ## Implemented discovery sources
 
 
-Beyond `swarzedz-wz`, four more municipal discovery sources are
+Beyond `swarzedz-wz`, six more municipal discovery sources are
 implemented: `czerwonak-obwieszczenia` and `tarnowo-podgorne-wz` (identical
 "Rekord BIP" CMS, share `RekordBipParser`), `suchy-las-npp` (Logonet CMS),
-and `poznan-ulicp` (City of Poznań's public-purpose siting register, a
+`poznan-ulicp` (City of Poznań's public-purpose siting register, a
 custom CMS that also exposes an XML/JSON API worth migrating to in a
-future revision). See `registry.DiscoverySourceRegistry` for the full
-per-municipality investigation record, including documented reasons for
-every municipality that is currently `BLOCKED` or `NOT_IMPLEMENTED`.
+future revision), `srem-wz` (Gmina Śrem BIP - uniquely among these,
+split one page per calendar year rather than a single evergreen feed, so
+`SremWzSource` does a two-step fetch: find the current year's URL from
+an index page, then fetch that page), and `murowana-goslina-obwieszczenia`
+(Gmina Murowana Goślina BIP - a single evergreen feed mixing zoning-conditions
+and public-purpose siting decisions, classified by keyword). See
+`registry.DiscoverySourceRegistry` for the full per-municipality
+investigation record, including documented reasons for every municipality
+that is currently `BLOCKED` or `NOT_IMPLEMENTED`.
+
+## `LocationCatalog.findIn` word-boundary bugfix
+
+While implementing the two sources above, `LocationCatalog.findIn` was
+found to silently fail to match most of its own catalog (`Poznań`,
+`Śrem`, `Łowęcin`, ...) whenever a location name was adjacent to
+punctuation/whitespace in real text - Java's `\b` word boundary is
+ASCII-only (`[a-zA-Z0-9_]`) unless `UNICODE_CHARACTER_CLASS` is set, and
+Polish diacritic letters aren't in that ASCII set. Fixed by replacing
+`\b` with explicit `(?<![\p{L}\p{N}])`/`(?![\p{L}\p{N}])` Unicode
+letter/digit lookarounds. This affects every call site - aggregator-only-discovery
+location matching, developer-candidate municipality assignment, and every
+discovery parser's `location` field - not just the two new sources.

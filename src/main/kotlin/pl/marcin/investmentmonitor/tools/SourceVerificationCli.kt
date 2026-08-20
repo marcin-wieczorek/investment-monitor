@@ -32,7 +32,9 @@ import pl.marcin.investmentmonitor.source.UWISource
 import pl.marcin.investmentmonitor.source.VastbouwSource
 import pl.marcin.investmentmonitor.source.aggregator.RynekPierwotnySource
 import pl.marcin.investmentmonitor.source.discovery.CzerwonakObwieszczeniaSource
+import pl.marcin.investmentmonitor.source.discovery.MurowanaGoslinaObwieszczeniaSource
 import pl.marcin.investmentmonitor.source.discovery.PoznanUlicpSource
+import pl.marcin.investmentmonitor.source.discovery.SremWzSource
 import pl.marcin.investmentmonitor.source.discovery.SuchyLasNppSource
 import pl.marcin.investmentmonitor.source.discovery.SwarzedzWzSource
 import pl.marcin.investmentmonitor.source.discovery.TarnowoPodgorneWzSource
@@ -58,7 +60,8 @@ fun main() {
     )
     val discoverySources: List<DiscoverySource> = listOf(
         SwarzedzWzSource(fetcher), CzerwonakObwieszczeniaSource(fetcher), TarnowoPodgorneWzSource(fetcher),
-        SuchyLasNppSource(fetcher), PoznanUlicpSource(fetcher)
+        SuchyLasNppSource(fetcher), PoznanUlicpSource(fetcher), SremWzSource(fetcher),
+        MurowanaGoslinaObwieszczeniaSource(fetcher)
     )
     val aggregatorSources: List<AggregatorSource> = listOf(RynekPierwotnySource(fetcher))
     val validator = SourceValidator()

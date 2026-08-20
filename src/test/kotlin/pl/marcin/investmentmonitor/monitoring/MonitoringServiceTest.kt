@@ -104,7 +104,8 @@ private class InMemoryDeveloperCandidateRepository : DeveloperCandidateRepositor
         return saved.size.toLong()
     }
     override fun findAll(): List<DeveloperCandidate> = saved
-    override fun findByName(developerName: String): DeveloperCandidate? = saved.firstOrNull { it.developerName == developerName }
+    override fun findByName(developerName: String): DeveloperCandidate? =
+        saved.firstOrNull { pl.marcin.investmentmonitor.domain.DeveloperNameMatcher.matches(it.developerName, developerName) }
     override fun updateStatus(id: Long, status: DeveloperCandidateStatus) {
         val index = saved.indexOfFirst { it.id == id }
         if (index >= 0) saved[index] = saved[index].copy(status = status)
@@ -331,6 +332,27 @@ class MonitoringServiceTest {
         buildService(aggregatorSources = listOf(aggregatorSource), developerCandidateRepository = candidateRepository).scan()
 
         candidateRepository.saved shouldHaveSize 0
+    }
+
+    @Test
+    fun `does not record a duplicate candidate for the same developer under a slightly different legal name`() {
+        val candidateRepository = InMemoryDeveloperCandidateRepository()
+        candidateRepository.save(
+            DeveloperCandidate(
+                developerName = "Totally Unknown Developer Sp. z o.o.",
+                discoveredUrl = java.net.URI("https://example.com/already-known"),
+                municipality = "Mosina",
+                discoveredFromSource = "rynekpierwotny",
+                discoveredAt = java.time.Instant.EPOCH
+            )
+        )
+        val aggregatorSource = FakeAggregatorSource(
+            "rynekpierwotny",
+            listOf(testInvestment(name = "AggregatorOnly", developer = "Totally Unknown Developer", location = "Mosina"))
+        )
+        buildService(aggregatorSources = listOf(aggregatorSource), developerCandidateRepository = candidateRepository).scan()
+
+        candidateRepository.saved shouldHaveSize 1
     }
 
     @Test

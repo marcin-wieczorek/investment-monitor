@@ -7,6 +7,7 @@ import org.springframework.jdbc.support.KeyHolder
 import org.springframework.stereotype.Repository
 import pl.marcin.investmentmonitor.domain.DeveloperCandidate
 import pl.marcin.investmentmonitor.domain.DeveloperCandidateStatus
+import pl.marcin.investmentmonitor.domain.DeveloperNameMatcher
 import java.net.URI
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -36,7 +37,8 @@ class JdbcDeveloperCandidateRepository(private val jdbcTemplate: JdbcTemplate) :
         jdbcTemplate.query(SELECT_ALL, DeveloperCandidateRowMapper)
 
     override fun findByName(developerName: String): DeveloperCandidate? =
-        jdbcTemplate.query(SELECT_BY_NAME, DeveloperCandidateRowMapper, developerName).firstOrNull()
+        jdbcTemplate.query(SELECT_ALL, DeveloperCandidateRowMapper)
+            .firstOrNull { DeveloperNameMatcher.matches(it.developerName, developerName) }
 
     override fun updateStatus(id: Long, status: DeveloperCandidateStatus) {
         jdbcTemplate.update(UPDATE_STATUS, status.name, id)
@@ -49,7 +51,6 @@ class JdbcDeveloperCandidateRepository(private val jdbcTemplate: JdbcTemplate) :
             VALUES (?, ?, ?, ?, ?, ?, ?)
         """
         const val SELECT_ALL = "SELECT * FROM developer_candidate ORDER BY discovered_at DESC"
-        const val SELECT_BY_NAME = "SELECT * FROM developer_candidate WHERE developer_name = ?"
         const val UPDATE_STATUS = "UPDATE developer_candidate SET status = ? WHERE id = ?"
     }
 }

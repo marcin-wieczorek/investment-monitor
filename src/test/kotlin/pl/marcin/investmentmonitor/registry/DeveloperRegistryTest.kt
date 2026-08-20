@@ -43,6 +43,11 @@ class DeveloperRegistryTest {
     }
 
     @Test
+    fun `finds a developer by name despite an added legal-entity suffix`() {
+        DeveloperRegistry.findByName("Chronos Development Sp. z o.o.")?.id shouldBe "chronos"
+    }
+
+    @Test
     fun `unknown developer name returns null`() {
         DeveloperRegistry.findByName("Totally Unknown Developer Xyz") shouldBe null
     }

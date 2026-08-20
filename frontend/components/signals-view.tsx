@@ -14,7 +14,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ExpandableTableRow, ExpandChevron } from "@/components/expandable-table-row";
-import { formatRelativeTime } from "@/lib/utils";
+import { formatRelativeTime, cn } from "@/lib/utils";
 import type { InvestmentSignalRow } from "@/lib/types";
 
 interface SignalsViewProps {
@@ -34,6 +34,26 @@ export function SignalsView({ signals }: SignalsViewProps) {
     () => Array.from(new Set(signals.map((s) => s.signal_type))).sort(),
     [signals]
   );
+
+  // Signals sharing the same source and case reference are different filing
+  // stages of the same underlying case (e.g. "wszczęcie postępowania" ->
+  // "decyzja końcowa") - group them client-side (no scan-time matching
+  // needed, unlike investment<->signal correlation: this is a plain
+  // reference-equality group-by within a single source's own numbering
+  // scheme, not a fuzzy/feature-based match). Never group across different
+  // sources, since a case reference is only unique within its own
+  // municipality's numbering scheme.
+  const caseGroups = useMemo(() => {
+    const groups = new Map<string, InvestmentSignalRow[]>();
+    signals.forEach((signal) => {
+      if (!signal.reference) return;
+      const key = `${signal.source}:${signal.reference}`;
+      const existing = groups.get(key);
+      if (existing) existing.push(signal);
+      else groups.set(key, [signal]);
+    });
+    return groups;
+  }, [signals]);
 
   const filtered = useMemo(() => {
     return signals.filter((signal) => {
@@ -100,6 +120,9 @@ export function SignalsView({ signals }: SignalsViewProps) {
             <TableBody>
               {filtered.map((signal) => {
                 const isOpen = expandedId === signal.id;
+                const caseGroup = signal.reference ? caseGroups.get(`${signal.source}:${signal.reference}`) : undefined;
+                const relatedSignals = caseGroup?.filter((s) => s.id !== signal.id) ?? [];
+
                 return (
                   <ExpandableTableRow
                     key={signal.id}
@@ -107,12 +130,48 @@ export function SignalsView({ signals }: SignalsViewProps) {
                     onToggle={() => setExpandedId(isOpen ? null : signal.id)}
                     columnsCount={COLUMNS_COUNT}
                     data={signal}
+                    expandedExtra={
+                      relatedSignals.length > 0 ? (
+                        <div className="border-b border-border px-4 py-3">
+                          <h3 className="mb-2 text-xs font-medium text-muted-foreground">
+                            {t("signals.caseHistory").replace("{count}", String(caseGroup!.length))}
+                          </h3>
+                          <ul className="space-y-1.5">
+                            {[...caseGroup!]
+                              .sort((a, b) => new Date(a.detected_at).getTime() - new Date(b.detected_at).getTime())
+                              .map((stage) => (
+                                <li
+                                  key={stage.id}
+                                  className={cn(
+                                    "flex items-center gap-2 text-xs",
+                                    stage.id === signal.id ? "text-foreground" : "text-muted-foreground"
+                                  )}
+                                >
+                                  <Badge variant="outline" className="shrink-0 text-[10px]">
+                                    {formatRelativeTime(stage.detected_at, locale)}
+                                  </Badge>
+                                  <span className="truncate" title={stage.title}>
+                                    {stage.title}
+                                  </span>
+                                </li>
+                              ))}
+                          </ul>
+                        </div>
+                      ) : undefined
+                    }
                   >
                     <TableCell>
                       <div className="flex flex-col gap-1">
-                        <Badge variant="outline" className="w-fit">
-                          {signal.signal_type}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant="outline" className="w-fit">
+                            {signal.signal_type}
+                          </Badge>
+                          {relatedSignals.length > 0 ? (
+                            <Badge variant="secondary" className="w-fit text-[10px]">
+                              {t("signals.stages").replace("{count}", String(caseGroup!.length))}
+                            </Badge>
+                          ) : null}
+                        </div>
                         <span className="max-w-md truncate text-sm" title={signal.title}>
                           {signal.title}
                         </span>

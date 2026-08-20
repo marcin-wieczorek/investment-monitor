@@ -31,11 +31,40 @@ object LocationCatalog {
         "Uzarzewo", "Janikowo", "Sarbinowo", "Gruszczynek", "Karłowice", "Kobylnica"
     )
 
-    val ALL_LOCATIONS: Set<String> = CORE_LOCATIONS + SWARZEDZ_GMINA_VILLAGES
+    /**
+     * Villages within Gmina Śrem observed directly in its BIP
+     * zoning-conditions (warunki zabudowy) obwieszczenia register.
+     */
+    val SREM_GMINA_VILLAGES: Set<String> = setOf("Kaleje", "Nochowo", "Wyrzeka")
 
-    /** Finds the first known location name mentioned as a whole word in [text], if any. */
+    /**
+     * Villages within Gmina Murowana Goślina observed directly in its BIP
+     * obwieszczenia register (zoning-conditions and public-purpose siting
+     * decisions).
+     */
+    val MUROWANA_GOSLINA_GMINA_VILLAGES: Set<String> = setOf(
+        "Wojnowo", "Białężyn", "Głębocko", "Długa Goślina", "Łopuchowo"
+    )
+
+    val ALL_LOCATIONS: Set<String> =
+        CORE_LOCATIONS + SWARZEDZ_GMINA_VILLAGES + SREM_GMINA_VILLAGES + MUROWANA_GOSLINA_GMINA_VILLAGES
+
+    /**
+     * Finds the first known location name mentioned as a whole word in
+     * [text], if any.
+     *
+     * Uses explicit Unicode letter/digit lookarounds rather than `\b`:
+     * Java's `\b` defines "word" as ASCII `[a-zA-Z0-9_]` unless
+     * `UNICODE_CHARACTER_CLASS` is set, so it silently fails to find a
+     * boundary next to a Polish diacritic letter - e.g. `\bPoznań\b` does
+     * not match "Poznań," because `ń` isn't an ASCII word character. Since
+     * almost every location in this catalog starts or ends with one
+     * (Poznań, Śrem, Łowęcin, Głębocko, ...), that bug would silently break
+     * this function for most of its own catalog.
+     */
     fun findIn(text: String): String? =
         ALL_LOCATIONS.firstOrNull { location ->
-            Regex("\\b${Regex.escape(location)}\\b", RegexOption.IGNORE_CASE).containsMatchIn(text)
+            Regex("(?<![\\p{L}\\p{N}])${Regex.escape(location)}(?![\\p{L}\\p{N}])", RegexOption.IGNORE_CASE)
+                .containsMatchIn(text)
         }
 }

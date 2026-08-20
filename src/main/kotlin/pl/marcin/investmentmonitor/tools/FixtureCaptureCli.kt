@@ -29,7 +29,9 @@ import pl.marcin.investmentmonitor.source.UWISource
 import pl.marcin.investmentmonitor.source.VastbouwSource
 import pl.marcin.investmentmonitor.source.aggregator.RynekPierwotnySource
 import pl.marcin.investmentmonitor.source.discovery.CzerwonakObwieszczeniaSource
+import pl.marcin.investmentmonitor.source.discovery.MurowanaGoslinaObwieszczeniaSource
 import pl.marcin.investmentmonitor.source.discovery.PoznanUlicpSource
+import pl.marcin.investmentmonitor.source.discovery.SremWzSource
 import pl.marcin.investmentmonitor.source.discovery.SuchyLasNppSource
 import pl.marcin.investmentmonitor.source.discovery.SwarzedzWzSource
 import pl.marcin.investmentmonitor.source.discovery.TarnowoPodgorneWzSource
@@ -77,6 +79,11 @@ fun main() {
         "tarnowo-podgorne-wz" to (URI(TarnowoPodgorneWzSource.LIST_URL) to "announcements.html"),
         "suchy-las-npp" to (URI(SuchyLasNppSource.LIST_URL) to "announcements.html"),
         "poznan-ulicp" to (URI(PoznanUlicpSource.LIST_URL) to "announcements.html"),
+        // Śrem's register is split one page per year (see SremWzParser KDoc) -
+        // capture both the index and the current year's page; the year id
+        // in this URL will need manual updating once a year.
+        "srem-wz" to (URI(SremWzSource.INDEX_URL) to "index.html"),
+        "murowana-goslina-obwieszczenia" to (URI(MurowanaGoslinaObwieszczeniaSource.LIST_URL) to "announcements.html"),
         "rynekpierwotny" to (URI(RynekPierwotnySource.LIST_URL) to "nowe-domy-poznan.html")
     )
     val fixturesDir = Path.of("src/test/resources/fixtures")

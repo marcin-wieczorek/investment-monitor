@@ -121,7 +121,9 @@
     "detected": "Wykryto",
     "reference": "Sygnatura",
     "source": "Źródło",
-    "noResults": "Nie zarejestrowano jeszcze żadnych sygnałów discovery."
+    "noResults": "Nie zarejestrowano jeszcze żadnych sygnałów discovery.",
+    "stages": "{count} etapy",
+    "caseHistory": "Historia sprawy ({count} etapy postępowania, ta sama sygnatura)"
   },
   "correlations": {
     "title": "Korelacje",

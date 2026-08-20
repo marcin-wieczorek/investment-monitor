@@ -57,6 +57,29 @@ the two colliding signals doesn't survive persistence - documented as an
 accepted, rare trade-off in the parser's KDoc rather than a reason to
 diverge from the project's established canonical-key identity model.
 
+## Implemented: Gmina Śrem zoning-conditions register (year-paginated)
+
+`SremWzSource` + `SremWzParser` (`http://bip.srem.pl/public/?id=73563`)
+are the only discovery source implemented so far whose register is split
+one page per calendar year rather than a single evergreen feed. A single
+hardcoded `LIST_URL` would silently start returning nothing every January,
+so `SremWzSource.fetch()` does a two-step fetch instead: parse the index
+page to find the current (highest) year's URL, then fetch and parse that
+page for the actual announcements. Each announcement is a DOCX download
+link (`a.nazwa_pliku`) with its creation date in a sibling `.wytworzyl_data`
+metadata field.
+
+## Implemented: Gmina Murowana Goślina obwieszczenia register
+
+`MurowanaGoslinaObwieszczeniaSource` + `MurowanaGoslinaObwieszczeniaParser`
+(`https://bip.murowana-goslina.pl/wiadomosci/9179/lista/1/obwieszczenia_inne`)
+mixes zoning-conditions ("warunki zabudowy") and public-purpose siting
+("lokalizacja inwestycji celu publicznego") decisions on the same feed,
+classified per-item by keyword (see `toSignalType`). No per-item
+publish date is available on the list page, so `detectedAt` falls back to
+`Instant.EPOCH` - the same documented fallback `PoznanUlicpParser` already
+uses when a date can't be parsed.
+
 ## Location extraction
 
 Discovery parsers extract location by matching known place names
