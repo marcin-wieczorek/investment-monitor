@@ -12,6 +12,24 @@ and rank the result against an investment profile. Identity, diffing,
 validation and persistence are all deterministic; the LLM never decides
 what is new.
 
+## Quick start
+
+Requires JDK 21 and Node 22.5+ (see [`Getting started`](#getting-started) /
+[`Frontend`](#frontend) below for details on each piece separately).
+
+```bash
+npm start
+```
+
+Starts the frontend dev server (installing its dependencies on first run)
+and, once it's serving requests, automatically triggers a scan via the
+same non-blocking endpoint the sidebar's "Run scan" button uses - so the
+progress bar in the sidebar starts moving right away. Open
+`http://localhost:3000`, `Ctrl+C` to stop. This is purely a convenience
+wrapper (`scripts/start.mjs`, no extra dependencies) - `./gradlew bootRun`
+and `cd frontend && npm run dev` still work exactly as before and can be
+run separately if you'd rather control each piece yourself.
+
 ## Source categories
 
 ```
