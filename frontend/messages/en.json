@@ -2,6 +2,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "investments": "Investments",
+    "map": "Map",
     "signals": "Signals",
     "correlations": "Correlations",
     "developers": "Developers",
@@ -47,6 +48,14 @@
     "scanComplete": "Scan complete",
     "scanFailed": "Scan failed",
     "viewDetails": "View scan details"
+  },
+  "map": {
+    "title": "Map",
+    "subtitle": "Where every currently known investment is located across the Poznań metro area",
+    "investmentCount": "{count} investment(s)",
+    "andMore": "+{count} more",
+    "locationsShown": "{count} locations shown",
+    "unmappedNotice": "{count} investment(s) have a location not yet in the map's coordinate lookup and are not shown."
   },
   "investments": {
     "title": "Investments",

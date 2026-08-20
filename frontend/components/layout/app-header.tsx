@@ -12,6 +12,7 @@ import { LocaleToggle } from "@/components/locale-toggle";
 const breadcrumbKeys: Record<string, string> = {
   "/": "nav.dashboard",
   "/investments": "nav.investments",
+  "/map": "nav.map",
   "/signals": "nav.signals",
   "/correlations": "nav.correlations",
   "/developers": "nav.developers",

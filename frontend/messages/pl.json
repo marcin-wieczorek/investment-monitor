@@ -2,6 +2,7 @@
   "nav": {
     "dashboard": "Pulpit",
     "investments": "Inwestycje",
+    "map": "Mapa",
     "signals": "Sygnały",
     "correlations": "Korelacje",
     "developers": "Deweloperzy",
@@ -47,6 +48,14 @@
     "scanComplete": "Skan zakończony",
     "scanFailed": "Skan nieudany",
     "viewDetails": "Zobacz szczegóły skanu"
+  },
+  "map": {
+    "title": "Mapa",
+    "subtitle": "Gdzie znajdują się wszystkie znane obecnie inwestycje na terenie Metropolii Poznań",
+    "investmentCount": "{count} inwestycji",
+    "andMore": "+{count} więcej",
+    "locationsShown": "{count} lokalizacji na mapie",
+    "unmappedNotice": "{count} inwestycji ma lokalizację nieznaną jeszcze w bazie współrzędnych mapy i nie jest pokazana."
   },
   "investments": {
     "title": "Inwestycje",
