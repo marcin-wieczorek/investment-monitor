@@ -1,10 +1,11 @@
 package pl.marcinwieczorek.investmentmonitor.persistence
 
 import pl.marcinwieczorek.investmentmonitor.domain.SourceCategory
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import java.time.Instant
 
 data class SourceSnapshot(
-    val source: String,
+    val source: SourceId,
     val capturedAt: Instant,
     val investmentCount: Int,
     /**
@@ -18,6 +19,6 @@ data class SourceSnapshot(
 )
 
 interface SourceSnapshotRepository {
-    fun find(source: String): SourceSnapshot?
+    fun find(source: SourceId): SourceSnapshot?
     fun save(snapshot: SourceSnapshot)
 }

@@ -1,5 +1,9 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import java.net.URI
+
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -24,7 +28,7 @@ class GreenbudParserTest {
     fun `parses a single-value house area and upper-bound-only plot area`() {
         val rabowice2 = parser.parse(fixtureHtml).single { it.name == "Zielone Rabowice II – etap VII" }
 
-        rabowice2.source shouldBe "greenbud"
+        rabowice2.source shouldBe SourceId("greenbud")
         rabowice2.developer shouldBe "Greenbud Development"
         rabowice2.url.toString() shouldBe "https://www.greenbud.com.pl/zielone-rabowice-2/"
         rabowice2.location shouldBe "Swarzędz – Rabowice"
@@ -32,7 +36,7 @@ class GreenbudParserTest {
         rabowice2.houseArea?.max shouldBe 87.43
         rabowice2.plotArea?.min shouldBe null
         rabowice2.plotArea?.max shouldBe 363.0
-        rabowice2.imageUrl shouldBe "https://www.greenbud.com.pl/wp-content/uploads/2024/05/camera_03_front1.jpg"
+        rabowice2.imageUrl shouldBe URI("https://www.greenbud.com.pl/wp-content/uploads/2024/05/camera_03_front1.jpg")
     }
 
     @Test

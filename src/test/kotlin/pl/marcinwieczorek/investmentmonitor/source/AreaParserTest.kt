@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -24,7 +26,7 @@ class AreaParserTest {
     fun `parses jantarowa 4`() {
         val jantarowa = parser.parse(fixtureHtml).single { it.name == "jantarowa 4" }
 
-        jantarowa.source shouldBe "area"
+        jantarowa.source shouldBe SourceId("area")
         jantarowa.developer shouldBe "Area Development"
         jantarowa.url.toString() shouldBe "https://areadevelopment.pl/pl/jantarowa-4"
         jantarowa.location shouldBe null

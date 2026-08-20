@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source.discovery
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -36,7 +38,7 @@ class DopiewoWzParserTest {
         val signals = parser.parse(yearHtml, "https://bip.dopiewo.pl/kategorie/706-2026")
         val signal = signals.first { it.reference == "RPP.6730.096.2026" }
 
-        signal.source shouldBe "dopiewo-wz"
+        signal.source shouldBe SourceId("dopiewo-wz")
         signal.municipality shouldBe "Dopiewo"
         signal.signalType shouldBe SignalType.WZ_DECISION
         // The title names both the village ("Skórzewo") and the parent

@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -25,7 +27,7 @@ class CordiaParserTest {
     fun `parses Modena`() {
         val investment = parser.parse(fixtureHtml).single()
 
-        investment.source shouldBe "cordia"
+        investment.source shouldBe SourceId("cordia")
         investment.developer shouldBe "Cordia"
         investment.name shouldBe "Modena"
         investment.url.toString() shouldBe "https://cordiapolska.pl/inwestycje/modena/"

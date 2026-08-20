@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -24,7 +26,7 @@ class SpraviaParserTest {
     fun `parses Lesny Marcelin with house area range`() {
         val lesny = parser.parse(fixtureHtml).single { it.name == "Leśny Marcelin" }
 
-        lesny.source shouldBe "spravia"
+        lesny.source shouldBe SourceId("spravia")
         lesny.developer shouldBe "Spravia"
         lesny.url.toString() shouldBe "https://lesnymarcelin.pl/"
         lesny.houseArea?.min shouldBe 31.0

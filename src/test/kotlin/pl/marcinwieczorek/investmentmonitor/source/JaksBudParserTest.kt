@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -24,7 +26,7 @@ class JaksBudParserTest {
     fun `aggregates unit count and house area range from the table rows`() {
         val natura = parser.parse(fixtureHtml).single()
 
-        natura.source shouldBe "jaksbud"
+        natura.source shouldBe SourceId("jaksbud")
         natura.developer shouldBe "JakśBud"
         natura.name shouldBe "Osiedle Natura Biedrusko"
         natura.units shouldBe 22

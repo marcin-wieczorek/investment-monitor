@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source.discovery
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.InvestmentSignal
@@ -37,25 +39,16 @@ class MurowanaGoslinaObwieszczeniaParser {
         val reference = REFERENCE.find(title)?.groupValues?.get(1)
 
         return InvestmentSignal(
-            source = MurowanaGoslinaObwieszczeniaSource.SOURCE_ID,
+            source = SourceId(MurowanaGoslinaObwieszczeniaSource.SOURCE_ID),
             municipality = MUNICIPALITY,
             location = LocationCatalog.findIn(title),
-            signalType = toSignalType(title),
+            signalType = SignalTypeClassifier.fromTitle(title),
             title = title,
             reference = reference,
             detectedAt = Instant.EPOCH,
             url = url,
             rawFacts = emptyMap()
         )
-    }
-
-    private fun toSignalType(title: String): SignalType = when {
-        title.contains("warunków zabudowy", ignoreCase = true) ||
-            title.contains("warunkach zabudowy", ignoreCase = true) -> SignalType.WZ_DECISION
-        title.contains("celu publicznego", ignoreCase = true) -> SignalType.LAND_DEVELOPMENT_SIGNAL
-        title.contains("planu zagospodarowania", ignoreCase = true) ||
-            title.contains("planu miejscowego", ignoreCase = true) -> SignalType.MPZP_CHANGE
-        else -> SignalType.OTHER
     }
 
     companion object {

@@ -1,5 +1,9 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import java.net.URI
+
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -25,7 +29,7 @@ class RonsonParserTest {
     fun `parses Grunwald Między Drzewami`() {
         val investment = parser.parse(fixtureHtml).single()
 
-        investment.source shouldBe "ronson"
+        investment.source shouldBe SourceId("ronson")
         investment.developer shouldBe "Ronson"
         investment.name shouldBe "Grunwald Między Drzewami"
         investment.url.toString() shouldBe "https://ronson.pl/inwestycja/grunwald-miedzy-drzewami/"
@@ -35,6 +39,6 @@ class RonsonParserTest {
         investment.houseArea shouldBe null
         investment.price shouldBe null
         investment.status shouldBe null
-        investment.imageUrl shouldBe "https://ronson.pl/wp-content/uploads/2024/05/RONSON-GMD-II-U2-Final-02-2048x2048.webp"
+        investment.imageUrl shouldBe URI("https://ronson.pl/wp-content/uploads/2024/05/RONSON-GMD-II-U2-Final-02-2048x2048.webp")
     }
 }

@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -24,7 +26,7 @@ class RobygParserTest {
     fun `parses Elektrownia Garbary`() {
         val elektrownia = parser.parse(fixtureHtml).single { it.name == "Elektrovnia Garbary" }
 
-        elektrownia.source shouldBe "robyg"
+        elektrownia.source shouldBe SourceId("robyg")
         elektrownia.developer shouldBe "ROBYG"
         elektrownia.url.toString() shouldBe "https://robyg.pl/poznan/inwestycje/elektrovnia-garbary"
         elektrownia.location shouldBe "MAŁA WYSPA, UL. PANNY MARII"

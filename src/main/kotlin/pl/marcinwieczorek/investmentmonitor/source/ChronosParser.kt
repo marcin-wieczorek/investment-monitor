@@ -3,6 +3,7 @@ package pl.marcinwieczorek.investmentmonitor.source
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.Investment
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import java.net.URI
 import java.util.Locale
 
@@ -40,7 +41,7 @@ class ChronosParser {
             .ifBlank { null }
 
         return Investment(
-            source = SOURCE_ID,
+            source = SourceId(SOURCE_ID),
             developer = DEVELOPER_NAME,
             name = name,
             url = url,
@@ -51,13 +52,13 @@ class ChronosParser {
             plotArea = null,
             price = null,
             status = null,
-            imageUrl = extractImageUrl(card)
+            imageUrl = extractImageUrl(card)?.let(::URI)
         )
     }
 
     private fun extractImageUrl(card: Element): String? {
         val style = card.selectFirst("div.investment-img")?.attr("style") ?: return null
-        return IMAGE_URL.find(style)?.groupValues?.get(1)?.takeIf(String::isNotBlank)
+        return CssBackgroundImage.extractUrl(style)
     }
 
     private fun extractName(card: Element): String? {
@@ -76,6 +77,5 @@ class ChronosParser {
         const val SOURCE_ID = "chronos"
         const val DEVELOPER_NAME = "Chronos Development"
         private val WHITESPACE = Regex("\\s+")
-        private val IMAGE_URL = Regex("url\\(['\"]?([^'\"()]+)['\"]?\\)")
     }
 }

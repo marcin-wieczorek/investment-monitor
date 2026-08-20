@@ -1,10 +1,11 @@
 package pl.marcinwieczorek.investmentmonitor.persistence
 
 import pl.marcinwieczorek.investmentmonitor.domain.Investment
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import java.time.Instant
 
 interface InvestmentRepository {
-    fun findAllBySource(source: String): Map<String, Investment>
+    fun findAllBySource(source: SourceId): Map<String, Investment>
     fun findAll(): List<Investment>
     fun upsert(investment: Investment, seenAt: Instant)
 

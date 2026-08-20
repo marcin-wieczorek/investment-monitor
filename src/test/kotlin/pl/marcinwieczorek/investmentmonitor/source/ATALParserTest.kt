@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -26,7 +28,7 @@ class ATALParserTest {
     fun `parses a Poznań investment with unit count`() {
         val unii = parser.parse(fixtureHtml).single { it.name == "ATAL Unii Lubelskiej" }
 
-        unii.source shouldBe "atal"
+        unii.source shouldBe SourceId("atal")
         unii.developer shouldBe "ATAL"
         unii.location shouldBe "Poznań, ul. Unii Lubelskiej"
         unii.units shouldBe 291

@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Repository
 import pl.marcinwieczorek.investmentmonitor.domain.InvestmentSignal
 import pl.marcinwieczorek.investmentmonitor.domain.SignalType
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import java.net.URI
 import java.sql.ResultSet
 import java.time.Instant
@@ -14,16 +15,19 @@ import java.time.Instant
 @Repository
 class JdbcSignalRepository(private val jdbcTemplate: JdbcTemplate) : SignalRepository {
 
-    override fun findAllBySource(source: String): Map<String, InvestmentSignal> =
-        jdbcTemplate.query(SELECT_BY_SOURCE, SignalRowMapper, source).associateBy { it.canonicalKey }
+    override fun findAllBySource(source: SourceId): Map<String, InvestmentSignal> =
+        jdbcTemplate.query(SELECT_BY_SOURCE, SignalRowMapper, source.value).associateBy { it.canonicalKey }
 
     override fun findAll(): List<InvestmentSignal> =
         jdbcTemplate.query(SELECT_ALL, SignalRowMapper)
 
+    /** Single atomic upsert - see [JdbcInvestmentRepository.upsert] for the rationale. */
     override fun upsert(signal: InvestmentSignal, seenAt: Instant) {
         val rawFactsJson = MAPPER.writeValueAsString(signal.rawFacts)
-        val updatedRows = jdbcTemplate.update(
-            UPDATE,
+        jdbcTemplate.update(
+            UPSERT,
+            signal.source.value,
+            signal.canonicalKey,
             signal.municipality,
             signal.location,
             signal.signalType.name,
@@ -33,25 +37,8 @@ class JdbcSignalRepository(private val jdbcTemplate: JdbcTemplate) : SignalRepos
             signal.url.toString(),
             rawFactsJson,
             seenAt.toString(),
-            signal.canonicalKey
+            seenAt.toString()
         )
-        if (updatedRows == 0) {
-            jdbcTemplate.update(
-                INSERT,
-                signal.source,
-                signal.canonicalKey,
-                signal.municipality,
-                signal.location,
-                signal.signalType.name,
-                signal.title,
-                signal.reference,
-                signal.detectedAt.toString(),
-                signal.url.toString(),
-                rawFactsJson,
-                seenAt.toString(),
-                seenAt.toString()
-            )
-        }
     }
 
     override fun findIdByCanonicalKey(canonicalKey: String): Long? =
@@ -64,18 +51,21 @@ class JdbcSignalRepository(private val jdbcTemplate: JdbcTemplate) : SignalRepos
         const val SELECT_ALL = "SELECT * FROM investment_signal"
         const val SELECT_ID = "SELECT id FROM investment_signal WHERE canonical_key = ?"
 
-        const val UPDATE = """
-            UPDATE investment_signal SET
-                municipality = ?, location = ?, signal_type = ?, title = ?, reference = ?,
-                detected_at = ?, url = ?, raw_facts = ?, last_seen_at = ?
-            WHERE canonical_key = ?
-        """
-
-        const val INSERT = """
+        const val UPSERT = """
             INSERT INTO investment_signal (
                 source, canonical_key, municipality, location, signal_type, title, reference,
                 detected_at, url, raw_facts, first_seen_at, last_seen_at
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(canonical_key) DO UPDATE SET
+                municipality = excluded.municipality,
+                location = excluded.location,
+                signal_type = excluded.signal_type,
+                title = excluded.title,
+                reference = excluded.reference,
+                detected_at = excluded.detected_at,
+                url = excluded.url,
+                raw_facts = excluded.raw_facts,
+                last_seen_at = excluded.last_seen_at
         """
     }
 }
@@ -84,7 +74,7 @@ private object SignalRowMapper : RowMapper<InvestmentSignal> {
     private val mapper = jacksonObjectMapper()
 
     override fun mapRow(rs: ResultSet, rowNum: Int): InvestmentSignal = InvestmentSignal(
-        source = rs.getString("source"),
+        source = SourceId(rs.getString("source")),
         municipality = rs.getString("municipality"),
         location = rs.getString("location"),
         signalType = SignalType.valueOf(rs.getString("signal_type")),

@@ -5,6 +5,7 @@ import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.InvestmentSignal
 import pl.marcinwieczorek.investmentmonitor.domain.LocationCatalog
 import pl.marcinwieczorek.investmentmonitor.domain.SignalType
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import java.net.URI
 import java.time.Instant
 import java.time.LocalDate
@@ -27,7 +28,7 @@ import java.time.ZoneOffset
  * universal scraper) - see docs/SOURCES.md for the two municipalities that
  * use it.
  */
-class RekordBipParser(private val municipality: String, private val sourceId: String) {
+class RekordBipParser(private val municipality: String, private val sourceId: SourceId) {
 
     fun parse(html: String, baseUri: String): List<InvestmentSignal> {
         val document = Jsoup.parse(html, baseUri)

@@ -1,5 +1,9 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import java.net.URI
+
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -24,11 +28,11 @@ class ChronosParserTest {
     fun `parses Tercja`() {
         val tercja = parser.parse(fixtureHtml).single { it.name == "Tercja" }
 
-        tercja.source shouldBe "chronos"
+        tercja.source shouldBe SourceId("chronos")
         tercja.developer shouldBe "Chronos Development"
         tercja.url.toString() shouldBe "https://www.tercja.eu"
         tercja.location shouldBe "Swarzędz – Rabowice, ul. Swanka"
-        tercja.imageUrl shouldBe "https://www.chronos.poznan.pl/photo/420x320/1e181add05b87f5501a59dc4259c7cb6.jpg/1"
+        tercja.imageUrl shouldBe URI("https://www.chronos.poznan.pl/photo/420x320/1e181add05b87f5501a59dc4259c7cb6.jpg/1")
     }
 
     @Test
@@ -37,12 +41,22 @@ class ChronosParserTest {
 
         gardenia.url.toString() shouldBe "https://www.osiedle-gardenia.pl"
         gardenia.location shouldBe "Rokietnica ul. Szkolna"
-        gardenia.imageUrl shouldBe "https://www.chronos.poznan.pl/tinyfinder/assets/uploads/img/gardenia-video.jpg"
+        gardenia.imageUrl shouldBe URI("https://www.chronos.poznan.pl/tinyfinder/assets/uploads/img/gardenia-video.jpg")
     }
 
     @Test
     fun `does not duplicate investments across the media and call-to-action cards`() {
         val names = parser.parse(fixtureHtml).map { it.name }
         names shouldBe listOf("Aura", "Tercja", "Kruszewnia", "Gardenia")
+    }
+
+    @Test
+    fun `returns an empty list for an empty document rather than throwing`() {
+        parser.parse("") shouldBe emptyList()
+    }
+
+    @Test
+    fun `returns an empty list when the page structure no longer matches, rather than throwing`() {
+        parser.parse("<html><body><p>Site redesigned, no investment cards here.</p></body></html>") shouldBe emptyList()
     }
 }

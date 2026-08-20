@@ -1,5 +1,9 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import java.net.URI
+
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -25,11 +29,11 @@ class ArchicomParserTest {
         val investments = parser.parse(html)
         val investment = investments.first { it.name == "Apartamenty Esencja II" }
 
-        investment.source shouldBe "archicom"
+        investment.source shouldBe SourceId("archicom")
         investment.developer shouldBe "Archicom"
         investment.location shouldBe "Poznań, Garbary"
         investment.url.toString() shouldBe "https://archicom.pl/poznan/esencja"
-        investment.imageUrl shouldBe "https://archicom.pl/media/.renditions/wysiwyg/Poznan/esencja_822x920.png?auto=webp&format=png&quality=85"
+        investment.imageUrl shouldBe URI("https://archicom.pl/media/.renditions/wysiwyg/Poznan/esencja_822x920.png?auto=webp&format=png&quality=85")
         investment.propertyType shouldBe null
         investment.units shouldBe null
         investment.houseArea shouldBe null

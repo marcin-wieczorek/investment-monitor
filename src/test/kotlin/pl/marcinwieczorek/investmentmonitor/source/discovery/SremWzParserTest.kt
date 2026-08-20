@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source.discovery
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -35,7 +37,7 @@ class SremWzParserTest {
         val signals = parser.parse(yearHtml, "http://bip.srem.pl/public/?id=238338")
         val signal = signals.first { it.title.contains("Gostyńska") }
 
-        signal.source shouldBe "srem-wz"
+        signal.source shouldBe SourceId("srem-wz")
         signal.municipality shouldBe "Śrem"
         signal.signalType shouldBe SignalType.WZ_DECISION
         signal.location shouldBe "Śrem"

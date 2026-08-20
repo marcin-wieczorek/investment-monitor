@@ -3,6 +3,7 @@ package pl.marcinwieczorek.investmentmonitor.source
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.Investment
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import pl.marcinwieczorek.investmentmonitor.domain.PropertyType
 import java.net.URI
 
@@ -35,7 +36,7 @@ class RonsonParser {
         val types = card.select("span.item-investition-type").map { it.text().trim() }
 
         return Investment(
-            source = SOURCE_ID,
+            source = SourceId(SOURCE_ID),
             developer = DEVELOPER_NAME,
             name = name,
             url = url,
@@ -46,7 +47,7 @@ class RonsonParser {
             plotArea = null,
             price = null,
             status = null,
-            imageUrl = extractImageUrl(card)
+            imageUrl = extractImageUrl(card)?.let(::URI)
         )
     }
 

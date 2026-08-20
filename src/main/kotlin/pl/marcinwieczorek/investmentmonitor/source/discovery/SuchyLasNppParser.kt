@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source.discovery
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.InvestmentSignal
@@ -32,7 +34,7 @@ class SuchyLasNppParser {
         val url = link.absUrl("href").takeIf(String::isNotBlank)?.let(::URI) ?: return null
 
         return InvestmentSignal(
-            source = SuchyLasNppSource.SOURCE_ID,
+            source = SourceId(SuchyLasNppSource.SOURCE_ID),
             municipality = MUNICIPALITY,
             location = LocationCatalog.findIn(title),
             signalType = SignalType.MPZP_CHANGE,

@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -24,7 +26,7 @@ class MurapolParserTest {
     fun `parses Murapol Helvetia with unit count`() {
         val helvetia = parser.parse(fixtureHtml).single { it.name == "Murapol Helvetia" }
 
-        helvetia.source shouldBe "murapol"
+        helvetia.source shouldBe SourceId("murapol")
         helvetia.developer shouldBe "Murapol"
         helvetia.location shouldBe "Poznań, ul. Szwajcarska"
         helvetia.units shouldBe 65

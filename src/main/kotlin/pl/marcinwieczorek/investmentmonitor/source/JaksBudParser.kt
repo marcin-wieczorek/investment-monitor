@@ -4,6 +4,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.AreaRange
 import pl.marcinwieczorek.investmentmonitor.domain.Investment
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import pl.marcinwieczorek.investmentmonitor.domain.PropertyType
 import java.net.URI
 
@@ -43,7 +44,7 @@ class JaksBudParser {
 
         return listOf(
             Investment(
-                source = SOURCE_ID,
+                source = SourceId(SOURCE_ID),
                 developer = DEVELOPER_NAME,
                 name = name,
                 url = URI(baseUri),
@@ -54,7 +55,7 @@ class JaksBudParser {
                 plotArea = plotAreas.toAreaRange(),
                 price = null,
                 status = null,
-                imageUrl = document.selectFirst("div.elementor-widget-image img")?.absUrl("src")?.takeIf(String::isNotBlank)
+                imageUrl = document.selectFirst("div.elementor-widget-image img")?.absUrl("src")?.takeIf(String::isNotBlank)?.let(::URI)
             )
         )
     }
@@ -69,8 +70,6 @@ class JaksBudParser {
         else -> null
     }
 
-    private fun List<Double>.toAreaRange(): AreaRange? =
-        if (isEmpty()) null else AreaRange(minOrNull(), maxOrNull())
 
     companion object {
         const val SOURCE_ID = "jaksbud"

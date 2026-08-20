@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source.discovery
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -35,7 +37,7 @@ class BukObwieszczeniaParserTest {
         val signals = parser.parse(yearHtml, "https://bip.buk.gmina.pl/a,17792,obwieszczenia-i-komunikaty-2026-rok.html")
         val signal = signals.first { it.title.contains("15 budynków mieszkalnych jednorodzinnych") }
 
-        signal.source shouldBe "buk-obwieszczenia"
+        signal.source shouldBe SourceId("buk-obwieszczenia")
         signal.municipality shouldBe "Buk"
         signal.signalType shouldBe SignalType.WZ_DECISION
         signal.location shouldBe "Wielka Wieś"

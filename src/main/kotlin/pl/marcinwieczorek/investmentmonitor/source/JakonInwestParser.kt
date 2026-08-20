@@ -3,6 +3,7 @@ package pl.marcinwieczorek.investmentmonitor.source
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.Investment
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import pl.marcinwieczorek.investmentmonitor.domain.InvestmentStatus
 import java.net.URI
 
@@ -38,7 +39,7 @@ class JakonInwestParser {
         val location = card.selectFirst("p.text-muted")?.text()?.trim()?.ifBlank { null }
 
         return Investment(
-            source = SOURCE_ID,
+            source = SourceId(SOURCE_ID),
             developer = DEVELOPER_NAME,
             name = name,
             url = url,
@@ -49,7 +50,7 @@ class JakonInwestParser {
             plotArea = null,
             price = null,
             status = extractStatus(card),
-            imageUrl = card.selectFirst("img")?.absUrl("src")?.takeIf(String::isNotBlank)
+            imageUrl = card.selectFirst("img")?.absUrl("src")?.takeIf(String::isNotBlank)?.let(::URI)
         )
     }
 

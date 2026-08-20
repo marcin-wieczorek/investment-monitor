@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -24,7 +26,7 @@ class PWDParserTest {
         investments shouldHaveSize 1
 
         val investment = investments.first()
-        investment.source shouldBe "pwd"
+        investment.source shouldBe SourceId("pwd")
         investment.developer shouldBe "PWD Deweloper"
         investment.name shouldBe "Osiedle Zagajnik – Etap I"
         investment.url.toString() shouldBe PWDSource.STAGE_1_URL

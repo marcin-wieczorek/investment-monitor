@@ -1,5 +1,9 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import java.net.URI
+
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -24,10 +28,10 @@ class EBFParserTest {
     fun `parses Grunwald PARK with lazily-loaded image`() {
         val grunwald = parser.parse(fixtureHtml).single { it.name == "Grunwald PARK - ul. Wieruszowska 8" }
 
-        grunwald.source shouldBe "ebf"
+        grunwald.source shouldBe SourceId("ebf")
         grunwald.developer shouldBe "EBF Development"
         grunwald.location shouldBe "Poznań"
         grunwald.url.toString() shouldBe "https://ebfdevelopment.pl/poznan/grunwald-park-ul-wieruszowska-8"
-        grunwald.imageUrl shouldBe "https://ebfdevelopment.pl/storage/investment/grunwald_park_zycart.webp"
+        grunwald.imageUrl shouldBe URI("https://ebfdevelopment.pl/storage/investment/grunwald_park_zycart.webp")
     }
 }

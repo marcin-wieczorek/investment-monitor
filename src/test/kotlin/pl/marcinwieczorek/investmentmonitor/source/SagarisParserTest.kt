@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -24,7 +26,7 @@ class SagarisParserTest {
     fun `parses Niedzialkowskiego Park with units and house area`() {
         val park = parser.parse(fixtureHtml).single()
 
-        park.source shouldBe "sagaris"
+        park.source shouldBe SourceId("sagaris")
         park.developer shouldBe "Sagaris"
         park.name shouldBe "Niedziałkowskiego Park"
         park.units shouldBe 247

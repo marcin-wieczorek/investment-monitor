@@ -4,7 +4,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import pl.marcinwieczorek.investmentmonitor.analysis.DeterministicScorer
 import pl.marcinwieczorek.investmentmonitor.analysis.InvestmentAnalyzer
-import pl.marcinwieczorek.investmentmonitor.analysis.LocationProfiles
+import pl.marcinwieczorek.investmentmonitor.analysis.locationProfileFor
 import pl.marcinwieczorek.investmentmonitor.archival.RawHtmlArchiver
 import pl.marcinwieczorek.investmentmonitor.correlation.CorrelationCandidate
 import pl.marcinwieczorek.investmentmonitor.correlation.DuplicateCandidate
@@ -13,44 +13,30 @@ import pl.marcinwieczorek.investmentmonitor.correlation.InvestmentDeduplicator
 import pl.marcinwieczorek.investmentmonitor.detection.ChangeDetector
 import pl.marcinwieczorek.investmentmonitor.detection.ChangeType
 import pl.marcinwieczorek.investmentmonitor.detection.InvestmentChange
-import pl.marcinwieczorek.investmentmonitor.domain.AreaRange
 import pl.marcinwieczorek.investmentmonitor.domain.Correlation
-import pl.marcinwieczorek.investmentmonitor.domain.DeveloperCandidate
-import pl.marcinwieczorek.investmentmonitor.domain.DuplicateConfidence
-import pl.marcinwieczorek.investmentmonitor.domain.ExtractionMethod
 import pl.marcinwieczorek.investmentmonitor.domain.Investment
 import pl.marcinwieczorek.investmentmonitor.domain.InvestmentDuplicate
-import pl.marcinwieczorek.investmentmonitor.domain.InvestmentSignal
-import pl.marcinwieczorek.investmentmonitor.domain.LocationCatalog
-import pl.marcinwieczorek.investmentmonitor.domain.LocationProfile
-import pl.marcinwieczorek.investmentmonitor.domain.PriceRange
 import pl.marcinwieczorek.investmentmonitor.domain.SourceCategory
-import pl.marcinwieczorek.investmentmonitor.domain.SourceEvidence
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import pl.marcinwieczorek.investmentmonitor.persistence.CorrelationRepository
-import pl.marcinwieczorek.investmentmonitor.persistence.DeveloperCandidateRepository
-import pl.marcinwieczorek.investmentmonitor.persistence.EvidenceRepository
-import pl.marcinwieczorek.investmentmonitor.persistence.InvestmentDuplicateRepository
 import pl.marcinwieczorek.investmentmonitor.persistence.InvestmentRepository
 import pl.marcinwieczorek.investmentmonitor.persistence.InvestmentScoreRepository
 import pl.marcinwieczorek.investmentmonitor.persistence.MonitoringRunRepository
 import pl.marcinwieczorek.investmentmonitor.persistence.RunStatus
 import pl.marcinwieczorek.investmentmonitor.persistence.SignalRepository
-import pl.marcinwieczorek.investmentmonitor.persistence.SourceSnapshot
 import pl.marcinwieczorek.investmentmonitor.persistence.SourceSnapshotRepository
 import pl.marcinwieczorek.investmentmonitor.persistence.UserPreferencesRepository
+import pl.marcinwieczorek.investmentmonitor.persistence.InvestmentDuplicateRepository
 import pl.marcinwieczorek.investmentmonitor.reporting.AnalyzedChange
 import pl.marcinwieczorek.investmentmonitor.reporting.DiscoverySourceReport
 import pl.marcinwieczorek.investmentmonitor.reporting.ScanReport
 import pl.marcinwieczorek.investmentmonitor.reporting.SourceReport
-import pl.marcinwieczorek.investmentmonitor.registry.DeveloperRegistry
 import pl.marcinwieczorek.investmentmonitor.source.AggregatorSource
 import pl.marcinwieczorek.investmentmonitor.source.DiscoverySource
 import pl.marcinwieczorek.investmentmonitor.source.InvestmentDetailEnricher
 import pl.marcinwieczorek.investmentmonitor.source.InvestmentSource
 import pl.marcinwieczorek.investmentmonitor.source.SourceRegistry
 import pl.marcinwieczorek.investmentmonitor.validation.SourceValidator
-import pl.marcinwieczorek.investmentmonitor.validation.ValidationResult
-import java.security.MessageDigest
 import java.time.Clock
 import java.time.Instant
 
@@ -69,6 +55,12 @@ import java.time.Instant
  *
  * A source whose result fails validation never overwrites the last
  * trusted snapshot (see docs/ADR-003-fail-closed-source-validation.md).
+ *
+ * Cross-source concerns that don't belong to the per-source scan loop
+ * itself are delegated to dedicated services: [EvidenceRecordingService]
+ * (provenance), [CrossSourceEnrichmentService] (gap-filling from HIGH
+ * duplicates) and [AggregatorDiscoveryService] (aggregator-only detection
+ * + unknown-developer candidates).
  */
 @Service
 class MonitoringService(
@@ -81,17 +73,19 @@ class MonitoringService(
     private val sourceSnapshotRepository: SourceSnapshotRepository,
     private val monitoringRunRepository: MonitoringRunRepository,
     private val signalRepository: SignalRepository,
-    private val evidenceRepository: EvidenceRepository,
+    private val evidenceRecordingService: EvidenceRecordingService,
     private val correlationRepository: CorrelationRepository,
     private val correlator: InvestmentCorrelator,
     private val duplicateRepository: InvestmentDuplicateRepository,
     private val deduplicator: InvestmentDeduplicator,
     private val rawHtmlArchiver: RawHtmlArchiver,
-    private val developerCandidateRepository: DeveloperCandidateRepository,
-        private val scorer: DeterministicScorer,
-        private val investmentScoreRepository: InvestmentScoreRepository,
-        private val userPreferencesRepository: UserPreferencesRepository,
-        private val clock: Clock = Clock.systemUTC()
+    private val crossSourceEnrichmentService: CrossSourceEnrichmentService,
+    private val aggregatorDiscoveryService: AggregatorDiscoveryService,
+    private val sourceCommitService: SourceCommitService,
+    private val scorer: DeterministicScorer,
+    private val investmentScoreRepository: InvestmentScoreRepository,
+    private val userPreferencesRepository: UserPreferencesRepository,
+    private val clock: Clock = Clock.systemUTC()
 ) {
 
     fun scan(): ScanReport {
@@ -127,10 +121,10 @@ class MonitoringService(
 
         val correlations = runCorrelation()
         val duplicates = runDeduplication()
-        runCrossSourceEnrichment(duplicates)
-        val aggregatorOnlyDiscoveries = findAggregatorOnlyDiscoveries(aggregatorReports)
-        recordUnknownDeveloperCandidates(aggregatorOnlyDiscoveries)
-        updateAggregatorOnlyDiscoveryFlags()
+        crossSourceEnrichmentService.enrichFromDuplicates(duplicates)
+        val aggregatorOnlyDiscoveries = aggregatorDiscoveryService.findAggregatorOnlyDiscoveries(aggregatorReports)
+        aggregatorDiscoveryService.recordUnknownDeveloperCandidates(aggregatorOnlyDiscoveries)
+        aggregatorDiscoveryService.updateAggregatorOnlyDiscoveryFlags()
 
         rawHtmlArchiver.cleanup()
 
@@ -166,15 +160,15 @@ class MonitoringService(
     // ---------------------------------------------------------------- developer
 
     private fun scanDeveloperSource(source: InvestmentSource): SourceReport =
-        scanInvestmentSource(source.id, SourceCategory.DEVELOPER, source::fetch, analyze = true)
+        scanInvestmentSource(SourceId(source.id), SourceCategory.DEVELOPER, source::fetch, analyze = true)
 
     // ---------------------------------------------------------------- aggregator
 
     private fun scanAggregatorSource(source: AggregatorSource): SourceReport =
-        scanInvestmentSource(source.id, SourceCategory.AGGREGATOR, source::fetch, analyze = false)
+        scanInvestmentSource(SourceId(source.id), SourceCategory.AGGREGATOR, source::fetch, analyze = false)
 
     private fun scanInvestmentSource(
-        sourceId: String,
+        sourceId: SourceId,
         category: SourceCategory,
         fetch: () -> List<Investment>,
         analyze: Boolean
@@ -194,12 +188,13 @@ class MonitoringService(
             .map { change -> if (analyze) processIfNew(change) else AnalyzedChange(change, analysis = null) }
 
         if (fetchResult.isSuccess && validation.valid) {
-            commitInvestments(sourceId, category, changes.mapNotNull { it.change.current })
+            val seenAt = Instant.now(clock)
+            sourceCommitService.commitInvestments(sourceId, category, changes.mapNotNull { it.change.current }, seenAt)
         } else {
             logger.info("Source '{}' not committed - trusted snapshot unchanged", sourceId)
         }
 
-        return SourceReport(sourceId, fetchResult.isSuccess, validation, changes)
+        return SourceReport(sourceId.value, fetchResult.isSuccess, validation, changes)
     }
 
     private fun processIfNew(change: InvestmentChange): AnalyzedChange {
@@ -218,142 +213,31 @@ class MonitoringService(
         return AnalyzedChange(change.copy(current = enriched), analysis)
     }
 
-    private fun locationProfileFor(investment: Investment): LocationProfile? =
-        investment.location?.let(LocationCatalog::findIn)?.let(LocationProfiles::find)
-
-    private fun commitInvestments(sourceId: String, category: SourceCategory, investments: List<Investment>) {
-        val seenAt = Instant.now(clock)
-        investments.forEach { investment ->
-            investmentRepository.upsert(investment, seenAt)
-            recordInvestmentEvidence(investment, sourceId, category, seenAt)
-        }
-        sourceSnapshotRepository.save(
-            SourceSnapshot(
-                source = sourceId,
-                capturedAt = seenAt,
-                investmentCount = investments.size,
-                contentHash = identityHash(investments.map { it.canonicalKey }),
-                sourceCategory = category
-            )
-        )
-    }
-
-    /**
-     * Records one [SourceEvidence] row per non-null fact the source
-     * actually published, not one placeholder row per investment - so
-     * provenance can answer "which source(s) confirm this specific price/
-     * area/location" (see AGENTS.md section 16), not just "this source
-     * saw this investment".
-     */
-    private fun recordInvestmentEvidence(investment: Investment, sourceId: String, category: SourceCategory, seenAt: Instant) {
-        val investmentId = investmentRepository.findIdByCanonicalKey(investment.canonicalKey) ?: return
-        investmentFacts(investment).forEach { (fieldName, fieldValue) ->
-            evidenceRepository.save(
-                SourceEvidence(
-                    investmentId = investmentId,
-                    signalId = null,
-                    sourceId = sourceId,
-                    sourceCategory = category,
-                    capturedAt = seenAt,
-                    url = investment.url,
-                    extractionMethod = ExtractionMethod.PARSER,
-                    fieldName = fieldName,
-                    fieldValue = fieldValue
-                )
-            )
-        }
-    }
-
-    private fun investmentFacts(investment: Investment): List<Pair<String, String>> = buildList {
-        add("name" to investment.name)
-        investment.location?.let { add("location" to it) }
-        investment.propertyType?.let { add("propertyType" to it.name) }
-        investment.units?.let { add("units" to it.toString()) }
-        investment.houseArea?.let { formatAreaRange(it) }?.let { add("houseArea" to it) }
-        investment.plotArea?.let { formatAreaRange(it) }?.let { add("plotArea" to it) }
-        investment.price?.let { formatPriceRange(it) }?.let { add("price" to it) }
-        investment.status?.let { add("status" to it.name) }
-        investment.imageUrl?.let { add("imageUrl" to it) }
-    }
-
-    private fun formatAreaRange(range: AreaRange): String? = when {
-        range.min != null && range.max != null -> "${range.min}-${range.max}"
-        range.min != null -> range.min.toString()
-        range.max != null -> range.max.toString()
-        else -> null
-    }
-
-    private fun formatPriceRange(range: PriceRange): String? = when {
-        range.min != null && range.max != null -> "${range.min}-${range.max}"
-        range.min != null -> range.min.toString()
-        range.max != null -> range.max.toString()
-        else -> null
-    }
-
     // ---------------------------------------------------------------- discovery
 
     private fun scanDiscoverySource(source: DiscoverySource): DiscoverySourceReport {
-        val previousSignals = signalRepository.findAllBySource(source.id)
+        val sourceId = SourceId(source.id)
+        val previousSignals = signalRepository.findAllBySource(sourceId)
 
         val fetchResult = runCatching(source::fetch)
-        fetchResult.onFailure { error -> logger.warn("Fetch failed for discovery source '{}': {}", source.id, error.message) }
+        fetchResult.onFailure { error -> logger.warn("Fetch failed for discovery source '{}': {}", sourceId, error.message) }
         val fetched = fetchResult.getOrDefault(emptyList())
 
         val newSignals = fetched.filter { it.canonicalKey !in previousSignals }
 
         if (fetchResult.isSuccess) {
-            val seenAt = Instant.now(clock)
-            fetched.forEach { signal ->
-                signalRepository.upsert(signal, seenAt)
-                recordSignalEvidence(signal, seenAt)
-            }
-            sourceSnapshotRepository.save(
-                SourceSnapshot(
-                    source = source.id,
-                    capturedAt = seenAt,
-                    investmentCount = fetched.size,
-                    contentHash = identityHash(fetched.map { it.canonicalKey }),
-                    sourceCategory = SourceCategory.DISCOVERY
-                )
-            )
+            sourceCommitService.commitSignals(sourceId, fetched, Instant.now(clock))
         } else {
-            logger.info("Discovery source '{}' not committed - trusted snapshot unchanged", source.id)
+            logger.info("Discovery source '{}' not committed - trusted snapshot unchanged", sourceId)
         }
 
         return DiscoverySourceReport(
-            sourceId = source.id,
+            sourceId = sourceId.value,
             municipality = source.municipality,
             fetchSucceeded = fetchResult.isSuccess,
             totalSignals = fetched.size,
             newSignals = newSignals
         )
-    }
-
-    private fun recordSignalEvidence(signal: InvestmentSignal, seenAt: Instant) {
-        val signalId = signalRepository.findIdByCanonicalKey(signal.canonicalKey) ?: return
-        signalFacts(signal).forEach { (fieldName, fieldValue) ->
-            evidenceRepository.save(
-                SourceEvidence(
-                    investmentId = null,
-                    signalId = signalId,
-                    sourceId = signal.source,
-                    sourceCategory = SourceCategory.DISCOVERY,
-                    capturedAt = seenAt,
-                    url = signal.url,
-                    extractionMethod = ExtractionMethod.PARSER,
-                    fieldName = fieldName,
-                    fieldValue = fieldValue
-                )
-            )
-        }
-    }
-
-    private fun signalFacts(signal: InvestmentSignal): List<Pair<String, String>> = buildList {
-        add("title" to signal.title)
-        add("signalType" to signal.signalType.name)
-        add("detectedAt" to signal.detectedAt.toString())
-        signal.location?.let { add("location" to it) }
-        signal.reference?.let { add("reference" to it) }
     }
 
     // ---------------------------------------------------------------- correlation
@@ -415,156 +299,13 @@ class MonitoringService(
         return candidates
     }
 
-    // ---------------------------------------------------------------- cross-source enrichment
-
-    /**
-     * Closes data gaps (see AGENTS.md scoring completeness issue: most
-     * developer list pages never publish price/plotArea/propertyType) by
-     * borrowing already-parsed facts from a confirmed same-project
-     * duplicate on another source - e.g. filling in the price RynekPierwotny
-     * published for a developer-sourced investment that has none.
-     *
-     * Deliberately restricted to [DuplicateConfidence.HIGH] pairs only
-     * (never MEDIUM/LOW) - enrichment silently changes what a user sees for
-     * an investment, so it must be at least as certain as an outright
-     * merge, not just "possibly the same project". Never overwrites a
-     * field the target already has: developer-published facts remain
-     * authoritative over borrowed ones (see [SourceCategory] ordering) -
-     * this only ever fills gaps, never contradicts what a source already
-     * published about its own investment.
-     */
-    private fun runCrossSourceEnrichment(duplicates: List<DuplicateCandidate>) {
-        val now = Instant.now(clock)
-        duplicates.filter { it.confidence == DuplicateConfidence.HIGH }.forEach { candidate ->
-            enrichFromPartner(target = candidate.investmentA, partner = candidate.investmentB, seenAt = now)
-            enrichFromPartner(target = candidate.investmentB, partner = candidate.investmentA, seenAt = now)
-        }
-    }
-
-    private fun enrichFromPartner(target: Investment, partner: Investment, seenAt: Instant) {
-        val borrowedFacts = mutableListOf<Pair<String, String>>()
-        val propertyType = target.propertyType ?: partner.propertyType?.also { borrowedFacts += "propertyType" to it.name }
-        val houseArea = target.houseArea ?: partner.houseArea?.also { formatAreaRange(it)?.let { v -> borrowedFacts += "houseArea" to v } }
-        val plotArea = target.plotArea ?: partner.plotArea?.also { formatAreaRange(it)?.let { v -> borrowedFacts += "plotArea" to v } }
-        val price = target.price ?: partner.price?.also { formatPriceRange(it)?.let { v -> borrowedFacts += "price" to v } }
-        if (borrowedFacts.isEmpty()) return
-
-        val enriched = target.copy(propertyType = propertyType, houseArea = houseArea, plotArea = plotArea, price = price)
-        investmentRepository.upsert(enriched, seenAt)
-        logger.info(
-            "Enriched '{}' ({}) with {} borrowed from '{}' ({})",
-            enriched.name, enriched.source, borrowedFacts.map { it.first }, partner.name, partner.source
-        )
-
-        val investmentId = investmentRepository.findIdByCanonicalKey(enriched.canonicalKey) ?: return
-        val partnerCategory = categoryOf(partner.source) ?: return
-        borrowedFacts.forEach { (fieldName, fieldValue) ->
-            evidenceRepository.save(
-                SourceEvidence(
-                    investmentId = investmentId,
-                    signalId = null,
-                    sourceId = partner.source,
-                    sourceCategory = partnerCategory,
-                    capturedAt = seenAt,
-                    url = partner.url,
-                    extractionMethod = ExtractionMethod.PARSER,
-                    fieldName = fieldName,
-                    fieldValue = fieldValue
-                )
-            )
-        }
-
-        val locationProfile = locationProfileFor(enriched)
-        val scoring = scorer.score(enriched, locationProfile, userPreferencesRepository.effectiveScoringProfile())
-        investmentScoreRepository.save(enriched.canonicalKey, scoring, seenAt)
-    }
-
-    private fun categoryOf(sourceId: String): SourceCategory? = when (sourceId) {
-        in sourceRegistry.developerSources().map { it.id } -> SourceCategory.DEVELOPER
-        in sourceRegistry.aggregatorSources().map { it.id } -> SourceCategory.AGGREGATOR
-        else -> null
-    }
-
-    // ---------------------------------------------------------------- aggregator-only discoveries
-
-    private fun findAggregatorOnlyDiscoveries(aggregatorReports: List<SourceReport>): List<Investment> {
-        val newAggregatorInvestments = aggregatorReports
-            .flatMap { it.changes }
-            .filter { it.change.type == ChangeType.NEW }
-            .mapNotNull { it.change.current }
-        if (newAggregatorInvestments.isEmpty()) return emptyList()
-
-        val developerLocations = sourceRegistry.developerSources()
-            .flatMap { investmentRepository.findAllBySource(it.id).values }
-            .mapNotNull { it.location?.let(LocationCatalog::findIn) }
-            .toSet()
-
-        return newAggregatorInvestments.filter { investment ->
-            val location = investment.location?.let(LocationCatalog::findIn)
-            location == null || location !in developerLocations
-        }
-    }
-
-    /**
-     * Feedback loop for AGENTS.md sections 6/33: when an aggregator
-     * publishes an investment from a developer the system does not yet
-     * know about ([DeveloperRegistry] has no entry for that name), record
-     * a [DeveloperCandidate] for later human review rather than silently
-     * ignoring the discovery or auto-trusting the developer.
-     */
-    private fun recordUnknownDeveloperCandidates(aggregatorOnlyDiscoveries: List<Investment>) {
-        aggregatorOnlyDiscoveries
-            .filter { investment -> DeveloperRegistry.findByName(investment.developer) == null }
-            .filter { investment -> developerCandidateRepository.findByName(investment.developer) == null }
-            .forEach { investment ->
-                developerCandidateRepository.save(
-                    DeveloperCandidate(
-                        developerName = investment.developer,
-                        discoveredUrl = investment.url,
-                        municipality = investment.location?.let(LocationCatalog::findIn),
-                        discoveredFromSource = investment.source,
-                        discoveredAt = Instant.now(clock)
-                    )
-                )
-                logger.info("Recorded new developer candidate '{}' from source '{}'", investment.developer, investment.source)
-            }
-    }
-
-    /**
-     * Persists, for every currently known aggregator investment (not just
-     * this run's new ones - unlike [findAggregatorOnlyDiscoveries], which
-     * only feeds the per-scan console report), whether it currently has no
-     * matching developer source covering its location. Lets the frontend
-     * filter on `investment.aggregator_only_discovery` directly instead of
-     * re-deriving [LocationCatalog] matching in SQL/JS.
-     */
-    private fun updateAggregatorOnlyDiscoveryFlags() {
-        val developerLocations = sourceRegistry.developerSources()
-            .flatMap { investmentRepository.findAllBySource(it.id).values }
-            .mapNotNull { it.location?.let(LocationCatalog::findIn) }
-            .toSet()
-
-        sourceRegistry.aggregatorSources()
-            .flatMap { investmentRepository.findAllBySource(it.id).values }
-            .forEach { investment ->
-                val location = investment.location?.let(LocationCatalog::findIn)
-                val isAggregatorOnly = location == null || location !in developerLocations
-                investmentRepository.updateAggregatorOnlyDiscoveryFlag(investment.canonicalKey, isAggregatorOnly)
-            }
-    }
-
     /**
      * Hashes the set of canonical keys currently known for a source - i.e.
      * "which investments exist", not "what their fields contain". Field-level
      * changes are already detected precisely by [ChangeDetector]; this hash
-     * is only a cheap identity fingerprint for the snapshot record.
+     * is only a cheap identity fingerprint for the snapshot record - see
+     * [SourceCommitService.commitInvestments]/[SourceCommitService.commitSignals].
      */
-    private fun identityHash(canonicalKeys: List<String>): String {
-        val digest = MessageDigest.getInstance("SHA-256")
-        canonicalKeys.sorted().forEach { key -> digest.update(key.toByteArray()) }
-        return digest.digest().joinToString("") { "%02x".format(it) }
-    }
-
     private companion object {
         val logger = LoggerFactory.getLogger(MonitoringService::class.java)
     }

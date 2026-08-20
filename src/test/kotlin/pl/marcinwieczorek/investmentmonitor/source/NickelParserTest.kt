@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -52,7 +54,7 @@ class NickelParserTest {
         val urls = parser.findInvestmentUrls(pages[0], NickelSource.LIST_URL)
         val investment = parser.aggregate(units, urls).first { it.name == "Warzelnia II" }
 
-        investment.source shouldBe "nickel"
+        investment.source shouldBe SourceId("nickel")
         investment.developer shouldBe "Nickel Development"
         investment.units shouldBe 62
         investment.houseArea?.min shouldBe 30.89

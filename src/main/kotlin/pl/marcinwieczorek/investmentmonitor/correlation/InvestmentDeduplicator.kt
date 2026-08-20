@@ -51,26 +51,26 @@ data class DuplicateCandidate(
 class InvestmentDeduplicator {
 
     fun findDuplicates(investments: List<Investment>): List<DuplicateCandidate> =
-        groupByLocation(investments).values.flatMap(::pairwiseCandidates)
+        groupByLocation(investments).flatMap { (location, group) -> pairwiseCandidates(location, group) }
 
     private fun groupByLocation(investments: List<Investment>): Map<String, List<Investment>> =
         investments
             .mapNotNull { investment -> investment.location?.let(LocationCatalog::findIn)?.let { it to investment } }
             .groupBy({ it.first }, { it.second })
 
-    private fun pairwiseCandidates(group: List<Investment>): List<DuplicateCandidate> = buildList {
+    /** [location] is already resolved by [groupByLocation] - never re-derived per pair. */
+    private fun pairwiseCandidates(location: String, group: List<Investment>): List<DuplicateCandidate> = buildList {
         for (i in group.indices) {
             for (j in i + 1 until group.size) {
                 val a = group[i]
                 val b = group[j]
                 if (a.source == b.source) continue
-                candidateFor(a, b)?.let(::add)
+                candidateFor(location, a, b)?.let(::add)
             }
         }
     }
 
-    private fun candidateFor(a: Investment, b: Investment): DuplicateCandidate? {
-        val location = a.location?.let(LocationCatalog::findIn) ?: return null
+    private fun candidateFor(location: String, a: Investment, b: Investment): DuplicateCandidate? {
         val developerMatch = isKnownDeveloperName(a) && isKnownDeveloperName(b) &&
             DeveloperNameMatcher.matches(a.developer, b.developer)
         val similarity = nameSimilarity(a.name, b.name)

@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source.discovery
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.InvestmentSignal
@@ -47,7 +49,7 @@ class PoznanUlicpParser {
         } ?: Instant.EPOCH
 
         return InvestmentSignal(
-            source = PoznanUlicpSource.SOURCE_ID,
+            source = SourceId(PoznanUlicpSource.SOURCE_ID),
             municipality = MUNICIPALITY,
             location = LocationCatalog.findIn(bodyText),
             signalType = SignalType.LAND_DEVELOPMENT_SIGNAL,

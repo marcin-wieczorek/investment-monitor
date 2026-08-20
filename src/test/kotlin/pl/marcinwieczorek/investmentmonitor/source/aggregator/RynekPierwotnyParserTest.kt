@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source.aggregator
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -24,7 +26,7 @@ class RynekPierwotnyParserTest {
     fun `parses name, developer, location and house area for a suburban offer`() {
         val offer = parser.parse(fixtureHtml).single { it.name == "Kameralny Gruszczyn" }
 
-        offer.source shouldBe "rynekpierwotny"
+        offer.source shouldBe SourceId("rynekpierwotny")
         offer.developer shouldBe "Budopol-Poznań sp. z o.o."
         offer.location shouldBe "Gruszczyn"
         offer.houseArea?.min shouldBe 93.0

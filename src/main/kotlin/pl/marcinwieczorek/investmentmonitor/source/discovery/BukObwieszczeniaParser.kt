@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source.discovery
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.InvestmentSignal
@@ -80,26 +82,16 @@ class BukObwieszczeniaParser {
         val reference = REFERENCE.find(title)?.value
 
         return InvestmentSignal(
-            source = BukObwieszczeniaSource.SOURCE_ID,
+            source = SourceId(BukObwieszczeniaSource.SOURCE_ID),
             municipality = MUNICIPALITY,
             location = LocationCatalog.findIn(title),
-            signalType = toSignalType(title),
+            signalType = SignalTypeClassifier.fromTitle(title),
             title = title,
             reference = reference,
             detectedAt = detectedAt,
             url = url,
             rawFacts = emptyMap()
         )
-    }
-
-    private fun toSignalType(title: String): SignalType = when {
-        title.contains("warunkach zabudowy", ignoreCase = true) ||
-            title.contains("warunków zabudowy", ignoreCase = true) -> SignalType.WZ_DECISION
-        title.contains("celu publicznego", ignoreCase = true) -> SignalType.LAND_DEVELOPMENT_SIGNAL
-        title.contains("planu zagospodarowania", ignoreCase = true) ||
-            title.contains("planu miejscowego", ignoreCase = true) ||
-            title.contains("planu ogólnego", ignoreCase = true) -> SignalType.MPZP_CHANGE
-        else -> SignalType.OTHER
     }
 
     companion object {

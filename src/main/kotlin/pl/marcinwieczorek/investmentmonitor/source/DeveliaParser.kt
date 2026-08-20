@@ -3,6 +3,7 @@ package pl.marcinwieczorek.investmentmonitor.source
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.Investment
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import pl.marcinwieczorek.investmentmonitor.domain.InvestmentStatus
 import java.net.URI
 
@@ -44,7 +45,7 @@ class DeveliaParser {
         val location = card.selectFirst("div.investment-box__address")?.text()?.trim()?.ifBlank { null }
 
         return Investment(
-            source = SOURCE_ID,
+            source = SourceId(SOURCE_ID),
             developer = DEVELOPER_NAME,
             name = name,
             url = url,
@@ -56,7 +57,7 @@ class DeveliaParser {
             price = null,
             status = extractStatus(card),
             imageUrl = card.selectFirst("header.investment-box__header img.investment-box__thumbnail")
-                ?.absUrl("src")?.takeIf(String::isNotBlank)
+                ?.absUrl("src")?.takeIf(String::isNotBlank)?.let(::URI)
         )
     }
 

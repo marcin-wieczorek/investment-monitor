@@ -2,6 +2,7 @@ package pl.marcinwieczorek.investmentmonitor.source
 
 import org.jsoup.Jsoup
 import pl.marcinwieczorek.investmentmonitor.domain.Investment
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import java.net.URI
 
 /**
@@ -23,7 +24,7 @@ class UWIParser {
 
         return listOf(
             Investment(
-                source = SOURCE_ID,
+                source = SourceId(SOURCE_ID),
                 developer = DEVELOPER_NAME,
                 name = name,
                 url = URI(baseUri),

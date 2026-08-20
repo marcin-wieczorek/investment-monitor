@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source.discovery
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -25,7 +27,7 @@ class MurowanaGoslinaObwieszczeniaParserTest {
     fun `classifies a residential warunki zabudowy announcement`() {
         val signal = parser.parse(fixtureHtml).first { it.reference == "PP.6730.298.2025" }
 
-        signal.source shouldBe "murowana-goslina-obwieszczenia"
+        signal.source shouldBe SourceId("murowana-goslina-obwieszczenia")
         signal.municipality shouldBe "Murowana Goślina"
         signal.signalType shouldBe SignalType.WZ_DECISION
         // The title names both the village ("Wojnowo") and the parent

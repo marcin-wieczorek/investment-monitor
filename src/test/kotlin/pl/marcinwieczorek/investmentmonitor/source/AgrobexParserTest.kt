@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -25,7 +27,7 @@ class AgrobexParserTest {
     fun `parses Osiedle Moderno with status`() {
         val moderno = parser.parse(fixtureHtml).single { it.name == "Osiedle Moderno" }
 
-        moderno.source shouldBe "agrobex"
+        moderno.source shouldBe SourceId("agrobex")
         moderno.developer shouldBe "Agrobex"
         moderno.location shouldBe "Środa Wielkopolska"
         moderno.url.toString() shouldBe "https://agrobex.pl/osiedle-moderno/"

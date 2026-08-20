@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source.discovery
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -38,7 +40,7 @@ class KornikObwieszczeniaParserTest {
         val signals = parser.parse(yearHtml, "https://bip.kornik.pl/2026-rok")
         val signal = signals.first { it.reference == "WB1-PP.6730.92.2026" && it.title.contains("przekazaniu do uzgodnień") }
 
-        signal.source shouldBe "kornik-obwieszczenia"
+        signal.source shouldBe SourceId("kornik-obwieszczenia")
         signal.municipality shouldBe "Kórnik"
         signal.signalType shouldBe SignalType.WZ_DECISION
         signal.location shouldBe "Radzewo"

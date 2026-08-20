@@ -2,6 +2,7 @@ package pl.marcinwieczorek.investmentmonitor.source.discovery
 
 import org.springframework.stereotype.Component
 import pl.marcinwieczorek.investmentmonitor.domain.InvestmentSignal
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import pl.marcinwieczorek.investmentmonitor.scraping.PageFetcher
 import pl.marcinwieczorek.investmentmonitor.source.DiscoverySource
 import java.net.URI
@@ -16,7 +17,7 @@ import java.net.URI
 @Component
 class CzerwonakObwieszczeniaSource(
     private val pageFetcher: PageFetcher,
-    private val parser: RekordBipParser = RekordBipParser(MUNICIPALITY, SOURCE_ID)
+    private val parser: RekordBipParser = RekordBipParser(MUNICIPALITY, SourceId(SOURCE_ID))
 ) : DiscoverySource {
 
     override val id: String = SOURCE_ID

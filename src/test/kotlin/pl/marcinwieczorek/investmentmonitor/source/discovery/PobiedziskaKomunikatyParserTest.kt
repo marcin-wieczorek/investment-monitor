@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source.discovery
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -26,7 +28,7 @@ class PobiedziskaKomunikatyParserTest {
         val signals = parser.parse(html, PobiedziskaKomunikatySource.LIST_URL)
         val signal = signals.first { it.title.contains("12 sierpnia 2026") }
 
-        signal.source shouldBe "pobiedziska-komunikaty"
+        signal.source shouldBe SourceId("pobiedziska-komunikaty")
         signal.municipality shouldBe "Pobiedziska"
         signal.signalType shouldBe SignalType.LAND_DEVELOPMENT_SIGNAL
         // The title names both the village ("Główna") and the parent gmina

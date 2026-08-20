@@ -2,7 +2,6 @@ package pl.marcinwieczorek.investmentmonitor.domain
 
 import java.net.URI
 import java.time.Instant
-import java.util.Locale
 
 /**
  * The kind of official/public signal that a [DiscoverySource] observed.
@@ -37,7 +36,7 @@ enum class SignalType {
  * change detection, independent of any LLM interpretation.
  */
 data class InvestmentSignal(
-    val source: String,
+    val source: SourceId,
     val municipality: String,
     val location: String?,
     val signalType: SignalType,
@@ -47,12 +46,12 @@ data class InvestmentSignal(
     val url: URI,
     val rawFacts: Map<String, String> = emptyMap()
 ) {
+    init {
+        require(municipality.isNotBlank()) { "InvestmentSignal municipality must not be blank" }
+        require(title.isNotBlank()) { "InvestmentSignal title must not be blank" }
+        require(url.toString().isNotBlank()) { "InvestmentSignal url must not be blank" }
+    }
+
     val canonicalKey: String
-        get() {
-            val normalizedUrl = url.normalize()
-                .toString()
-                .removeSuffix("/")
-                .lowercase(Locale.ROOT)
-            return "$source:$normalizedUrl"
-        }
+        get() = canonicalKeyOf(source, url)
 }

@@ -3,6 +3,7 @@ package pl.marcinwieczorek.investmentmonitor.source
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.Investment
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import pl.marcinwieczorek.investmentmonitor.domain.InvestmentStatus
 import java.net.URI
 
@@ -40,7 +41,7 @@ class InwestycjeWielkopolskiParser {
         val location = texts.getOrNull(1)?.text()?.trim()?.let { LEADING_YEARS.replace(it, "") }?.ifBlank { null }
 
         return Investment(
-            source = SOURCE_ID,
+            source = SourceId(SOURCE_ID),
             developer = DEVELOPER_NAME,
             name = name,
             url = url,
@@ -51,7 +52,7 @@ class InwestycjeWielkopolskiParser {
             plotArea = null,
             price = null,
             status = InvestmentStatus.SOLD_OUT,
-            imageUrl = extractImageUrl(section)
+            imageUrl = extractImageUrl(section)?.let(::URI)
         )
     }
 

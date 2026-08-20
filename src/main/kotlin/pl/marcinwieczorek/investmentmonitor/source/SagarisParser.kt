@@ -3,6 +3,7 @@ package pl.marcinwieczorek.investmentmonitor.source
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.Investment
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import java.net.URI
 
 /**
@@ -38,7 +39,7 @@ class SagarisParser {
         val houseArea = bullets.firstOrNull { it.contains("m2") || it.contains("m²") }?.let(PolishAreaFormat::parse)
 
         return Investment(
-            source = SOURCE_ID,
+            source = SourceId(SOURCE_ID),
             developer = DEVELOPER_NAME,
             name = name,
             url = url,
@@ -49,7 +50,7 @@ class SagarisParser {
             plotArea = null,
             price = null,
             status = null,
-            imageUrl = extractImageUrl(card)
+            imageUrl = extractImageUrl(card)?.let(::URI)
         )
     }
 

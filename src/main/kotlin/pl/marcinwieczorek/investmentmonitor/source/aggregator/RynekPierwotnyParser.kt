@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source.aggregator
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.AreaRange
@@ -59,7 +61,7 @@ class RynekPierwotnyParser {
         }
 
         return Investment(
-            source = RynekPierwotnySource.SOURCE_ID,
+            source = SourceId(RynekPierwotnySource.SOURCE_ID),
             developer = developer ?: DEFAULT_DEVELOPER,
             name = name,
             url = url,
@@ -70,7 +72,7 @@ class RynekPierwotnyParser {
             plotArea = null,
             price = price,
             status = null,
-            imageUrl = extractImageUrl(card)
+            imageUrl = extractImageUrl(card)?.let(::URI)
         )
     }
 

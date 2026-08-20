@@ -1,10 +1,9 @@
 package pl.marcinwieczorek.investmentmonitor.domain
 
 import java.net.URI
-import java.util.Locale
 
 data class Investment(
-    val source: String,
+    val source: SourceId,
     val developer: String,
     val name: String,
     val url: URI,
@@ -15,20 +14,28 @@ data class Investment(
     val plotArea: AreaRange?,
     val price: PriceRange?,
     val status: InvestmentStatus?,
-    val imageUrl: String?
+    val imageUrl: URI?
 ) {
+    init {
+        require(name.isNotBlank()) { "Investment name must not be blank" }
+        require(url.toString().isNotBlank()) { "Investment url must not be blank" }
+    }
+
     val canonicalKey: String
-        get() {
-            val normalizedUrl = url.normalize()
-                .toString()
-                .removeSuffix("/")
-                .lowercase(Locale.ROOT)
-            return "$source:$normalizedUrl"
-        }
+        get() = canonicalKeyOf(source, url)
 }
 
-data class AreaRange(val min: Double?, val max: Double?)
-data class PriceRange(val min: Int?, val max: Int?)
+data class AreaRange(val min: Double?, val max: Double?) {
+    init {
+        require(min != null || max != null) { "AreaRange must have at least one non-null bound" }
+    }
+}
+
+data class PriceRange(val min: Int?, val max: Int?) {
+    init {
+        require(min != null || max != null) { "PriceRange must have at least one non-null bound" }
+    }
+}
 
 enum class PropertyType { TERRACED, SEMI_DETACHED, DETACHED, APARTMENT, UNKNOWN }
 

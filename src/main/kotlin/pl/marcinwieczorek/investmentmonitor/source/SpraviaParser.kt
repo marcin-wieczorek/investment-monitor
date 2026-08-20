@@ -4,6 +4,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.AreaRange
 import pl.marcinwieczorek.investmentmonitor.domain.Investment
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import java.net.URI
 
 /**
@@ -38,7 +39,7 @@ class SpraviaParser {
         }?.selectFirst("span.inwestycje__card-stat-value")?.text()
 
         return Investment(
-            source = SOURCE_ID,
+            source = SourceId(SOURCE_ID),
             developer = DEVELOPER_NAME,
             name = name,
             url = url,
@@ -49,7 +50,7 @@ class SpraviaParser {
             plotArea = null,
             price = null,
             status = null,
-            imageUrl = card.selectFirst("div.inwestycje__card-image img")?.absUrl("src")?.takeIf(String::isNotBlank)
+            imageUrl = card.selectFirst("div.inwestycje__card-image img")?.absUrl("src")?.takeIf(String::isNotBlank)?.let(::URI)
         )
     }
 

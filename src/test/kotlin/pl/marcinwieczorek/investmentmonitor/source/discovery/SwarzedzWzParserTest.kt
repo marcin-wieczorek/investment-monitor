@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source.discovery
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldNotBeEmpty
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -26,7 +28,7 @@ class SwarzedzWzParserTest {
     fun `parses a residential decision naming a village`() {
         val signal = parser.parse(fixtureHtml).single { it.url.toString().endsWith("23z2026_decyzja.pdf") }
 
-        signal.source shouldBe "swarzedz-wz"
+        signal.source shouldBe SourceId("swarzedz-wz")
         signal.municipality shouldBe "Swarzędz"
         signal.signalType shouldBe SignalType.WZ_DECISION
         signal.location shouldBe "Kruszewnia"
@@ -52,5 +54,15 @@ class SwarzedzWzParserTest {
     fun `parses hundreds of real decision entries from the live register`() {
         val signals = parser.parse(fixtureHtml)
         signals.size shouldBe 279
+    }
+
+    @Test
+    fun `returns an empty list for an empty document rather than throwing`() {
+        parser.parse("") shouldBe emptyList()
+    }
+
+    @Test
+    fun `returns an empty list when the page structure no longer matches, rather than throwing`() {
+        parser.parse("<html><body><p>Register temporarily unavailable.</p></body></html>") shouldBe emptyList()
     }
 }

@@ -1,5 +1,6 @@
 package pl.marcinwieczorek.investmentmonitor.source.discovery
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -8,7 +9,7 @@ import java.nio.file.Path
 
 class TarnowoPodgorneWzParserTest {
 
-    private val parser = RekordBipParser(TarnowoPodgorneWzSource.MUNICIPALITY, TarnowoPodgorneWzSource.SOURCE_ID)
+    private val parser = RekordBipParser(TarnowoPodgorneWzSource.MUNICIPALITY, SourceId(TarnowoPodgorneWzSource.SOURCE_ID))
 
     private val fixtureHtml: String by lazy {
         Files.readString(Path.of("src/test/resources/fixtures/tarnowo-podgorne-wz/announcements.html"))
@@ -25,7 +26,7 @@ class TarnowoPodgorneWzParserTest {
         val signal = parser.parse(fixtureHtml, TarnowoPodgorneWzSource.LIST_URL)
             .single { it.reference == "WZP.6733.20.2026" }
 
-        signal.source shouldBe "tarnowo-podgorne-wz"
+        signal.source shouldBe SourceId("tarnowo-podgorne-wz")
         signal.municipality shouldBe "Tarnowo Podgórne"
         signal.url.toString() shouldBe "http://bip2.tarnowo-podgorne.pl/6037/dokument/34193"
     }

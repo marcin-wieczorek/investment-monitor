@@ -1,5 +1,9 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import java.net.URI
+
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -24,11 +28,11 @@ class VastbouwParserTest {
     fun `derives the name from the detail URL slug`() {
         val investment = parser.parse(fixtureHtml).single()
 
-        investment.source shouldBe "vastbouw"
+        investment.source shouldBe SourceId("vastbouw")
         investment.developer shouldBe "Vastbouw"
         investment.name shouldBe "Osiedle Literatura"
         investment.url.toString() shouldBe "https://vastbouw.pl/inwestycje/mieszkania-domy-poznan/osiedle-literatura/"
         investment.location shouldBe "ul. Literacka, Poznań"
-        investment.imageUrl shouldBe "https://vastbouw.pl/wp-content/uploads/VASTBOUW-Literatura-Nowy-Etap-Mieszkania-Poznan.jpg"
+        investment.imageUrl shouldBe URI("https://vastbouw.pl/wp-content/uploads/VASTBOUW-Literatura-Nowy-Etap-Mieszkania-Poznan.jpg")
     }
 }

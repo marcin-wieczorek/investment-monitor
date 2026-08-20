@@ -1,5 +1,9 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import java.net.URI
+
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -27,7 +31,7 @@ class SivanetParserTest {
     fun `parses every published fact`() {
         val investment = parser.parse(fixtureHtml).single()
 
-        investment.source shouldBe "sivanet"
+        investment.source shouldBe SourceId("sivanet")
         investment.developer shouldBe "SIVANET"
         investment.name shouldBe "Lechicka 65"
         investment.url.toString() shouldBe "https://sivanet.pl/nieruchomosci/lechicka-65/"
@@ -38,6 +42,6 @@ class SivanetParserTest {
         investment.plotArea shouldBe null
         investment.price shouldBe null
         investment.status shouldBe InvestmentStatus.FOR_SALE
-        investment.imageUrl shouldBe "https://sivanet.pl/Zdjecia-video/lechicka-park.webp"
+        investment.imageUrl shouldBe URI("https://sivanet.pl/Zdjecia-video/lechicka-park.webp")
     }
 }

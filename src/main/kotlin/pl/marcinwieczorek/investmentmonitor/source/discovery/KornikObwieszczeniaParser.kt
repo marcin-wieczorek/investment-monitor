@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source.discovery
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.InvestmentSignal
@@ -73,23 +75,16 @@ class KornikObwieszczeniaParser {
         val fullText = item.text().trim()
 
         return InvestmentSignal(
-            source = KornikObwieszczeniaSource.SOURCE_ID,
+            source = SourceId(KornikObwieszczeniaSource.SOURCE_ID),
             municipality = MUNICIPALITY,
             location = LocationCatalog.findIn(fullText),
-            signalType = toSignalType(title),
+            signalType = SignalTypeClassifier.fromTitle(title),
             title = title,
             reference = REFERENCE.find(title)?.groupValues?.get(1),
             detectedAt = parseDate(title),
             url = url,
             rawFacts = emptyMap()
         )
-    }
-
-    private fun toSignalType(title: String): SignalType = when {
-        title.contains("warunkach zabudowy", ignoreCase = true) ||
-            title.contains("warunków zabudowy", ignoreCase = true) -> SignalType.WZ_DECISION
-        title.contains("celu publicznego", ignoreCase = true) -> SignalType.LAND_DEVELOPMENT_SIGNAL
-        else -> SignalType.OTHER
     }
 
     private fun parseDate(title: String): Instant {

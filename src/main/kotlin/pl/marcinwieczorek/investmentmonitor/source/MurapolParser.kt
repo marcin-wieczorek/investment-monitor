@@ -3,6 +3,7 @@ package pl.marcinwieczorek.investmentmonitor.source
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.Investment
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import java.net.URI
 
 /**
@@ -37,7 +38,7 @@ class MurapolParser {
             ?.let { UNITS_PATTERN.find(it)?.groupValues?.get(1)?.toIntOrNull() }
 
         return Investment(
-            source = SOURCE_ID,
+            source = SourceId(SOURCE_ID),
             developer = DEVELOPER_NAME,
             name = name,
             url = url,
@@ -48,7 +49,7 @@ class MurapolParser {
             plotArea = null,
             price = null,
             status = null,
-            imageUrl = card.selectFirst("picture.investment-image img")?.absUrl("src")?.takeIf(String::isNotBlank)
+            imageUrl = card.selectFirst("picture.investment-image img")?.absUrl("src")?.takeIf(String::isNotBlank)?.let(::URI)
         )
     }
 

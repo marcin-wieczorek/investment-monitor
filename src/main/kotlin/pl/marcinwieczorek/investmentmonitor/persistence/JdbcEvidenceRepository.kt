@@ -3,6 +3,7 @@ package pl.marcinwieczorek.investmentmonitor.persistence
 import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.jdbc.core.RowMapper
 import org.springframework.stereotype.Repository
+import pl.marcinwieczorek.investmentmonitor.domain.EvidenceOwner
 import pl.marcinwieczorek.investmentmonitor.domain.ExtractionMethod
 import pl.marcinwieczorek.investmentmonitor.domain.SourceCategory
 import pl.marcinwieczorek.investmentmonitor.domain.SourceEvidence
@@ -14,10 +15,12 @@ import java.time.Instant
 class JdbcEvidenceRepository(private val jdbcTemplate: JdbcTemplate) : EvidenceRepository {
 
     override fun save(evidence: SourceEvidence) {
+        val investmentId = (evidence.owner as? EvidenceOwner.ForInvestment)?.investmentId
+        val signalId = (evidence.owner as? EvidenceOwner.ForSignal)?.signalId
         jdbcTemplate.update(
             INSERT,
-            evidence.investmentId,
-            evidence.signalId,
+            investmentId,
+            signalId,
             evidence.sourceId,
             evidence.sourceCategory.name,
             evidence.capturedAt.toString(),
@@ -49,8 +52,8 @@ class JdbcEvidenceRepository(private val jdbcTemplate: JdbcTemplate) : EvidenceR
 private object EvidenceRowMapper : RowMapper<SourceEvidence> {
     override fun mapRow(rs: ResultSet, rowNum: Int): SourceEvidence = SourceEvidence(
         id = rs.getLong("id"),
-        investmentId = rs.getNullableLong("investment_id"),
-        signalId = rs.getNullableLong("signal_id"),
+        owner = rs.getNullableLong("investment_id")?.let { EvidenceOwner.ForInvestment(it) }
+            ?: EvidenceOwner.ForSignal(rs.getNullableLong("signal_id")!!),
         sourceId = rs.getString("source_id"),
         sourceCategory = SourceCategory.valueOf(rs.getString("source_category")),
         capturedAt = Instant.parse(rs.getString("captured_at")),

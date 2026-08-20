@@ -81,8 +81,22 @@ class InvestmentCorrelator {
         val developerWords = investment.developer.split(" ").filter { it.length > 3 }
         if (developerWords.isEmpty()) return false
         val haystack = "${signal.title} ${signal.reference.orEmpty()}"
-        return developerWords.any { word -> haystack.contains(word, ignoreCase = true) }
+        return developerWords.any { word -> containsWholeWord(haystack, word) }
     }
+
+    /**
+     * Whole-word match rather than plain [String.contains] - a bare
+     * substring check would let a developer word like "Development" or
+     * "Invest" false-positive-match inside an unrelated longer word (see
+     * docs review - "mentionsDeveloper word matching could false-positive
+     * on common words" finding). Uses the same explicit Unicode
+     * letter/digit lookaround as [LocationCatalog.findIn] rather than
+     * `\b`, since developer names commonly start/end with a Polish
+     * diacritic letter.
+     */
+    private fun containsWholeWord(haystack: String, word: String): Boolean =
+        Regex("(?<![\\p{L}\\p{N}])${Regex.escape(word)}(?![\\p{L}\\p{N}])", RegexOption.IGNORE_CASE)
+            .containsMatchIn(haystack)
 
     private companion object {
         val RESIDENTIAL_KEYWORDS = listOf(

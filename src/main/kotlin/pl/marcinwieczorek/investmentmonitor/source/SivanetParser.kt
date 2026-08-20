@@ -4,6 +4,7 @@ import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import pl.marcinwieczorek.investmentmonitor.domain.AreaRange
 import pl.marcinwieczorek.investmentmonitor.domain.Investment
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import pl.marcinwieczorek.investmentmonitor.domain.InvestmentStatus
 import pl.marcinwieczorek.investmentmonitor.domain.PropertyType
 import java.net.URI
@@ -30,7 +31,7 @@ class SivanetParser {
 
         return listOf(
             Investment(
-                source = SOURCE_ID,
+                source = SourceId(SOURCE_ID),
                 developer = DEVELOPER_NAME,
                 name = name,
                 url = URI(baseUri),
@@ -41,7 +42,7 @@ class SivanetParser {
                 plotArea = null,
                 price = null,
                 status = tileValue(document, "Status")?.let(::toStatus),
-                imageUrl = document.selectFirst(".ab-photo img")?.absUrl("src")?.takeIf(String::isNotBlank)
+                imageUrl = document.selectFirst(".ab-photo img")?.absUrl("src")?.takeIf(String::isNotBlank)?.let(::URI)
             )
         )
     }

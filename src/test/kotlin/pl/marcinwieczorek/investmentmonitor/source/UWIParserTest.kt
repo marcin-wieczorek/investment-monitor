@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -24,7 +26,7 @@ class UWIParserTest {
     fun `leaves unit-level fields null since they are JS-only`() {
         val malta = parser.parse(fixtureHtml).single()
 
-        malta.source shouldBe "uwi"
+        malta.source shouldBe SourceId("uwi")
         malta.developer shouldBe "UWI"
         malta.name shouldBe "Oferta Malta Wołkowyska"
         malta.units shouldBe null

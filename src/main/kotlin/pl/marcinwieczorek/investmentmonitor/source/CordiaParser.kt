@@ -3,6 +3,7 @@ package pl.marcinwieczorek.investmentmonitor.source
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.Investment
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import pl.marcinwieczorek.investmentmonitor.domain.PropertyType
 import java.net.URI
 
@@ -35,7 +36,7 @@ class CordiaParser {
         val location = card.selectFirst("ul.c-investment--main-list li span")?.text()?.trim()?.ifBlank { null }
 
         return Investment(
-            source = SOURCE_ID,
+            source = SourceId(SOURCE_ID),
             developer = DEVELOPER_NAME,
             name = name,
             url = url,
@@ -46,7 +47,7 @@ class CordiaParser {
             plotArea = null,
             price = null,
             status = null,
-            imageUrl = card.selectFirst("div.c-investment--top-img img")?.absUrl("src")?.takeIf(String::isNotBlank)
+            imageUrl = card.selectFirst("div.c-investment--top-img img")?.absUrl("src")?.takeIf(String::isNotBlank)?.let(::URI)
         )
     }
 

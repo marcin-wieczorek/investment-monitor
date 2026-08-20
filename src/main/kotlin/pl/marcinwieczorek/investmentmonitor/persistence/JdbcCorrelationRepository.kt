@@ -13,8 +13,13 @@ import java.time.Instant
 @Repository
 class JdbcCorrelationRepository(private val jdbcTemplate: JdbcTemplate) : CorrelationRepository {
 
+    /**
+     * Single atomic `INSERT ... ON CONFLICT DO NOTHING` instead of a
+     * separate `exists()` check followed by an insert - halves the
+     * round-trips for the common "already correlated" case (see
+     * [JdbcInvestmentRepository.upsert] for the same rationale).
+     */
     override fun save(correlation: Correlation) {
-        if (exists(correlation.investmentId, correlation.signalId)) return
         jdbcTemplate.update(
             INSERT,
             correlation.investmentId,
@@ -48,6 +53,7 @@ class JdbcCorrelationRepository(private val jdbcTemplate: JdbcTemplate) : Correl
         const val INSERT = """
             INSERT INTO correlation (investment_id, signal_id, confidence, matched_features, reason, created_at)
             VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(investment_id, signal_id) DO NOTHING
         """
         const val SELECT_BY_INVESTMENT = "SELECT * FROM correlation WHERE investment_id = ?"
         const val SELECT_EXISTS = "SELECT COUNT(*) FROM correlation WHERE investment_id = ? AND signal_id = ?"

@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -24,7 +26,7 @@ class KonimpexParserTest {
     fun `parses Wilda Story, splitting name from district and city`() {
         val wilda = parser.parse(fixtureHtml).single { it.name == "WILDA STORY" }
 
-        wilda.source shouldBe "konimpex"
+        wilda.source shouldBe SourceId("konimpex")
         wilda.developer shouldBe "Konimpex-Invest"
         wilda.location shouldBe "Wilda Poznań"
     }

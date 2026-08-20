@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source.discovery
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.InvestmentSignal
@@ -67,7 +69,7 @@ class SwarzedzWzParser {
         } ?: Instant.EPOCH
 
         return InvestmentSignal(
-            source = SwarzedzWzSource.SOURCE_ID,
+            source = SourceId(SwarzedzWzSource.SOURCE_ID),
             municipality = MUNICIPALITY,
             location = LocationCatalog.findIn(description),
             signalType = SignalType.WZ_DECISION,

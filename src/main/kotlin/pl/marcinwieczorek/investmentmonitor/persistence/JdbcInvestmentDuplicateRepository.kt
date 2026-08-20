@@ -13,10 +13,14 @@ import java.time.Instant
 @Repository
 class JdbcInvestmentDuplicateRepository(private val jdbcTemplate: JdbcTemplate) : InvestmentDuplicateRepository {
 
+    /**
+     * Single atomic `INSERT ... ON CONFLICT DO NOTHING` instead of a
+     * separate `exists()` check followed by an insert - see
+     * [JdbcCorrelationRepository.save] for the same rationale.
+     */
     override fun save(duplicate: InvestmentDuplicate) {
         val idA = minOf(duplicate.investmentIdA, duplicate.investmentIdB)
         val idB = maxOf(duplicate.investmentIdA, duplicate.investmentIdB)
-        if (exists(idA, idB)) return
         jdbcTemplate.update(
             INSERT,
             idA,
@@ -45,6 +49,7 @@ class JdbcInvestmentDuplicateRepository(private val jdbcTemplate: JdbcTemplate) 
             INSERT INTO investment_duplicate
                 (investment_id_a, investment_id_b, confidence, matched_features, reason, created_at)
             VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(investment_id_a, investment_id_b) DO NOTHING
         """
         const val SELECT_BY_INVESTMENT =
             "SELECT * FROM investment_duplicate WHERE investment_id_a = ? OR investment_id_b = ?"

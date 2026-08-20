@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -25,7 +27,7 @@ class DudaParserTest {
     fun `parses Dobry Szelag as for sale`() {
         val dobry = parser.parse(fixtureHtml).single { it.name.contains("DOBRY SZEL", ignoreCase = true) }
 
-        dobry.source shouldBe "duda"
+        dobry.source shouldBe SourceId("duda")
         dobry.developer shouldBe "Duda Development"
         dobry.location shouldBe "Poznań Szeląg"
         dobry.status shouldBe InvestmentStatus.FOR_SALE

@@ -43,7 +43,7 @@ class PlaywrightPageFetcher(
         val page = browser.newPage()
         return try {
             page.navigate(uri.toString(), Page.NavigateOptions().setTimeout(timeoutMs.toDouble()))
-            page.waitForLoadState(LoadState.NETWORKIDLE)
+            page.waitForLoadState(LoadState.NETWORKIDLE, Page.WaitForLoadStateOptions().setTimeout(timeoutMs.toDouble()))
             page.content()
         } finally {
             page.close()

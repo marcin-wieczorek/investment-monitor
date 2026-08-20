@@ -10,13 +10,14 @@ import pl.marcinwieczorek.investmentmonitor.domain.Investment
 import pl.marcinwieczorek.investmentmonitor.domain.PriceRange
 import pl.marcinwieczorek.investmentmonitor.domain.PropertyType
 import pl.marcinwieczorek.investmentmonitor.domain.ReferenceInvestmentProfile
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import pl.marcinwieczorek.investmentmonitor.persistence.InvestmentRepository
 import pl.marcinwieczorek.investmentmonitor.persistence.UserPreferencesRepository
 import pl.marcinwieczorek.investmentmonitor.testsupport.testInvestment
 import java.time.Instant
 
 private class RescoreTestInvestmentRepository(private val investments: List<Investment>) : InvestmentRepository {
-    override fun findAllBySource(source: String): Map<String, Investment> =
+    override fun findAllBySource(source: SourceId): Map<String, Investment> =
         investments.filter { it.source == source }.associateBy { it.canonicalKey }
     override fun findAll(): List<Investment> = investments
     override fun upsert(investment: Investment, seenAt: Instant) {}

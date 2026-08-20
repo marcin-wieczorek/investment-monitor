@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -24,7 +26,7 @@ class PekabexParserTest {
     fun `parses a Poznan investment`() {
         val jaSielska = parser.parse(fixtureHtml).single { it.name == "Osiedle JA_SIELSKA" }
 
-        jaSielska.source shouldBe "pekabex"
+        jaSielska.source shouldBe SourceId("pekabex")
         jaSielska.developer shouldBe "Pekabex Development"
         jaSielska.url.toString() shouldBe "https://pekabexdevelopment.com/inwestycja/mieszkania-w-poznaniu-ja_sielska/"
     }

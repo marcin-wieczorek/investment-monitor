@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -24,7 +26,7 @@ class GGWParserTest {
     fun `parses Osiedle Bojerowa`() {
         val bojerowa = parser.parse(fixtureHtml).single { it.name == "Osiedle Bojerowa" }
 
-        bojerowa.source shouldBe "ggw"
+        bojerowa.source shouldBe SourceId("ggw")
         bojerowa.developer shouldBe "GGW Development"
         bojerowa.url.toString() shouldBe "https://bojerowa.pl"
         bojerowa.location shouldBe null

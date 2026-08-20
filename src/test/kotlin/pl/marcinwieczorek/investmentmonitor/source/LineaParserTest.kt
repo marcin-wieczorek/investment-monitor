@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -25,7 +27,7 @@ class LineaParserTest {
     fun `parses Dopiewiec, separating city from estate name`() {
         val lesnaPolana = parser.parse(fixtureHtml).single { it.location == "Dopiewiec" }
 
-        lesnaPolana.source shouldBe "linea"
+        lesnaPolana.source shouldBe SourceId("linea")
         lesnaPolana.developer shouldBe "Linea"
         lesnaPolana.name shouldBe "os. Dąbrówka – Leśna Polana"
         lesnaPolana.url.toString() shouldBe "https://linea-deweloper.pl/inwestycje/lesna-polana"

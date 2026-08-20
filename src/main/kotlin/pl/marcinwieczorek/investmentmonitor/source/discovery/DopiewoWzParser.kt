@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source.discovery
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.InvestmentSignal
@@ -53,7 +55,7 @@ class DopiewoWzParser {
         val url = link.absUrl("href").takeIf(String::isNotBlank)?.let(::URI) ?: return null
 
         return InvestmentSignal(
-            source = DopiewoWzSource.SOURCE_ID,
+            source = SourceId(DopiewoWzSource.SOURCE_ID),
             municipality = MUNICIPALITY,
             location = LocationCatalog.findIn(title),
             signalType = SignalType.WZ_DECISION,

@@ -5,12 +5,16 @@ import pl.marcinwieczorek.investmentmonitor.domain.Investment
 import pl.marcinwieczorek.investmentmonitor.domain.InvestmentStatus
 import pl.marcinwieczorek.investmentmonitor.domain.PriceRange
 import pl.marcinwieczorek.investmentmonitor.domain.PropertyType
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import java.net.URI
 
 /**
  * Builds an [Investment] for tests with sensible defaults, so each test only
  * needs to specify the fields relevant to what it's actually verifying
  * instead of repeating every constructor argument.
+ *
+ * [source]/[imageUrl] are still plain `String`s here (not [SourceId]/[URI])
+ * for call-site brevity - converted internally.
  */
 fun testInvestment(
     name: String = "Test Investment",
@@ -26,7 +30,7 @@ fun testInvestment(
     status: InvestmentStatus? = null,
     imageUrl: String? = null
 ): Investment = Investment(
-    source = source,
+    source = SourceId(source),
     developer = developer,
     name = name,
     url = url,
@@ -37,5 +41,5 @@ fun testInvestment(
     plotArea = plotArea,
     price = price,
     status = status,
-    imageUrl = imageUrl
+    imageUrl = imageUrl?.let(::URI)
 )

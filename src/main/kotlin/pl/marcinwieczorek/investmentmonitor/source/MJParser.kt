@@ -3,6 +3,7 @@ package pl.marcinwieczorek.investmentmonitor.source
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.Investment
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import java.net.URI
 
 /**
@@ -31,7 +32,7 @@ class MJParser {
         val url = link.absUrl("href").takeIf(String::isNotBlank)?.let(::URI) ?: return null
 
         return Investment(
-            source = SOURCE_ID,
+            source = SourceId(SOURCE_ID),
             developer = DEVELOPER_NAME,
             name = name,
             url = url,
@@ -42,18 +43,17 @@ class MJParser {
             plotArea = null,
             price = null,
             status = null,
-            imageUrl = extractImageUrl(card)
+            imageUrl = extractImageUrl(card)?.let(::URI)
         )
     }
 
     private fun extractImageUrl(card: Element): String? {
         val style = card.selectFirst(".item--image")?.attr("style") ?: return null
-        return IMAGE_URL.find(style)?.groupValues?.get(1)?.takeIf(String::isNotBlank)
+        return CssBackgroundImage.extractUrl(style)
     }
 
     companion object {
         const val SOURCE_ID = "mj"
         const val DEVELOPER_NAME = "MJ Deweloper"
-        private val IMAGE_URL = Regex("url\\(['\"]?([^'\"()]+)['\"]?\\)")
     }
 }

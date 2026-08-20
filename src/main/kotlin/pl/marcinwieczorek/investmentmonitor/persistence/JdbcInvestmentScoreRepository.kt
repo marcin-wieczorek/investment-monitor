@@ -22,7 +22,8 @@ class JdbcInvestmentScoreRepository(private val jdbcTemplate: JdbcTemplate) : In
             scoring.priceScore,
             scoring.largePlotBonus,
             scoring.plotToHouseRatio,
-            scoredAt.toString()
+            scoredAt.toString(),
+            investmentCanonicalKey
         )
     }
 
@@ -33,8 +34,9 @@ class JdbcInvestmentScoreRepository(private val jdbcTemplate: JdbcTemplate) : In
         const val UPSERT = """
             INSERT INTO investment_score
                 (investment_canonical_key, overall_score, property_type_match, location_tier_match,
-                 house_area_score, plot_area_score, price_score, large_plot_bonus, plot_to_house_ratio, scored_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 house_area_score, plot_area_score, price_score, large_plot_bonus, plot_to_house_ratio, scored_at,
+                 investment_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, (SELECT id FROM investment WHERE canonical_key = ?))
             ON CONFLICT(investment_canonical_key) DO UPDATE SET
                 overall_score = excluded.overall_score,
                 property_type_match = excluded.property_type_match,
@@ -44,7 +46,8 @@ class JdbcInvestmentScoreRepository(private val jdbcTemplate: JdbcTemplate) : In
                 price_score = excluded.price_score,
                 large_plot_bonus = excluded.large_plot_bonus,
                 plot_to_house_ratio = excluded.plot_to_house_ratio,
-                scored_at = excluded.scored_at
+                scored_at = excluded.scored_at,
+                investment_id = excluded.investment_id
         """
         const val SELECT_BY_KEY = "SELECT * FROM investment_score WHERE investment_canonical_key = ?"
     }

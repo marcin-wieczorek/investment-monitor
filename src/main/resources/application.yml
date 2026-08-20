@@ -14,6 +14,8 @@ spring:
 investment-monitor:
   validation:
     max-investment-drop-percentage: 50
+  jsoup:
+    timeout-ms: 30000
   llm:
     # Disabled by default: a scan must never depend on a local LLM being
     # installed/running. Set to true once Ollama is set up (see docs/LLM.md).

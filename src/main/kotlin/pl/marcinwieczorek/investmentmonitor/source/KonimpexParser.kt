@@ -3,6 +3,7 @@ package pl.marcinwieczorek.investmentmonitor.source
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.Investment
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import java.net.URI
 
 /**
@@ -41,7 +42,7 @@ class KonimpexParser {
         val url = URI(rawUrl.removeSuffix("/layout/frame"))
 
         return Investment(
-            source = SOURCE_ID,
+            source = SourceId(SOURCE_ID),
             developer = DEVELOPER_NAME,
             name = name,
             url = url,
@@ -52,7 +53,7 @@ class KonimpexParser {
             plotArea = null,
             price = null,
             status = null,
-            imageUrl = link.selectFirst("img.card-img-top")?.absUrl("src")?.takeIf(String::isNotBlank)
+            imageUrl = link.selectFirst("img.card-img-top")?.absUrl("src")?.takeIf(String::isNotBlank)?.let(::URI)
         )
     }
 

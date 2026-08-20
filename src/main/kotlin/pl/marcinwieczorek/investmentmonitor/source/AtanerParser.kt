@@ -3,6 +3,7 @@ package pl.marcinwieczorek.investmentmonitor.source
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.Investment
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import java.net.URI
 
 /**
@@ -40,7 +41,7 @@ class AtanerParser {
         val location = lines.firstOrNull { !it.contains(UNITS_PREFIX) }
 
         return Investment(
-            source = SOURCE_ID,
+            source = SourceId(SOURCE_ID),
             developer = DEVELOPER_NAME,
             name = name,
             url = url,
@@ -51,7 +52,7 @@ class AtanerParser {
             plotArea = null,
             price = null,
             status = null,
-            imageUrl = extractImageUrl(link)
+            imageUrl = extractImageUrl(link)?.let(::URI)
         )
     }
 

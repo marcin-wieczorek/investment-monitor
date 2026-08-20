@@ -3,6 +3,7 @@ package pl.marcinwieczorek.investmentmonitor.source
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.Investment
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import pl.marcinwieczorek.investmentmonitor.domain.InvestmentStatus
 import java.net.URI
 
@@ -39,7 +40,7 @@ class LineaParser {
         val url = link.absUrl("href").takeIf(String::isNotBlank)?.let(::URI) ?: return null
 
         return Investment(
-            source = SOURCE_ID,
+            source = SourceId(SOURCE_ID),
             developer = DEVELOPER_NAME,
             name = subtitle,
             url = url,
@@ -50,7 +51,7 @@ class LineaParser {
             plotArea = null,
             price = null,
             status = extractStatus(card),
-            imageUrl = link.selectFirst("img")?.absUrl("src")?.takeIf(String::isNotBlank)
+            imageUrl = link.selectFirst("img")?.absUrl("src")?.takeIf(String::isNotBlank)?.let(::URI)
         )
     }
 

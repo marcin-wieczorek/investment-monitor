@@ -19,6 +19,10 @@ import java.net.URI
  * host isn't flagged, so this decorator behaves identically to before
  * ADR-007 for the ~20 sources that don't need a browser.
  *
+ * Every fetch - regardless of which underlying fetcher is selected - is
+ * additionally wrapped in [RetryingPageFetcher] so a single transient
+ * network failure doesn't drop an entire source for the whole scan.
+ *
  * Archived under the URL's host (e.g. `chronos.poznan.pl`, `tercja.eu`) -
  * a coarse but always-available "what did this look like" key, since
  * [PageFetcher] callers (sources and detail parsers alike) never expose a
@@ -44,7 +48,7 @@ class ArchivingPageFetcher(
         } else {
             delegate
         }
-        val html = fetcher.fetch(uri)
+        val html = RetryingPageFetcher(fetcher).fetch(uri)
         archiver.archive(uri.host ?: "unknown-host", html)
         return html
     }

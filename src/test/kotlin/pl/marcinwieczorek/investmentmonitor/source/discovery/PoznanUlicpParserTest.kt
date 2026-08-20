@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source.discovery
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -25,7 +27,7 @@ class PoznanUlicpParserTest {
     fun `extracts the investment description, not the legal boilerplate`() {
         val signal = parser.parse(fixtureHtml).single { it.reference == "UA-IV.6733.137.2026" }
 
-        signal.source shouldBe "poznan-ulicp"
+        signal.source shouldBe SourceId("poznan-ulicp")
         signal.municipality shouldBe "Poznań"
         signal.title shouldBe "Budowa sieci wodociągowej"
         signal.signalType shouldBe SignalType.LAND_DEVELOPMENT_SIGNAL

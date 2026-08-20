@@ -87,7 +87,13 @@ src/main/kotlin/pl/marcinwieczorek/investmentmonitor/
                    Correlation, InvestmentDuplicate, LlmAnalysis, UserPreferences
                    (generic key-value store, currently just the scoring profile)
   monitoring/      MonitoringService (the orchestrator — read this first for the
-                   full pipeline), ScanRunner (ApplicationRunner, makes bootRun one-shot),
+                   full pipeline), SourceCommitService (transactional per-source
+                   commit — a separate bean so @Transactional isn't bypassed by
+                   Spring's self-invocation limitation), EvidenceRecordingService
+                   (per-fact provenance), CrossSourceEnrichmentService (gap-filling
+                   from HIGH-confidence duplicates), AggregatorDiscoveryService
+                   (aggregator-only detection + unknown-developer candidates),
+                   ScanRunner (ApplicationRunner, makes bootRun one-shot),
                    RescoreService + RescoreRunner (recomputes investment_score for every
                    known investment against the current scoring profile, no live fetch —
                    activated via --investment-monitor.mode=rescore, mutually exclusive
@@ -97,7 +103,7 @@ src/main/kotlin/pl/marcinwieczorek/investmentmonitor/
                    Spring-managed, construct sources manually
 src/main/resources/
   application.yml
-  db/migration/V1..V12__*.sql       Flyway, sequential, never edit an already-applied one
+  db/migration/V1..V14__*.sql       Flyway, sequential, never edit an already-applied one
 src/test/kotlin/...                Mirrors main/ package structure
 src/test/resources/fixtures/<source>/*.html   Real captured HTML, reviewed before commit
   testsupport/  TestInvestments.kt (testInvestment()), TestSignals.kt (testSignal())
@@ -228,20 +234,23 @@ regenerate every deploy).
 ## Database
 
 SQLite file `investment-monitor.db` in repo root (gitignored). Flyway
-migrations in `src/main/resources/db/migration/`, currently V1–V12. To add
-a column/table: new `V13__description.sql` — **never edit an already-
+migrations in `src/main/resources/db/migration/`, currently V1–V14. To add
+a column/table: new `V15__description.sql` — **never edit an already-
 applied migration**, Flyway checksums them.
 
 Tables: `investment`, `source_snapshot` (+`source_category`),
 `monitoring_run`, `user_note`, `investment_state` (frontend-only, notes/
 archive), `investment_signal`, `source_evidence`, `correlation`,
-`investment_duplicate`, `llm_analysis`, `location_profile` (unused —
-never populated at runtime, do not build on top of it without checking
-first), `developer_registry`, `developer_candidate`,
-`municipality_registry`, `investment_score`, `user_preferences`
-(generic key-value store, currently just `key="scoring.profile"` - unlike
-`location_profile`, this one actually is read at scan/rescore time, see
-`UserPreferencesRepository`).
+`investment_duplicate`, `llm_analysis`, `developer_registry`, `developer_candidate`,
+`municipality_registry`, `investment_score` (has both `investment_canonical_key`,
+its original key, and a nullable `investment_id` FK added in V14 - nullable
+because scoring for a newly-discovered investment happens before that
+investment's row exists yet, see `JdbcInvestmentScoreRepository`),
+`user_preferences`
+(generic key-value store, currently just `key="scoring.profile"` - this one
+actually is read at scan/rescore time, see
+`UserPreferencesRepository`). The previously-unused `location_profile`
+table (declared in V4, never populated at runtime) was dropped in V13.
 
 ## Conventions
 

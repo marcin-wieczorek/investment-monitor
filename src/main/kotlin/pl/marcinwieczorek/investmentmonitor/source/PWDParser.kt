@@ -3,6 +3,7 @@ package pl.marcinwieczorek.investmentmonitor.source
 import org.jsoup.Jsoup
 import pl.marcinwieczorek.investmentmonitor.domain.AreaRange
 import pl.marcinwieczorek.investmentmonitor.domain.Investment
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import pl.marcinwieczorek.investmentmonitor.domain.PropertyType
 import java.net.URI
 
@@ -57,7 +58,7 @@ class PWDParser {
 
         return listOf(
             Investment(
-                source = SOURCE_ID,
+                source = SourceId(SOURCE_ID),
                 developer = DEVELOPER_NAME,
                 name = name,
                 url = URI(baseUri),
@@ -82,8 +83,6 @@ class PWDParser {
 
     private fun toDouble(text: String): Double? = text.replace(",", ".").toDoubleOrNull()
 
-    private fun List<Double>.toAreaRange(): AreaRange? =
-        if (isEmpty()) null else AreaRange(minOrNull(), maxOrNull())
 
     companion object {
         const val SOURCE_ID = "pwd"

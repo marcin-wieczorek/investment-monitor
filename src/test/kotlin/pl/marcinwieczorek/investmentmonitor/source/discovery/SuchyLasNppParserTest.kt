@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source.discovery
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -25,7 +27,7 @@ class SuchyLasNppParserTest {
     fun `parses an MPZP announcement about Biedrusko`() {
         val signal = parser.parse(fixtureHtml).first { it.title.contains("Biedrusko") }
 
-        signal.source shouldBe "suchy-las-npp"
+        signal.source shouldBe SourceId("suchy-las-npp")
         signal.municipality shouldBe "Suchy Las"
         signal.signalType shouldBe SignalType.MPZP_CHANGE
         signal.reference shouldBe null

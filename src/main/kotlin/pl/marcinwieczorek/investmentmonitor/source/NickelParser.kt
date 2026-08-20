@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.AreaRange
@@ -83,7 +85,7 @@ class NickelParser {
                 val prices = unitsForInvestment.mapNotNull { it.price }
 
                 Investment(
-                    source = NickelSource.SOURCE_ID,
+                    source = SourceId(NickelSource.SOURCE_ID),
                     developer = DEVELOPER_NAME,
                     name = name,
                     url = url,
@@ -115,8 +117,6 @@ class NickelParser {
         return cleaned.substringBefore(",").filter(Char::isDigit).toIntOrNull()
     }
 
-    private fun List<Double>.toAreaRange(): AreaRange? =
-        if (isEmpty()) null else AreaRange(minOrNull(), maxOrNull())
 
     private fun List<Int>.toPriceRange(): PriceRange? =
         if (isEmpty()) null else PriceRange(minOrNull(), maxOrNull())

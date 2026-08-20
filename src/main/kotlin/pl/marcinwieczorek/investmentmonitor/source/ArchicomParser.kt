@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.Investment
@@ -55,7 +57,7 @@ class ArchicomParser {
             ?.takeIf(String::isNotBlank)
 
         return Investment(
-            source = ArchicomSource.SOURCE_ID,
+            source = SourceId(ArchicomSource.SOURCE_ID),
             developer = "Archicom",
             name = name,
             url = url,
@@ -66,7 +68,7 @@ class ArchicomParser {
             plotArea = null,
             price = null,
             status = null,
-            imageUrl = imageUrl
+            imageUrl = imageUrl?.let(::URI)
         )
     }
 }

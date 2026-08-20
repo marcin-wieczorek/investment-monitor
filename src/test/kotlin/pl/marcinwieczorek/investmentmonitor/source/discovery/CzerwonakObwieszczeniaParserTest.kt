@@ -1,5 +1,6 @@
 package pl.marcinwieczorek.investmentmonitor.source.discovery
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -8,7 +9,7 @@ import java.nio.file.Path
 
 class CzerwonakObwieszczeniaParserTest {
 
-    private val parser = RekordBipParser(CzerwonakObwieszczeniaSource.MUNICIPALITY, CzerwonakObwieszczeniaSource.SOURCE_ID)
+    private val parser = RekordBipParser(CzerwonakObwieszczeniaSource.MUNICIPALITY, SourceId(CzerwonakObwieszczeniaSource.SOURCE_ID))
 
     private val fixtureHtml: String by lazy {
         Files.readString(Path.of("src/test/resources/fixtures/czerwonak-obwieszczenia/announcements.html"))
@@ -25,7 +26,7 @@ class CzerwonakObwieszczeniaParserTest {
         val signal = parser.parse(fixtureHtml, CzerwonakObwieszczeniaSource.LIST_URL)
             .single { it.reference == "31027.2026" }
 
-        signal.source shouldBe "czerwonak-obwieszczenia"
+        signal.source shouldBe SourceId("czerwonak-obwieszczenia")
         signal.municipality shouldBe "Czerwonak"
         signal.title shouldBe "obwieszczenie Wójta Gminy Czerwonak o wydaniu decyzji WRO.6831.123.2025"
         signal.url.toString() shouldBe "https://bip.czerwonak.pl/6469/dokument/42032"

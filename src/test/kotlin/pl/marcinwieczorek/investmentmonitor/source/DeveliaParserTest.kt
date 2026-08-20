@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -25,7 +27,7 @@ class DeveliaParserTest {
     fun `parses Krolowej Jadwigi 51`() {
         val krolowej = parser.parse(fixtureHtml).single { it.name == "Królowej Jadwigi 51" }
 
-        krolowej.source shouldBe "develia"
+        krolowej.source shouldBe SourceId("develia")
         krolowej.developer shouldBe "Develia"
         krolowej.url.toString() shouldBe "https://develia.pl/pl/mieszkania/poznan/krolowej-jadwigi-51/"
         krolowej.location shouldBe "Królowej Jadwigi 51, Wilda, Poznań"

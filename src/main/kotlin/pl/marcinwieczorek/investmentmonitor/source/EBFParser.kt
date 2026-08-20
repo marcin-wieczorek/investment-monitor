@@ -3,6 +3,7 @@ package pl.marcinwieczorek.investmentmonitor.source
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import pl.marcinwieczorek.investmentmonitor.domain.Investment
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import java.net.URI
 
 /**
@@ -32,7 +33,7 @@ class EBFParser {
         val location = card.selectFirst("div.title .ttu")?.text()?.trim()?.ifBlank { null }
 
         return Investment(
-            source = SOURCE_ID,
+            source = SourceId(SOURCE_ID),
             developer = DEVELOPER_NAME,
             name = name,
             url = url,
@@ -43,7 +44,7 @@ class EBFParser {
             plotArea = null,
             price = null,
             status = null,
-            imageUrl = card.selectFirst("figure.img img")?.absUrl("data-src")?.takeIf(String::isNotBlank)
+            imageUrl = card.selectFirst("figure.img img")?.absUrl("data-src")?.takeIf(String::isNotBlank)?.let(::URI)
         )
     }
 

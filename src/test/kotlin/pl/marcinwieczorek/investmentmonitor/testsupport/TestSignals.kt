@@ -2,6 +2,7 @@ package pl.marcinwieczorek.investmentmonitor.testsupport
 
 import pl.marcinwieczorek.investmentmonitor.domain.InvestmentSignal
 import pl.marcinwieczorek.investmentmonitor.domain.SignalType
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import java.net.URI
 import java.time.Instant
 
@@ -17,7 +18,7 @@ fun testSignal(
     url: URI = URI("https://example.com/test-signal"),
     rawFacts: Map<String, String> = emptyMap()
 ): InvestmentSignal = InvestmentSignal(
-    source = source,
+    source = SourceId(source),
     municipality = municipality,
     location = location,
     signalType = signalType,

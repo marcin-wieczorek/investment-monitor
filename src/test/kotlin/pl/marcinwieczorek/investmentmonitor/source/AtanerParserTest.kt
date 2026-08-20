@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -24,7 +26,7 @@ class AtanerParserTest {
     fun `parses Swierzawska 13 with unit count and district`() {
         val swierzawska = parser.parse(fixtureHtml).single { it.name == "Świerzawska 13" }
 
-        swierzawska.source shouldBe "ataner"
+        swierzawska.source shouldBe SourceId("ataner")
         swierzawska.developer shouldBe "Ataner"
         swierzawska.units shouldBe 42
         swierzawska.location shouldBe "Grunwald"

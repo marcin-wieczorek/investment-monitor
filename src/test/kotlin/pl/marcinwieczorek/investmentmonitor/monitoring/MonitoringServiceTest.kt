@@ -4,6 +4,7 @@ import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import pl.marcinwieczorek.investmentmonitor.analysis.DefaultInvestmentAnalyzer
 import pl.marcinwieczorek.investmentmonitor.analysis.DeterministicScorer
@@ -16,6 +17,8 @@ import pl.marcinwieczorek.investmentmonitor.domain.AreaRange
 import pl.marcinwieczorek.investmentmonitor.domain.Correlation
 import pl.marcinwieczorek.investmentmonitor.domain.DeveloperCandidate
 import pl.marcinwieczorek.investmentmonitor.domain.DeveloperCandidateStatus
+import pl.marcinwieczorek.investmentmonitor.domain.DuplicateConfidence
+import pl.marcinwieczorek.investmentmonitor.domain.EvidenceOwner
 import pl.marcinwieczorek.investmentmonitor.domain.Investment
 import pl.marcinwieczorek.investmentmonitor.domain.InvestmentDuplicate
 import pl.marcinwieczorek.investmentmonitor.domain.InvestmentSignal
@@ -23,6 +26,7 @@ import pl.marcinwieczorek.investmentmonitor.domain.PriceRange
 import pl.marcinwieczorek.investmentmonitor.domain.PropertyType
 import pl.marcinwieczorek.investmentmonitor.domain.ReferenceInvestmentProfile
 import pl.marcinwieczorek.investmentmonitor.domain.SourceEvidence
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
 import pl.marcinwieczorek.investmentmonitor.persistence.CorrelationRepository
 import pl.marcinwieczorek.investmentmonitor.persistence.DeveloperCandidateRepository
 import pl.marcinwieczorek.investmentmonitor.persistence.EvidenceRepository
@@ -43,14 +47,14 @@ import pl.marcinwieczorek.investmentmonitor.source.SourceRegistry
 import pl.marcinwieczorek.investmentmonitor.testsupport.testInvestment
 import pl.marcinwieczorek.investmentmonitor.testsupport.testSignal
 import pl.marcinwieczorek.investmentmonitor.validation.SourceValidator
-import java.nio.file.Path
+import java.net.URI
 import java.time.Instant
 
 private class InMemoryInvestmentRepository : InvestmentRepository {
-    private val bySource = mutableMapOf<String, MutableMap<String, Investment>>()
+    private val bySource = mutableMapOf<SourceId, MutableMap<String, Investment>>()
     val aggregatorOnlyFlags = mutableMapOf<String, Boolean>()
 
-    override fun findAllBySource(source: String): Map<String, Investment> = bySource[source] ?: emptyMap()
+    override fun findAllBySource(source: SourceId): Map<String, Investment> = bySource[source] ?: emptyMap()
     override fun findAll(): List<Investment> = bySource.values.flatMap { it.values }
     override fun upsert(investment: Investment, seenAt: Instant) {
         bySource.getOrPut(investment.source) { mutableMapOf() }[investment.canonicalKey] = investment
@@ -63,8 +67,8 @@ private class InMemoryInvestmentRepository : InvestmentRepository {
 }
 
 private class InMemorySourceSnapshotRepository : SourceSnapshotRepository {
-    private val snapshots = mutableMapOf<String, SourceSnapshot>()
-    override fun find(source: String): SourceSnapshot? = snapshots[source]
+    private val snapshots = mutableMapOf<SourceId, SourceSnapshot>()
+    override fun find(source: SourceId): SourceSnapshot? = snapshots[source]
     override fun save(snapshot: SourceSnapshot) { snapshots[snapshot.source] = snapshot }
 }
 
@@ -77,8 +81,8 @@ private class InMemoryMonitoringRunRepository : MonitoringRunRepository {
 }
 
 private class InMemorySignalRepository : SignalRepository {
-    private val bySource = mutableMapOf<String, MutableMap<String, InvestmentSignal>>()
-    override fun findAllBySource(source: String): Map<String, InvestmentSignal> = bySource[source] ?: emptyMap()
+    private val bySource = mutableMapOf<SourceId, MutableMap<String, InvestmentSignal>>()
+    override fun findAllBySource(source: SourceId): Map<String, InvestmentSignal> = bySource[source] ?: emptyMap()
     override fun findAll(): List<InvestmentSignal> = bySource.values.flatMap { it.values }
     override fun upsert(signal: InvestmentSignal, seenAt: Instant) {
         bySource.getOrPut(signal.source) { mutableMapOf() }[signal.canonicalKey] = signal
@@ -90,8 +94,10 @@ private class InMemorySignalRepository : SignalRepository {
 private class InMemoryEvidenceRepository : EvidenceRepository {
     val saved = mutableListOf<SourceEvidence>()
     override fun save(evidence: SourceEvidence) { saved += evidence }
-    override fun findByInvestment(investmentId: Long) = saved.filter { it.investmentId == investmentId }
-    override fun findBySignal(signalId: Long) = saved.filter { it.signalId == signalId }
+    override fun findByInvestment(investmentId: Long) =
+        saved.filter { (it.owner as? EvidenceOwner.ForInvestment)?.investmentId == investmentId }
+    override fun findBySignal(signalId: Long) =
+        saved.filter { (it.owner as? EvidenceOwner.ForSignal)?.signalId == signalId }
 }
 
 private class InMemoryCorrelationRepository : CorrelationRepository {
@@ -164,6 +170,13 @@ private class FakeAggregatorSource(override val id: String, private val investme
     override fun fetch(): List<Investment> = investments
 }
 
+/**
+ * Full-pipeline integration tests for [MonitoringService], grouped by
+ * concern with `@Nested` classes (see docs review - "572-line mega-test"
+ * finding) - each nested class shares the same [buildService] factory
+ * from the outer class but keeps its own tests focused on one pipeline
+ * stage, making failures easier to locate.
+ */
 class MonitoringServiceTest {
 
     private fun buildService(
@@ -176,372 +189,414 @@ class MonitoringServiceTest {
         developerCandidateRepository: InMemoryDeveloperCandidateRepository = InMemoryDeveloperCandidateRepository(),
         investmentScoreRepository: InMemoryInvestmentScoreRepository = InMemoryInvestmentScoreRepository(),
         investmentRepository: InMemoryInvestmentRepository = InMemoryInvestmentRepository()
-    ): MonitoringService = MonitoringService(
-        sourceRegistry = SourceRegistry(developerSources, discoverySources, aggregatorSources),
-        sourceValidator = SourceValidator(),
-        changeDetector = ChangeDetector(),
-        detailEnricher = InvestmentDetailEnricher(emptyList()) { _ -> "" },
-        investmentAnalyzer = DefaultInvestmentAnalyzer(DeterministicScorer(), InMemoryUserPreferencesRepository()),
-        investmentRepository = investmentRepository,
-        sourceSnapshotRepository = InMemorySourceSnapshotRepository(),
-        monitoringRunRepository = InMemoryMonitoringRunRepository(),
-        signalRepository = InMemorySignalRepository(),
-        evidenceRepository = evidenceRepository,
-        correlationRepository = correlationRepository,
-        correlator = InvestmentCorrelator(),
-        duplicateRepository = duplicateRepository,
-        deduplicator = InvestmentDeduplicator(),
-        rawHtmlArchiver = RawHtmlArchiver(enabled = false, basePath = "unused", retentionDays = 1),
-        developerCandidateRepository = developerCandidateRepository,
-        scorer = DeterministicScorer(),
-        investmentScoreRepository = investmentScoreRepository,
-        userPreferencesRepository = InMemoryUserPreferencesRepository()
-    )
+    ): MonitoringService {
+        val sourceRegistry = SourceRegistry(developerSources, discoverySources, aggregatorSources)
+        val signalRepository = InMemorySignalRepository()
+        val sourceSnapshotRepository = InMemorySourceSnapshotRepository()
+        val userPreferencesRepository = InMemoryUserPreferencesRepository()
+        val scorer = DeterministicScorer()
 
-    @Test
-    fun `a scan with no sources produces a report with nothing new`() {
-        val report = buildService().scan()
-
-        report.newInvestmentCount shouldBe 0
-        report.newDiscoverySignalCount shouldBe 0
-        report.changedInvestmentCount shouldBe 0
-    }
-
-    @Test
-    fun `detects a new investment from a developer source`() {
-        val source = FakeInvestmentSource("chronos", listOf(testInvestment(name = "Aura")))
-        val report = buildService(developerSources = listOf(source)).scan()
-
-        report.newInvestmentCount shouldBe 1
-        report.developerReports shouldHaveSize 1
-    }
-
-    @Test
-    fun `detects a new discovery signal`() {
-        val source = FakeDiscoverySource("swarzedz-wz", "Swarzędz", listOf(testSignal()))
-        val report = buildService(discoverySources = listOf(source)).scan()
-
-        report.newDiscoverySignalCount shouldBe 1
-    }
-
-    @Test
-    fun `correlates a matching investment and signal by location`() {
-        val investment = testInvestment(name = "OsiedleX", location = "Kruszewnia")
-        val signal = testSignal(location = "Kruszewnia", title = "budowa budynku mieszkalnego jednorodzinnego")
-
-        val developerSource = FakeInvestmentSource("chronos", listOf(investment))
-        val discoverySource = FakeDiscoverySource("swarzedz-wz", "Swarzędz", listOf(signal))
-
-        val report = buildService(
-            developerSources = listOf(developerSource),
-            discoverySources = listOf(discoverySource)
-        ).scan()
-
-        report.correlations shouldHaveSize 1
-    }
-
-    @Test
-    fun `records evidence for a newly committed investment`() {
-        val evidenceRepository = InMemoryEvidenceRepository()
-        val source = FakeInvestmentSource("chronos", listOf(testInvestment(name = "Aura")))
-        buildService(developerSources = listOf(source), evidenceRepository = evidenceRepository).scan()
-
-        evidenceRepository.saved.isNotEmpty() shouldBe true
-    }
-
-    @Test
-    fun `records one evidence row per published fact, not one placeholder row`() {
-        val evidenceRepository = InMemoryEvidenceRepository()
-        val investment = testInvestment(
-            name = "Tercja",
-            location = "Rabowice",
-            propertyType = PropertyType.TERRACED,
-            houseArea = AreaRange(120.0, 140.0),
-            price = PriceRange(800_000, 900_000)
+        val evidenceRecordingService = EvidenceRecordingService(evidenceRepository, investmentRepository, signalRepository)
+        val sourceCommitService = SourceCommitService(
+            investmentRepository, signalRepository, sourceSnapshotRepository, evidenceRecordingService
         )
-        val source = FakeInvestmentSource("chronos", listOf(investment))
-        buildService(developerSources = listOf(source), evidenceRepository = evidenceRepository).scan()
+        val crossSourceEnrichmentService = CrossSourceEnrichmentService(
+            investmentRepository, evidenceRecordingService, scorer, investmentScoreRepository,
+            userPreferencesRepository, sourceRegistry
+        )
+        val aggregatorDiscoveryService = AggregatorDiscoveryService(
+            investmentRepository, sourceRegistry, developerCandidateRepository
+        )
 
-        val fields = evidenceRepository.saved.map { it.fieldName }
-        fields shouldContainAll listOf("name", "location", "propertyType", "houseArea", "price")
-        evidenceRepository.saved.none { it.fieldName == "investment" } shouldBe true
+        return MonitoringService(
+            sourceRegistry = sourceRegistry,
+            sourceValidator = SourceValidator(),
+            changeDetector = ChangeDetector(),
+            detailEnricher = InvestmentDetailEnricher(emptyList()) { _ -> "" },
+            investmentAnalyzer = DefaultInvestmentAnalyzer(DeterministicScorer(), InMemoryUserPreferencesRepository()),
+            investmentRepository = investmentRepository,
+            sourceSnapshotRepository = sourceSnapshotRepository,
+            monitoringRunRepository = InMemoryMonitoringRunRepository(),
+            signalRepository = signalRepository,
+            evidenceRecordingService = evidenceRecordingService,
+            correlationRepository = correlationRepository,
+            correlator = InvestmentCorrelator(),
+            duplicateRepository = duplicateRepository,
+            deduplicator = InvestmentDeduplicator(),
+            rawHtmlArchiver = RawHtmlArchiver(enabled = false, basePath = "unused", retentionDays = 1),
+            crossSourceEnrichmentService = crossSourceEnrichmentService,
+            aggregatorDiscoveryService = aggregatorDiscoveryService,
+            sourceCommitService = sourceCommitService,
+            scorer = scorer,
+            investmentScoreRepository = investmentScoreRepository,
+            userPreferencesRepository = userPreferencesRepository
+        )
     }
 
-    @Test
-    fun `does not fabricate evidence for unpublished fields`() {
-        val evidenceRepository = InMemoryEvidenceRepository()
-        val investment = testInvestment(name = "Bare")
-        val source = FakeInvestmentSource("chronos", listOf(investment))
-        buildService(developerSources = listOf(source), evidenceRepository = evidenceRepository).scan()
+    @Nested
+    inner class CoreScanBehavior {
 
-        evidenceRepository.saved.map { it.fieldName } shouldBe listOf("name")
-    }
+        @Test
+        fun `a scan with no sources produces a report with nothing new`() {
+            val report = buildService().scan()
 
-    @Test
-    fun `records one evidence row per published signal fact`() {
-        val evidenceRepository = InMemoryEvidenceRepository()
-        val signal = testSignal(location = "Kruszewnia", reference = "WAU.6730.1.2026")
-        val source = FakeDiscoverySource("swarzedz-wz", "Swarzędz", listOf(signal))
-        buildService(discoverySources = listOf(source), evidenceRepository = evidenceRepository).scan()
-
-        val fields = evidenceRepository.saved.map { it.fieldName }
-        fields shouldContainAll listOf("title", "signalType", "detectedAt", "location", "reference")
-        evidenceRepository.saved.none { it.fieldName == "signal" } shouldBe true
-    }
-
-    @Test
-    fun `a fetch failure does not overwrite trusted state and is reported as a failure`() {
-        val failingSource = object : InvestmentSource {
-            override val id = "broken"
-            override fun fetch(): List<Investment> = error("simulated failure")
+            report.newInvestmentCount shouldBe 0
+            report.newDiscoverySignalCount shouldBe 0
+            report.changedInvestmentCount shouldBe 0
         }
-        val report = buildService(developerSources = listOf(failingSource)).scan()
 
-        report.developerReports.single().fetchSucceeded shouldBe false
-        report.sourcesFailed shouldBe 1
+        @Test
+        fun `detects a new investment from a developer source`() {
+            val source = FakeInvestmentSource("chronos", listOf(testInvestment(name = "Aura")))
+            val report = buildService(developerSources = listOf(source)).scan()
+
+            report.newInvestmentCount shouldBe 1
+            report.developerReports shouldHaveSize 1
+        }
+
+        @Test
+        fun `detects a new discovery signal`() {
+            val source = FakeDiscoverySource("swarzedz-wz", "Swarzędz", listOf(testSignal()))
+            val report = buildService(discoverySources = listOf(source)).scan()
+
+            report.newDiscoverySignalCount shouldBe 1
+        }
+
+        @Test
+        fun `a fetch failure does not overwrite trusted state and is reported as a failure`() {
+            val failingSource = object : InvestmentSource {
+                override val id = "broken"
+                override fun fetch(): List<Investment> = error("simulated failure")
+            }
+            val report = buildService(developerSources = listOf(failingSource)).scan()
+
+            report.developerReports.single().fetchSucceeded shouldBe false
+            report.sourcesFailed shouldBe 1
+        }
+
+        @Test
+        fun `persists a deterministic score for a newly detected investment even without an LLM configured`() {
+            val scoreRepository = InMemoryInvestmentScoreRepository()
+            val investment = testInvestment(name = "Aura", location = "Kruszewnia")
+            val source = FakeInvestmentSource("chronos", listOf(investment))
+
+            buildService(developerSources = listOf(source), investmentScoreRepository = scoreRepository).scan()
+
+            val score = scoreRepository.saved[investment.canonicalKey]
+            score shouldNotBe null
+        }
     }
 
-    @Test
-    fun `flags an aggregator-only investment with no matching developer location`() {
-        val aggregatorSource = FakeAggregatorSource(
-            "rynekpierwotny",
-            listOf(testInvestment(name = "AggregatorOnly", location = "Mosina"))
-        )
-        val report = buildService(aggregatorSources = listOf(aggregatorSource)).scan()
+    @Nested
+    inner class Correlation {
 
-        report.aggregatorOnlyDiscoveries shouldHaveSize 1
+        @Test
+        fun `correlates a matching investment and signal by location`() {
+            val investment = testInvestment(name = "OsiedleX", location = "Kruszewnia")
+            val signal = testSignal(location = "Kruszewnia", title = "budowa budynku mieszkalnego jednorodzinnego")
+
+            val developerSource = FakeInvestmentSource("chronos", listOf(investment))
+            val discoverySource = FakeDiscoverySource("swarzedz-wz", "Swarzędz", listOf(signal))
+
+            val report = buildService(
+                developerSources = listOf(developerSource),
+                discoverySources = listOf(discoverySource)
+            ).scan()
+
+            report.correlations shouldHaveSize 1
+        }
     }
 
-    @Test
-    fun `persists the aggregator-only flag for every current aggregator investment, not just new ones`() {
-        val investmentRepository = InMemoryInvestmentRepository()
-        val aggregatorSource = FakeAggregatorSource(
-            "rynekpierwotny",
-            listOf(testInvestment(name = "AggregatorOnly", source = "rynekpierwotny", location = "Mosina"))
-        )
-        buildService(aggregatorSources = listOf(aggregatorSource), investmentRepository = investmentRepository).scan()
+    @Nested
+    inner class EvidenceRecording {
 
-        investmentRepository.aggregatorOnlyFlags.values shouldContainAll listOf(true)
-    }
+        @Test
+        fun `records evidence for a newly committed investment`() {
+            val evidenceRepository = InMemoryEvidenceRepository()
+            val source = FakeInvestmentSource("chronos", listOf(testInvestment(name = "Aura")))
+            buildService(developerSources = listOf(source), evidenceRepository = evidenceRepository).scan()
 
-    @Test
-    fun `does not flag an aggregator investment whose location is already covered by a developer source`() {
-        val investmentRepository = InMemoryInvestmentRepository()
-        val developerSource = FakeInvestmentSource("chronos", listOf(testInvestment(name = "Aura", location = "Mosina")))
-        val aggregatorSource = FakeAggregatorSource(
-            "rynekpierwotny",
-            listOf(testInvestment(name = "Covered", source = "rynekpierwotny", location = "Mosina"))
-        )
-        buildService(
-            developerSources = listOf(developerSource),
-            aggregatorSources = listOf(aggregatorSource),
-            investmentRepository = investmentRepository
-        ).scan()
+            evidenceRepository.saved.isNotEmpty() shouldBe true
+        }
 
-        investmentRepository.aggregatorOnlyFlags.values shouldContainAll listOf(false)
-    }
-
-    @Test
-    fun `records a developer candidate for an aggregator-only investment from an unknown developer`() {
-        val candidateRepository = InMemoryDeveloperCandidateRepository()
-        val aggregatorSource = FakeAggregatorSource(
-            "rynekpierwotny",
-            listOf(testInvestment(name = "AggregatorOnly", developer = "Totally Unknown Developer Sp. z o.o.", location = "Mosina"))
-        )
-        buildService(aggregatorSources = listOf(aggregatorSource), developerCandidateRepository = candidateRepository).scan()
-
-        candidateRepository.saved shouldHaveSize 1
-        candidateRepository.saved.single().developerName shouldBe "Totally Unknown Developer Sp. z o.o."
-    }
-
-    @Test
-    fun `does not record a developer candidate for a developer already in the registry`() {
-        val candidateRepository = InMemoryDeveloperCandidateRepository()
-        val aggregatorSource = FakeAggregatorSource(
-            "rynekpierwotny",
-            listOf(testInvestment(name = "AggregatorOnly", developer = "Chronos Development", location = "Mosina"))
-        )
-        buildService(aggregatorSources = listOf(aggregatorSource), developerCandidateRepository = candidateRepository).scan()
-
-        candidateRepository.saved shouldHaveSize 0
-    }
-
-    @Test
-    fun `does not record a duplicate candidate for the same developer under a slightly different legal name`() {
-        val candidateRepository = InMemoryDeveloperCandidateRepository()
-        candidateRepository.save(
-            DeveloperCandidate(
-                developerName = "Totally Unknown Developer Sp. z o.o.",
-                discoveredUrl = java.net.URI("https://example.com/already-known"),
-                municipality = "Mosina",
-                discoveredFromSource = "rynekpierwotny",
-                discoveredAt = java.time.Instant.EPOCH
+        @Test
+        fun `records one evidence row per published fact, not one placeholder row`() {
+            val evidenceRepository = InMemoryEvidenceRepository()
+            val investment = testInvestment(
+                name = "Tercja",
+                location = "Rabowice",
+                propertyType = PropertyType.TERRACED,
+                houseArea = AreaRange(120.0, 140.0),
+                price = PriceRange(800_000, 900_000)
             )
-        )
-        val aggregatorSource = FakeAggregatorSource(
-            "rynekpierwotny",
-            listOf(testInvestment(name = "AggregatorOnly", developer = "Totally Unknown Developer", location = "Mosina"))
-        )
-        buildService(aggregatorSources = listOf(aggregatorSource), developerCandidateRepository = candidateRepository).scan()
+            val source = FakeInvestmentSource("chronos", listOf(investment))
+            buildService(developerSources = listOf(source), evidenceRepository = evidenceRepository).scan()
 
-        candidateRepository.saved shouldHaveSize 1
+            val fields = evidenceRepository.saved.map { it.fieldName }
+            fields shouldContainAll listOf("name", "location", "propertyType", "houseArea", "price")
+            evidenceRepository.saved.none { it.fieldName == "investment" } shouldBe true
+        }
+
+        @Test
+        fun `does not fabricate evidence for unpublished fields`() {
+            val evidenceRepository = InMemoryEvidenceRepository()
+            val investment = testInvestment(name = "Bare")
+            val source = FakeInvestmentSource("chronos", listOf(investment))
+            buildService(developerSources = listOf(source), evidenceRepository = evidenceRepository).scan()
+
+            evidenceRepository.saved.map { it.fieldName } shouldBe listOf("name")
+        }
+
+        @Test
+        fun `records one evidence row per published signal fact`() {
+            val evidenceRepository = InMemoryEvidenceRepository()
+            val signal = testSignal(location = "Kruszewnia", reference = "WAU.6730.1.2026")
+            val source = FakeDiscoverySource("swarzedz-wz", "Swarzędz", listOf(signal))
+            buildService(discoverySources = listOf(source), evidenceRepository = evidenceRepository).scan()
+
+            val fields = evidenceRepository.saved.map { it.fieldName }
+            fields shouldContainAll listOf("title", "signalType", "detectedAt", "location", "reference")
+            evidenceRepository.saved.none { it.fieldName == "signal" } shouldBe true
+        }
     }
 
-    @Test
-    fun `persists a deterministic score for a newly detected investment even without an LLM configured`() {
-        val scoreRepository = InMemoryInvestmentScoreRepository()
-        val investment = testInvestment(name = "Aura", location = "Kruszewnia")
-        val source = FakeInvestmentSource("chronos", listOf(investment))
+    @Nested
+    inner class AggregatorDiscovery {
 
-        buildService(developerSources = listOf(source), investmentScoreRepository = scoreRepository).scan()
+        @Test
+        fun `flags an aggregator-only investment with no matching developer location`() {
+            val aggregatorSource = FakeAggregatorSource(
+                "rynekpierwotny",
+                listOf(testInvestment(name = "AggregatorOnly", location = "Mosina"))
+            )
+            val report = buildService(aggregatorSources = listOf(aggregatorSource)).scan()
 
-        val score = scoreRepository.saved[investment.canonicalKey]
-        score shouldNotBe null
-    }
+            report.aggregatorOnlyDiscoveries shouldHaveSize 1
+        }
 
-    @Test
-    fun `flags a cross-source duplicate between a developer investment and an aggregator listing of the same project`() {
-        val duplicateRepository = InMemoryInvestmentDuplicateRepository()
-        val developerSource = FakeInvestmentSource(
-            "chronos",
-            listOf(testInvestment(name = "Tercja", source = "chronos", developer = "Chronos Development", location = "Kruszewnia"))
-        )
-        val aggregatorSource = FakeAggregatorSource(
-            "rynekpierwotny",
-            listOf(testInvestment(name = "Osiedle Tercja", source = "rynekpierwotny", developer = "Chronos Development", location = "Kruszewnia", url = java.net.URI("https://rynekpierwotny.pl/osiedle-tercja")))
-        )
+        @Test
+        fun `persists the aggregator-only flag for every current aggregator investment, not just new ones`() {
+            val investmentRepository = InMemoryInvestmentRepository()
+            val aggregatorSource = FakeAggregatorSource(
+                "rynekpierwotny",
+                listOf(testInvestment(name = "AggregatorOnly", source = "rynekpierwotny", location = "Mosina"))
+            )
+            buildService(aggregatorSources = listOf(aggregatorSource), investmentRepository = investmentRepository).scan()
 
-        val report = buildService(
-            developerSources = listOf(developerSource),
-            aggregatorSources = listOf(aggregatorSource),
-            duplicateRepository = duplicateRepository
-        ).scan()
+            investmentRepository.aggregatorOnlyFlags.values shouldContainAll listOf(true)
+        }
 
-        report.duplicates shouldHaveSize 1
-        duplicateRepository.saved shouldHaveSize 1
-    }
+        @Test
+        fun `does not flag an aggregator investment whose location is already covered by a developer source`() {
+            val investmentRepository = InMemoryInvestmentRepository()
+            val developerSource = FakeInvestmentSource("chronos", listOf(testInvestment(name = "Aura", location = "Mosina")))
+            val aggregatorSource = FakeAggregatorSource(
+                "rynekpierwotny",
+                listOf(testInvestment(name = "Covered", source = "rynekpierwotny", location = "Mosina"))
+            )
+            buildService(
+                developerSources = listOf(developerSource),
+                aggregatorSources = listOf(aggregatorSource),
+                investmentRepository = investmentRepository
+            ).scan()
 
-    @Test
-    fun `does not flag two unrelated investments from different sources as duplicates`() {
-        val duplicateRepository = InMemoryInvestmentDuplicateRepository()
-        val developerSource = FakeInvestmentSource(
-            "chronos",
-            listOf(testInvestment(name = "Aura", source = "chronos", developer = "Chronos Development", location = "Kruszewnia"))
-        )
-        val aggregatorSource = FakeAggregatorSource(
-            "rynekpierwotny",
-            listOf(testInvestment(name = "Zielona Dolina", source = "rynekpierwotny", developer = "Unknown (RynekPierwotny)", location = "Mosina", url = java.net.URI("https://rynekpierwotny.pl/zielona-dolina")))
-        )
+            investmentRepository.aggregatorOnlyFlags.values shouldContainAll listOf(false)
+        }
 
-        val report = buildService(
-            developerSources = listOf(developerSource),
-            aggregatorSources = listOf(aggregatorSource),
-            duplicateRepository = duplicateRepository
-        ).scan()
+        @Test
+        fun `records a developer candidate for an aggregator-only investment from an unknown developer`() {
+            val candidateRepository = InMemoryDeveloperCandidateRepository()
+            val aggregatorSource = FakeAggregatorSource(
+                "rynekpierwotny",
+                listOf(testInvestment(name = "AggregatorOnly", developer = "Totally Unknown Developer Sp. z o.o.", location = "Mosina"))
+            )
+            buildService(aggregatorSources = listOf(aggregatorSource), developerCandidateRepository = candidateRepository).scan()
 
-        report.duplicates.isEmpty() shouldBe true
-        duplicateRepository.saved.isEmpty() shouldBe true
-    }
+            candidateRepository.saved shouldHaveSize 1
+            candidateRepository.saved.single().developerName shouldBe "Totally Unknown Developer Sp. z o.o."
+        }
 
-    @Test
-    fun `enriches a developer investment's missing price from a HIGH-confidence duplicate`() {
-        val investmentRepository = InMemoryInvestmentRepository()
-        val developerSource = FakeInvestmentSource(
-            "chronos",
-            listOf(testInvestment(name = "Tercja", source = "chronos", developer = "Chronos Development", location = "Kruszewnia"))
-        )
-        val aggregatorSource = FakeAggregatorSource(
-            "rynekpierwotny",
-            listOf(
-                testInvestment(
-                    name = "Osiedle Tercja",
-                    source = "rynekpierwotny",
-                    developer = "Chronos Development",
-                    location = "Kruszewnia",
-                    url = java.net.URI("https://rynekpierwotny.pl/osiedle-tercja"),
-                    price = PriceRange(800_000, 900_000)
+        @Test
+        fun `does not record a developer candidate for a developer already in the registry`() {
+            val candidateRepository = InMemoryDeveloperCandidateRepository()
+            val aggregatorSource = FakeAggregatorSource(
+                "rynekpierwotny",
+                listOf(testInvestment(name = "AggregatorOnly", developer = "Chronos Development", location = "Mosina"))
+            )
+            buildService(aggregatorSources = listOf(aggregatorSource), developerCandidateRepository = candidateRepository).scan()
+
+            candidateRepository.saved shouldHaveSize 0
+        }
+
+        @Test
+        fun `does not record a duplicate candidate for the same developer under a slightly different legal name`() {
+            val candidateRepository = InMemoryDeveloperCandidateRepository()
+            candidateRepository.save(
+                DeveloperCandidate(
+                    developerName = "Totally Unknown Developer Sp. z o.o.",
+                    discoveredUrl = URI("https://example.com/already-known"),
+                    municipality = "Mosina",
+                    discoveredFromSource = "rynekpierwotny",
+                    discoveredAt = Instant.EPOCH
                 )
             )
-        )
+            val aggregatorSource = FakeAggregatorSource(
+                "rynekpierwotny",
+                listOf(testInvestment(name = "AggregatorOnly", developer = "Totally Unknown Developer", location = "Mosina"))
+            )
+            buildService(aggregatorSources = listOf(aggregatorSource), developerCandidateRepository = candidateRepository).scan()
 
-        buildService(
-            developerSources = listOf(developerSource),
-            aggregatorSources = listOf(aggregatorSource),
-            investmentRepository = investmentRepository
-        ).scan()
-
-        val chronosTercja = investmentRepository.findAll().single { it.source == "chronos" }
-        chronosTercja.price shouldBe PriceRange(800_000, 900_000)
+            candidateRepository.saved shouldHaveSize 1
+        }
     }
 
-    @Test
-    fun `never overwrites a field a developer already published via cross-source enrichment`() {
-        val investmentRepository = InMemoryInvestmentRepository()
-        val developerSource = FakeInvestmentSource(
-            "chronos",
-            listOf(
-                testInvestment(
-                    name = "Tercja",
-                    source = "chronos",
-                    developer = "Chronos Development",
-                    location = "Kruszewnia",
-                    price = PriceRange(700_000, 750_000)
+    @Nested
+    inner class CrossSourceDeduplicationAndEnrichment {
+
+        @Test
+        fun `flags a cross-source duplicate between a developer investment and an aggregator listing of the same project`() {
+            val duplicateRepository = InMemoryInvestmentDuplicateRepository()
+            val developerSource = FakeInvestmentSource(
+                "chronos",
+                listOf(testInvestment(name = "Tercja", source = "chronos", developer = "Chronos Development", location = "Kruszewnia"))
+            )
+            val aggregatorSource = FakeAggregatorSource(
+                "rynekpierwotny",
+                listOf(testInvestment(name = "Osiedle Tercja", source = "rynekpierwotny", developer = "Chronos Development", location = "Kruszewnia", url = URI("https://rynekpierwotny.pl/osiedle-tercja")))
+            )
+
+            val report = buildService(
+                developerSources = listOf(developerSource),
+                aggregatorSources = listOf(aggregatorSource),
+                duplicateRepository = duplicateRepository
+            ).scan()
+
+            report.duplicates shouldHaveSize 1
+            duplicateRepository.saved shouldHaveSize 1
+        }
+
+        @Test
+        fun `does not flag two unrelated investments from different sources as duplicates`() {
+            val duplicateRepository = InMemoryInvestmentDuplicateRepository()
+            val developerSource = FakeInvestmentSource(
+                "chronos",
+                listOf(testInvestment(name = "Aura", source = "chronos", developer = "Chronos Development", location = "Kruszewnia"))
+            )
+            val aggregatorSource = FakeAggregatorSource(
+                "rynekpierwotny",
+                listOf(testInvestment(name = "Zielona Dolina", source = "rynekpierwotny", developer = "Unknown (RynekPierwotny)", location = "Mosina", url = URI("https://rynekpierwotny.pl/zielona-dolina")))
+            )
+
+            val report = buildService(
+                developerSources = listOf(developerSource),
+                aggregatorSources = listOf(aggregatorSource),
+                duplicateRepository = duplicateRepository
+            ).scan()
+
+            report.duplicates.isEmpty() shouldBe true
+            duplicateRepository.saved.isEmpty() shouldBe true
+        }
+
+        @Test
+        fun `enriches a developer investment's missing price from a HIGH-confidence duplicate`() {
+            val investmentRepository = InMemoryInvestmentRepository()
+            val developerSource = FakeInvestmentSource(
+                "chronos",
+                listOf(testInvestment(name = "Tercja", source = "chronos", developer = "Chronos Development", location = "Kruszewnia"))
+            )
+            val aggregatorSource = FakeAggregatorSource(
+                "rynekpierwotny",
+                listOf(
+                    testInvestment(
+                        name = "Osiedle Tercja",
+                        source = "rynekpierwotny",
+                        developer = "Chronos Development",
+                        location = "Kruszewnia",
+                        url = URI("https://rynekpierwotny.pl/osiedle-tercja"),
+                        price = PriceRange(800_000, 900_000)
+                    )
                 )
             )
-        )
-        val aggregatorSource = FakeAggregatorSource(
-            "rynekpierwotny",
-            listOf(
-                testInvestment(
-                    name = "Osiedle Tercja",
-                    source = "rynekpierwotny",
-                    developer = "Chronos Development",
-                    location = "Kruszewnia",
-                    url = java.net.URI("https://rynekpierwotny.pl/osiedle-tercja"),
-                    price = PriceRange(800_000, 900_000)
+
+            buildService(
+                developerSources = listOf(developerSource),
+                aggregatorSources = listOf(aggregatorSource),
+                investmentRepository = investmentRepository
+            ).scan()
+
+            val chronosTercja = investmentRepository.findAll().single { it.source == SourceId("chronos") }
+            chronosTercja.price shouldBe PriceRange(800_000, 900_000)
+        }
+
+        @Test
+        fun `never overwrites a field a developer already published via cross-source enrichment`() {
+            val investmentRepository = InMemoryInvestmentRepository()
+            val developerSource = FakeInvestmentSource(
+                "chronos",
+                listOf(
+                    testInvestment(
+                        name = "Tercja",
+                        source = "chronos",
+                        developer = "Chronos Development",
+                        location = "Kruszewnia",
+                        price = PriceRange(700_000, 750_000)
+                    )
                 )
             )
-        )
-
-        buildService(
-            developerSources = listOf(developerSource),
-            aggregatorSources = listOf(aggregatorSource),
-            investmentRepository = investmentRepository
-        ).scan()
-
-        val chronosTercja = investmentRepository.findAll().single { it.source == "chronos" }
-        chronosTercja.price shouldBe PriceRange(700_000, 750_000)
-    }
-
-    @Test
-    fun `does not enrich from a MEDIUM-confidence duplicate`() {
-        val investmentRepository = InMemoryInvestmentRepository()
-        val developerSource = FakeInvestmentSource(
-            "chronos",
-            listOf(testInvestment(name = "AuraEtap1", source = "chronos", developer = "Chronos Development Sp. z o.o.", location = "Kruszewnia"))
-        )
-        val aggregatorSource = FakeAggregatorSource(
-            "rynekpierwotny",
-            listOf(
-                testInvestment(
-                    name = "AuraEtap2",
-                    source = "rynekpierwotny",
-                    developer = "Chronos Development",
-                    location = "Kruszewnia",
-                    url = java.net.URI("https://rynekpierwotny.pl/aura-etap-2"),
-                    price = PriceRange(800_000, 900_000)
+            val aggregatorSource = FakeAggregatorSource(
+                "rynekpierwotny",
+                listOf(
+                    testInvestment(
+                        name = "Osiedle Tercja",
+                        source = "rynekpierwotny",
+                        developer = "Chronos Development",
+                        location = "Kruszewnia",
+                        url = URI("https://rynekpierwotny.pl/osiedle-tercja"),
+                        price = PriceRange(800_000, 900_000)
+                    )
                 )
             )
-        )
 
-        val report = buildService(
-            developerSources = listOf(developerSource),
-            aggregatorSources = listOf(aggregatorSource),
-            investmentRepository = investmentRepository
-        ).scan()
+            buildService(
+                developerSources = listOf(developerSource),
+                aggregatorSources = listOf(aggregatorSource),
+                investmentRepository = investmentRepository
+            ).scan()
 
-        report.duplicates.single().confidence shouldBe pl.marcinwieczorek.investmentmonitor.domain.DuplicateConfidence.MEDIUM
-        val chronosAura = investmentRepository.findAll().single { it.source == "chronos" }
-        chronosAura.price shouldBe null
+            val chronosTercja = investmentRepository.findAll().single { it.source == SourceId("chronos") }
+            chronosTercja.price shouldBe PriceRange(700_000, 750_000)
+        }
+
+        @Test
+        fun `does not enrich from a MEDIUM-confidence duplicate`() {
+            val investmentRepository = InMemoryInvestmentRepository()
+            val developerSource = FakeInvestmentSource(
+                "chronos",
+                listOf(testInvestment(name = "AuraEtap1", source = "chronos", developer = "Chronos Development Sp. z o.o.", location = "Kruszewnia"))
+            )
+            val aggregatorSource = FakeAggregatorSource(
+                "rynekpierwotny",
+                listOf(
+                    testInvestment(
+                        name = "AuraEtap2",
+                        source = "rynekpierwotny",
+                        developer = "Chronos Development",
+                        location = "Kruszewnia",
+                        url = URI("https://rynekpierwotny.pl/aura-etap-2"),
+                        price = PriceRange(800_000, 900_000)
+                    )
+                )
+            )
+
+            val report = buildService(
+                developerSources = listOf(developerSource),
+                aggregatorSources = listOf(aggregatorSource),
+                investmentRepository = investmentRepository
+            ).scan()
+
+            report.duplicates.single().confidence shouldBe DuplicateConfidence.MEDIUM
+            val chronosAura = investmentRepository.findAll().single { it.source == SourceId("chronos") }
+            chronosAura.price shouldBe null
+        }
     }
 }

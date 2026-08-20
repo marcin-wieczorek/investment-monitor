@@ -1,5 +1,7 @@
 package pl.marcinwieczorek.investmentmonitor.source.discovery
 
+import pl.marcinwieczorek.investmentmonitor.domain.SourceId
+
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import org.junit.jupiter.api.Test
@@ -33,7 +35,7 @@ class SzamotulyUlicpParserTest {
         )
 
         checkNotNull(signal)
-        signal.source shouldBe "szamotuly-ulicp"
+        signal.source shouldBe SourceId("szamotuly-ulicp")
         signal.municipality shouldBe "Szamotuły"
         signal.signalType shouldBe SignalType.LAND_DEVELOPMENT_SIGNAL
         // The title names both the village ("Lulinek") and the parent gmina

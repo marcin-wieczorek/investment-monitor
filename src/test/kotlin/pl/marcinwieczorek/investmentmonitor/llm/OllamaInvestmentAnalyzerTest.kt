@@ -6,7 +6,13 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import pl.marcinwieczorek.investmentmonitor.analysis.DeterministicScorer
 import pl.marcinwieczorek.investmentmonitor.analysis.Priority
+import pl.marcinwieczorek.investmentmonitor.domain.AreaRange
+import pl.marcinwieczorek.investmentmonitor.domain.DevelopmentTier
+import pl.marcinwieczorek.investmentmonitor.domain.PriceRange
+import pl.marcinwieczorek.investmentmonitor.domain.PropertyType
+import pl.marcinwieczorek.investmentmonitor.domain.ReferenceInvestmentProfile
 import pl.marcinwieczorek.investmentmonitor.persistence.LlmAnalysisRepository
+import pl.marcinwieczorek.investmentmonitor.persistence.UserPreferencesRepository
 import pl.marcinwieczorek.investmentmonitor.testsupport.testInvestment
 import java.net.InetSocketAddress
 import java.nio.charset.StandardCharsets
@@ -20,6 +26,13 @@ private class InMemoryLlmAnalysisRepository : LlmAnalysisRepository {
     override fun save(investmentCanonicalKey: String, model: String, promptHash: String, responseJson: String) {
         store["$investmentCanonicalKey|$model|$promptHash"] = responseJson
     }
+}
+
+private class FakeUserPreferencesRepository(
+    private val profile: ReferenceInvestmentProfile? = null
+) : UserPreferencesRepository {
+    override fun findScoringProfile(): ReferenceInvestmentProfile? = profile
+    override fun saveScoringProfile(profile: ReferenceInvestmentProfile) {}
 }
 
 class OllamaInvestmentAnalyzerTest {
@@ -48,7 +61,7 @@ class OllamaInvestmentAnalyzerTest {
     fun `uses the LLM's priority and reason when the response is well-formed`() {
         val json = """{\"attractiveness\":\"HIGH\",\"reason\":\"Great plot and location\"}"""
         val client = startServer(""""$json"""")
-        val analyzer = OllamaInvestmentAnalyzer(client, DeterministicScorer(), InMemoryLlmAnalysisRepository(), "test-model")
+        val analyzer = OllamaInvestmentAnalyzer(client, DeterministicScorer(), InMemoryLlmAnalysisRepository(), FakeUserPreferencesRepository(), "test-model")
 
         val analysis = analyzer.analyze(testInvestment(name = "A"), locationProfile = null)
 
@@ -59,7 +72,7 @@ class OllamaInvestmentAnalyzerTest {
     @Test
     fun `falls back to a deterministic priority when the LLM response is malformed`() {
         val client = startServer(""""not valid json at all"""")
-        val analyzer = OllamaInvestmentAnalyzer(client, DeterministicScorer(), InMemoryLlmAnalysisRepository(), "test-model")
+        val analyzer = OllamaInvestmentAnalyzer(client, DeterministicScorer(), InMemoryLlmAnalysisRepository(), FakeUserPreferencesRepository(), "test-model")
 
         val analysis = analyzer.analyze(testInvestment(name = "A"), locationProfile = null)
 
@@ -71,11 +84,39 @@ class OllamaInvestmentAnalyzerTest {
     @Test
     fun `falls back gracefully when the LLM is unreachable`() {
         val client = OllamaClient(baseUrl = "http://127.0.0.1:1", timeoutSeconds = 2)
-        val analyzer = OllamaInvestmentAnalyzer(client, DeterministicScorer(), InMemoryLlmAnalysisRepository(), "test-model")
+        val analyzer = OllamaInvestmentAnalyzer(client, DeterministicScorer(), InMemoryLlmAnalysisRepository(), FakeUserPreferencesRepository(), "test-model")
 
         val analysis = analyzer.analyze(testInvestment(name = "A"), locationProfile = null)
 
         analysis.reason.contains("LLM unavailable") shouldBe true
         analysis.investmentScore shouldBe 0.0
+    }
+
+    @Test
+    fun `scores against the user-configured reference profile, not the hardcoded default`() {
+        // Regression test for the review finding that this analyzer used
+        // ReferenceProfiles.DEFAULT hardcoded, ignoring UserPreferencesRepository -
+        // meaning a user's Settings changes silently had no effect when the LLM was enabled.
+        val client = startServer(""""not valid json at all"""")
+        val customProfile = ReferenceInvestmentProfile(
+            name = "custom",
+            preferredPropertyTypes = setOf(PropertyType.APARTMENT),
+            preferredLocationTiers = setOf(DevelopmentTier.S),
+            houseAreaRange = AreaRange(30.0, 60.0),
+            plotAreaRange = null,
+            priceRange = PriceRange(300_000, 500_000),
+            largePlotPreferred = false,
+            maxDistanceFromPoznanKm = 10
+        )
+        val analyzer = OllamaInvestmentAnalyzer(
+            client, DeterministicScorer(), InMemoryLlmAnalysisRepository(), FakeUserPreferencesRepository(customProfile), "test-model"
+        )
+
+        // An APARTMENT investment matches the custom profile's preferred type, so
+        // propertyTypeMatch (and thus investmentScore) differs from the DEFAULT
+        // profile (which prefers TERRACED/SEMI_DETACHED/DETACHED houses instead).
+        val analysis = analyzer.analyze(testInvestment(name = "A", propertyType = PropertyType.APARTMENT), locationProfile = null)
+
+        analysis.investmentScore shouldBe 1.0
     }
 }
