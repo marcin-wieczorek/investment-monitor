@@ -63,6 +63,7 @@
     "units": "lokali",
     "evidence": "Źródła danych",
     "noEvidence": "Brak zarejestrowanej proweniencji.",
+    "confirmedBySources": "potwierdzone przez {count} źródła",
     "correlatedSignals": "Powiązane sygnały discovery",
     "noCorrelations": "Brak powiązanych sygnałów discovery.",
     "source": "Źródło",

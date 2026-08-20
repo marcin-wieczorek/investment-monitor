@@ -55,6 +55,16 @@ function ScoreBar({ label, value }: { label: string; value: number | null }) {
   );
 }
 
+function groupEvidenceByField(evidence: SourceEvidenceRow[]): Map<string, SourceEvidenceRow[]> {
+  const groups = new Map<string, SourceEvidenceRow[]>();
+  evidence.forEach((item) => {
+    const existing = groups.get(item.field_name);
+    if (existing) existing.push(item);
+    else groups.set(item.field_name, [item]);
+  });
+  return groups;
+}
+
 export function InvestmentDetailView({ investment, evidence, correlations }: InvestmentDetailViewProps) {
   const { t, locale } = useI18n();
   const router = useRouter();
@@ -70,6 +80,7 @@ export function InvestmentDetailView({ investment, evidence, correlations }: Inv
   const houseArea = formatArea(investment.house_area_min, investment.house_area_max, t);
   const plotArea = formatArea(investment.plot_area_min, investment.plot_area_max, t);
   const price = formatPrice(investment.price_min, investment.price_max, t);
+  const evidenceByField = groupEvidenceByField(evidence);
 
   async function saveNote() {
     setSavingNote(true);
@@ -281,31 +292,47 @@ export function InvestmentDetailView({ investment, evidence, correlations }: Inv
 
           <Separator />
 
-          {evidence.length > 0 ? (
+          {evidenceByField.size > 0 ? (
             <div className="space-y-2">
               <h2 className="text-sm font-medium text-muted-foreground">{t("investments.evidence")}</h2>
-              <div className="space-y-1.5">
-                {evidence.map((item) => (
-                  <div
-                    key={item.id}
-                    className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border border-border bg-muted/30 px-3 py-2 text-xs"
-                  >
-                    <Badge variant="outline" className="text-[10px] uppercase">
-                      {item.source_category}
-                    </Badge>
-                    <span className="font-mono text-muted-foreground">{item.source_id}</span>
-                    <span className="text-muted-foreground">{formatRelativeTime(item.captured_at, locale)}</span>
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="ml-auto inline-flex items-center gap-1 text-muted-foreground hover:text-foreground hover:underline"
+              <div className="space-y-2">
+                {Array.from(evidenceByField.entries()).map(([fieldName, items]) => {
+                  const distinctSources = new Set(items.map((item) => item.source_id)).size;
+                  return (
+                    <div
+                      key={fieldName}
+                      className="space-y-1 rounded-md border border-border bg-muted/30 px-3 py-2 text-xs"
                     >
-                      <ExternalLink className="size-3" />
-                      {item.field_name}
-                    </a>
-                  </div>
-                ))}
+                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <span className="font-mono font-medium text-foreground">{fieldName}</span>
+                        <span className="text-muted-foreground">{items[0].field_value}</span>
+                        {distinctSources > 1 ? (
+                          <Badge variant="outline" className="border-emerald-500/30 text-[10px] text-emerald-500 dark:text-emerald-400">
+                            {t("investments.confirmedBySources").replace("{count}", String(distinctSources))}
+                          </Badge>
+                        ) : null}
+                      </div>
+                      <div className="flex flex-wrap gap-x-3 gap-y-1">
+                        {items.map((item) => (
+                          <a
+                            key={item.id}
+                            href={item.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground hover:underline"
+                          >
+                            <Badge variant="outline" className="text-[10px] uppercase">
+                              {item.source_category}
+                            </Badge>
+                            <span className="font-mono">{item.source_id}</span>
+                            <span>{formatRelativeTime(item.captured_at, locale)}</span>
+                            <ExternalLink className="size-3" />
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           ) : (

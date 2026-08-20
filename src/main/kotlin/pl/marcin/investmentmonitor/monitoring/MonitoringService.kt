@@ -12,6 +12,7 @@ import pl.marcin.investmentmonitor.correlation.InvestmentCorrelator
 import pl.marcin.investmentmonitor.detection.ChangeDetector
 import pl.marcin.investmentmonitor.detection.ChangeType
 import pl.marcin.investmentmonitor.detection.InvestmentChange
+import pl.marcin.investmentmonitor.domain.AreaRange
 import pl.marcin.investmentmonitor.domain.Correlation
 import pl.marcin.investmentmonitor.domain.DeveloperCandidate
 import pl.marcin.investmentmonitor.domain.ExtractionMethod
@@ -19,6 +20,7 @@ import pl.marcin.investmentmonitor.domain.Investment
 import pl.marcin.investmentmonitor.domain.InvestmentSignal
 import pl.marcin.investmentmonitor.domain.LocationCatalog
 import pl.marcin.investmentmonitor.domain.LocationProfile
+import pl.marcin.investmentmonitor.domain.PriceRange
 import pl.marcin.investmentmonitor.domain.SourceCategory
 import pl.marcin.investmentmonitor.domain.SourceEvidence
 import pl.marcin.investmentmonitor.persistence.CorrelationRepository
@@ -207,21 +209,56 @@ class MonitoringService(
         )
     }
 
+    /**
+     * Records one [SourceEvidence] row per non-null fact the source
+     * actually published, not one placeholder row per investment - so
+     * provenance can answer "which source(s) confirm this specific price/
+     * area/location" (see AGENTS.md section 16), not just "this source
+     * saw this investment".
+     */
     private fun recordInvestmentEvidence(investment: Investment, sourceId: String, category: SourceCategory, seenAt: Instant) {
         val investmentId = investmentRepository.findIdByCanonicalKey(investment.canonicalKey) ?: return
-        evidenceRepository.save(
-            SourceEvidence(
-                investmentId = investmentId,
-                signalId = null,
-                sourceId = sourceId,
-                sourceCategory = category,
-                capturedAt = seenAt,
-                url = investment.url,
-                extractionMethod = ExtractionMethod.PARSER,
-                fieldName = "investment",
-                fieldValue = investment.name
+        investmentFacts(investment).forEach { (fieldName, fieldValue) ->
+            evidenceRepository.save(
+                SourceEvidence(
+                    investmentId = investmentId,
+                    signalId = null,
+                    sourceId = sourceId,
+                    sourceCategory = category,
+                    capturedAt = seenAt,
+                    url = investment.url,
+                    extractionMethod = ExtractionMethod.PARSER,
+                    fieldName = fieldName,
+                    fieldValue = fieldValue
+                )
             )
-        )
+        }
+    }
+
+    private fun investmentFacts(investment: Investment): List<Pair<String, String>> = buildList {
+        add("name" to investment.name)
+        investment.location?.let { add("location" to it) }
+        investment.propertyType?.let { add("propertyType" to it.name) }
+        investment.units?.let { add("units" to it.toString()) }
+        investment.houseArea?.let { formatAreaRange(it) }?.let { add("houseArea" to it) }
+        investment.plotArea?.let { formatAreaRange(it) }?.let { add("plotArea" to it) }
+        investment.price?.let { formatPriceRange(it) }?.let { add("price" to it) }
+        investment.status?.let { add("status" to it.name) }
+        investment.imageUrl?.let { add("imageUrl" to it) }
+    }
+
+    private fun formatAreaRange(range: AreaRange): String? = when {
+        range.min != null && range.max != null -> "${range.min}-${range.max}"
+        range.min != null -> range.min.toString()
+        range.max != null -> range.max.toString()
+        else -> null
+    }
+
+    private fun formatPriceRange(range: PriceRange): String? = when {
+        range.min != null && range.max != null -> "${range.min}-${range.max}"
+        range.min != null -> range.min.toString()
+        range.max != null -> range.max.toString()
+        else -> null
     }
 
     // ---------------------------------------------------------------- discovery
@@ -265,19 +302,29 @@ class MonitoringService(
 
     private fun recordSignalEvidence(signal: InvestmentSignal, seenAt: Instant) {
         val signalId = signalRepository.findIdByCanonicalKey(signal.canonicalKey) ?: return
-        evidenceRepository.save(
-            SourceEvidence(
-                investmentId = null,
-                signalId = signalId,
-                sourceId = signal.source,
-                sourceCategory = SourceCategory.DISCOVERY,
-                capturedAt = seenAt,
-                url = signal.url,
-                extractionMethod = ExtractionMethod.PARSER,
-                fieldName = "signal",
-                fieldValue = signal.title
+        signalFacts(signal).forEach { (fieldName, fieldValue) ->
+            evidenceRepository.save(
+                SourceEvidence(
+                    investmentId = null,
+                    signalId = signalId,
+                    sourceId = signal.source,
+                    sourceCategory = SourceCategory.DISCOVERY,
+                    capturedAt = seenAt,
+                    url = signal.url,
+                    extractionMethod = ExtractionMethod.PARSER,
+                    fieldName = fieldName,
+                    fieldValue = fieldValue
+                )
             )
-        )
+        }
+    }
+
+    private fun signalFacts(signal: InvestmentSignal): List<Pair<String, String>> = buildList {
+        add("title" to signal.title)
+        add("signalType" to signal.signalType.name)
+        add("detectedAt" to signal.detectedAt.toString())
+        signal.location?.let { add("location" to it) }
+        signal.reference?.let { add("reference" to it) }
     }
 
     // ---------------------------------------------------------------- correlation

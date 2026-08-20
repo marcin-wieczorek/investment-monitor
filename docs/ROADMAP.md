@@ -31,33 +31,22 @@ pipeline, discovery lead time, and price/watchlist UI (commit
   source-category badges, advanced filter panel (range sliders for
   area/price), score badge column, price column; investment detail with
   scoring breakdown, price/ratio badges, watch button.
+- **Phase D done**: per-field provenance. `MonitoringService.recordInvestmentEvidence`/
+  `recordSignalEvidence` now write one `SourceEvidence` row per actual
+  non-null fact (`name`/`location`/`propertyType`/`units`/`houseArea`/
+  `plotArea`/`price`/`status`/`imageUrl` for investments;
+  `title`/`signalType`/`detectedAt`/`location`/`reference` for signals),
+  not one `"investment"`/`"signal"` placeholder row. Frontend
+  `investment-detail-view.tsx` groups evidence by `field_name` and shows
+  a "confirmed by N sources" badge when 2+ distinct `source_id`s agree on
+  the same fact.
 
 See `docs/ARCHITECTURE.md` "Implemented (phase 5/6, ...)" sections and
 `docs/SOURCES.md` for the authoritative, detailed record.
 
 ## Next phases (in priority order)
 
-### Phase D — Per-field provenance
-
-**Problem**: `SourceEvidence` schema supports per-field records
-(`fieldName`/`fieldValue`), but `MonitoringService.recordInvestmentEvidence()`
-/ `recordSignalEvidence()` always write a single record per entity per
-scan (`fieldName="investment"`/`"signal"`), not one per actual fact.
-
-**Plan**:
-1. `MonitoringService.recordInvestmentEvidence()` — instead of one
-   `SourceEvidence` row, write one row per non-null `Investment` field
-   (`name`, `location`, `propertyType`, `units`, `houseArea`, `plotArea`,
-   `price`, `status`, `imageUrl`), each with its own `fieldValue`.
-2. Same for `recordSignalEvidence()` — one row per non-null
-   `InvestmentSignal` field (`title`, `location`, `signalType`,
-   `reference`, `detectedAt`).
-3. Frontend `investment-detail-view.tsx` — group evidence rows by
-   `field_name` so multi-source confirmation of the same fact becomes
-   visible (e.g. "price confirmed by both developer site and aggregator").
-4. Tests: `MonitoringServiceTest` — assert evidence contains distinct
-   `field_name` values matching the investment's non-null fields, not a
-   single "investment" placeholder.
+### Phase D — Per-field provenance — DONE, see above.
 
 ### Phase E — Remaining Tier B `CANDIDATE` developers
 

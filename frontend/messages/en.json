@@ -63,6 +63,7 @@
     "units": "units",
     "evidence": "Evidence",
     "noEvidence": "No provenance recorded yet.",
+    "confirmedBySources": "confirmed by {count} sources",
     "correlatedSignals": "Correlated discovery signals",
     "noCorrelations": "No correlated discovery signals yet.",
     "source": "Source",

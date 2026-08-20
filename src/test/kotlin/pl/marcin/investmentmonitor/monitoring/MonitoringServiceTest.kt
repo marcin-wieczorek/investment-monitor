@@ -1,5 +1,6 @@
 package pl.marcin.investmentmonitor.monitoring
 
+import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.matchers.collections.shouldHaveSize
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.shouldNotBe
@@ -10,11 +11,14 @@ import pl.marcin.investmentmonitor.analysis.ScoringResult
 import pl.marcin.investmentmonitor.archival.RawHtmlArchiver
 import pl.marcin.investmentmonitor.correlation.InvestmentCorrelator
 import pl.marcin.investmentmonitor.detection.ChangeDetector
+import pl.marcin.investmentmonitor.domain.AreaRange
 import pl.marcin.investmentmonitor.domain.Correlation
 import pl.marcin.investmentmonitor.domain.DeveloperCandidate
 import pl.marcin.investmentmonitor.domain.DeveloperCandidateStatus
 import pl.marcin.investmentmonitor.domain.Investment
 import pl.marcin.investmentmonitor.domain.InvestmentSignal
+import pl.marcin.investmentmonitor.domain.PriceRange
+import pl.marcin.investmentmonitor.domain.PropertyType
 import pl.marcin.investmentmonitor.domain.SourceEvidence
 import pl.marcin.investmentmonitor.persistence.CorrelationRepository
 import pl.marcin.investmentmonitor.persistence.DeveloperCandidateRepository
@@ -205,6 +209,46 @@ class MonitoringServiceTest {
         buildService(developerSources = listOf(source), evidenceRepository = evidenceRepository).scan()
 
         evidenceRepository.saved.isNotEmpty() shouldBe true
+    }
+
+    @Test
+    fun `records one evidence row per published fact, not one placeholder row`() {
+        val evidenceRepository = InMemoryEvidenceRepository()
+        val investment = testInvestment(
+            name = "Tercja",
+            location = "Rabowice",
+            propertyType = PropertyType.TERRACED,
+            houseArea = AreaRange(120.0, 140.0),
+            price = PriceRange(800_000, 900_000)
+        )
+        val source = FakeInvestmentSource("chronos", listOf(investment))
+        buildService(developerSources = listOf(source), evidenceRepository = evidenceRepository).scan()
+
+        val fields = evidenceRepository.saved.map { it.fieldName }
+        fields shouldContainAll listOf("name", "location", "propertyType", "houseArea", "price")
+        evidenceRepository.saved.none { it.fieldName == "investment" } shouldBe true
+    }
+
+    @Test
+    fun `does not fabricate evidence for unpublished fields`() {
+        val evidenceRepository = InMemoryEvidenceRepository()
+        val investment = testInvestment(name = "Bare")
+        val source = FakeInvestmentSource("chronos", listOf(investment))
+        buildService(developerSources = listOf(source), evidenceRepository = evidenceRepository).scan()
+
+        evidenceRepository.saved.map { it.fieldName } shouldBe listOf("name")
+    }
+
+    @Test
+    fun `records one evidence row per published signal fact`() {
+        val evidenceRepository = InMemoryEvidenceRepository()
+        val signal = testSignal(location = "Kruszewnia", reference = "WAU.6730.1.2026")
+        val source = FakeDiscoverySource("swarzedz-wz", "Swarzędz", listOf(signal))
+        buildService(discoverySources = listOf(source), evidenceRepository = evidenceRepository).scan()
+
+        val fields = evidenceRepository.saved.map { it.fieldName }
+        fields shouldContainAll listOf("title", "signalType", "detectedAt", "location", "reference")
+        evidenceRepository.saved.none { it.fieldName == "signal" } shouldBe true
     }
 
     @Test
