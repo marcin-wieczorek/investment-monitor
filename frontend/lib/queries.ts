@@ -1,4 +1,5 @@
 import { getDb } from "@/lib/db";
+import { DEFAULT_SCORING_PROFILE } from "@/lib/types";
 import type {
   CorrelationRow,
   DeveloperCandidateRow,
@@ -9,6 +10,7 @@ import type {
   InvestmentWithState,
   MonitoringRunRow,
   MunicipalityRegistryRow,
+  ScoringProfile,
   SourceEvidenceRow,
   SourceSnapshotRow,
 } from "@/lib/types";
@@ -323,4 +325,34 @@ export function listDuplicatesForInvestment(investmentId: number): InvestmentDup
     .prepare(`${DUPLICATE_SELECT} WHERE d.investment_id_a = ? OR d.investment_id_b = ?`)
     .all(investmentId, investmentId) as unknown as InvestmentDuplicateRow[];
   return rows.map((row) => ({ ...row }));
+}
+
+const SCORING_PROFILE_KEY = "scoring.profile";
+
+/**
+ * Reads the current scoring profile from `user_preferences` (see
+ * `UserPreferencesRepository` on the Kotlin side, which this mirrors) -
+ * falls back to [DEFAULT_SCORING_PROFILE] when nothing has been saved yet,
+ * same rationale as `UserPreferencesRepository.effectiveScoringProfile()`.
+ */
+export function getScoringPreferences(): ScoringProfile {
+  const db = getDb();
+  const row = db
+    .prepare("SELECT value FROM user_preferences WHERE key = ?")
+    .get(SCORING_PROFILE_KEY) as unknown as { value: string } | undefined;
+  if (!row) return DEFAULT_SCORING_PROFILE;
+  return JSON.parse(row.value) as ScoringProfile;
+}
+
+export function saveScoringPreferences(profile: ScoringProfile): void {
+  const db = getDb();
+  db.prepare(
+    `INSERT INTO user_preferences (key, value, updated_at)
+     VALUES (@key, @value, @updatedAt)
+     ON CONFLICT(key) DO UPDATE SET value = @value, updated_at = @updatedAt`
+  ).run({
+    key: SCORING_PROFILE_KEY,
+    value: JSON.stringify(profile),
+    updatedAt: new Date().toISOString(),
+  });
 }

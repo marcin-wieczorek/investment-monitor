@@ -157,6 +157,43 @@ export interface DeveloperCandidateRow {
   evidence: string | null;
 }
 
+/**
+ * Mirrors `pl.marcin.investmentmonitor.domain.ReferenceInvestmentProfile`
+ * (see analysis/ReferenceProfiles.kt) - the reference profile
+ * `DeterministicScorer` on the Kotlin side compares every investment
+ * against. Persisted as a single JSON blob in `user_preferences`
+ * (key = "scoring.profile") via `UserPreferencesRepository`.
+ */
+export interface ScoringProfile {
+  name: string;
+  preferredPropertyTypes: string[];
+  preferredLocationTiers: string[];
+  houseAreaRange: { min: number | null; max: number | null } | null;
+  plotAreaRange: { min: number | null; max: number | null } | null;
+  priceRange: { min: number | null; max: number | null } | null;
+  largePlotPreferred: boolean;
+  maxDistanceFromPoznanKm: number | null;
+}
+
+/**
+ * Mirrors `ReferenceProfiles.POZNAN_HOUSE_SEEKER` on the Kotlin side
+ * (analysis/ReferenceProfiles.kt) - used as the initial form values when
+ * nothing has been saved to `user_preferences` yet. Keep in sync if that
+ * Kotlin default ever changes. Lives in this client-safe file (not
+ * lib/queries.ts, which pulls in node:sqlite) so client components can
+ * import it directly.
+ */
+export const DEFAULT_SCORING_PROFILE: ScoringProfile = {
+  name: "poznan-house-seeker",
+  preferredPropertyTypes: ["TERRACED", "SEMI_DETACHED", "DETACHED"],
+  preferredLocationTiers: ["S", "A"],
+  houseAreaRange: { min: 80, max: 160 },
+  plotAreaRange: { min: 250, max: 1000 },
+  priceRange: { min: 600_000, max: 1_500_000 },
+  largePlotPreferred: true,
+  maxDistanceFromPoznanKm: 25,
+};
+
 export interface MunicipalityRegistryRow {
   id: string;
   name: string;

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowDown, ArrowUp, Building2, ChevronDown, ChevronUp, Search, SlidersHorizontal } from "lucide-react";
+import { ArrowDown, ArrowUp, Building2, ChevronDown, ChevronUp, Info, Search, SlidersHorizontal } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { Input } from "@/components/ui/input";
 import {
@@ -445,7 +445,14 @@ export function InvestmentsView({ investments, duplicates = [] }: InvestmentsVie
                 <TableHead className="hidden md:table-cell">{t("sources.title")}</TableHead>
                 <TableHead className="hidden lg:table-cell">{t("investments.houseArea")}</TableHead>
                 <TableHead className="hidden lg:table-cell">{t("investments.price")}</TableHead>
-                <TableHead>{t("investments.score")}</TableHead>
+                <TableHead>
+                  <span className="inline-flex items-center gap-1">
+                    {t("investments.score")}
+                    <span title={t("investments.scoreExplanation")}>
+                      <Info className="size-3.5 text-muted-foreground" />
+                    </span>
+                  </span>
+                </TableHead>
                 <TableHead>{t("investments.firstSeen")}</TableHead>
                 <TableHead className="w-10" />
               </TableRow>

@@ -153,8 +153,11 @@ under their most authoritative source, and has a collapsible filter panel
 (source, property type, status, location, and range sliders for house
 area/plot area/price) plus an always-visible sort control. A `/map` page
 (Leaflet + OpenStreetMap, no API key) shows where every currently known
-investment is located across the Poznań metro area. Dark/light mode and
-an English/Polish language toggle are built in.
+investment is located across the Poznań metro area. A `/settings` page
+lets you configure the scoring reference profile (property types,
+location tiers, area/price ranges, large-plot preference) - saving
+immediately recomputes every investment's score, no new scan needed.
+Dark/light mode and an English/Polish language toggle are built in.
 
 Requires Node 22.5+.
 
@@ -181,7 +184,9 @@ See [`frontend/README.md`](frontend/README.md) for full setup and details.
   tracking; raw HTML archival with retention; deterministic
   reference-profile scoring that always runs and is persisted, with
   explicit large-plot handling, a data-completeness indicator, and a
-  discovery-lead-time metric per correlation; local Ollama LLM
+  discovery-lead-time metric per correlation; a user-configurable scoring
+  reference profile (`/settings`, persisted in SQLite, immediate rescore-all
+  on save without a live-source scan); local Ollama LLM
   integration with graceful fallback; a Next.js dashboard covering all of
   the above plus developer/geographic coverage pages, a score/price-aware
   investment filter panel, a location map, and a watchlist.

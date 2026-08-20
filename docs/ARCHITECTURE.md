@@ -413,3 +413,48 @@ scan-time matching, unlike deterministic investment<->signal correlation.
   the raw value (never the dotted i18n key) if a translation is missing,
   so a newly-added Kotlin enum constant never regresses to showing a
   literal key.
+
+## Implemented (phase 10, score explanation + configurable scoring preferences)
+
+- **Score tooltip**: an info icon next to the "Score" column header on
+  `/investments` and the "Deterministic scoring breakdown" heading on
+  `/investments/[id]` explains what the percentage measures (weighted
+  match: property type 25%, location tier 15%, plot area fit 25%, house
+  area fit 20%, price fit 15%, plus a +10% large-plot bonus) and points to
+  `/settings` to change the profile it's compared against - previously a
+  bare percentage with no explanation of where it came from.
+- **Configurable scoring reference profile**: `ReferenceProfiles.DEFAULT`
+  (`POZNAN_HOUSE_SEEKER`) was the only profile `DeterministicScorer` could
+  ever compare against, hard-coded in Kotlin with no way to change it
+  short of editing source. `UserPreferencesRepository` (a generic
+  key-value store, `user_preferences` table, `V11__user_preferences.sql`)
+  now persists a single JSON-encoded `ReferenceInvestmentProfile` under
+  `key="scoring.profile"`; `effectiveScoringProfile()` returns the stored
+  profile or falls back to `ReferenceProfiles.DEFAULT` when nothing has
+  been saved yet - same "never silently skip scoring" rationale as
+  `DefaultInvestmentAnalyzer`. Both `DefaultInvestmentAnalyzer` and
+  `MonitoringService` (new-investment scoring and cross-source
+  enrichment re-scoring) now read through this repository instead of
+  `ReferenceProfiles.DEFAULT` directly. One global profile only (no
+  multi-profile support) - YAGNI.
+- **Immediate rescore-all, no live fetch**: `RescoreService.rescoreAll()`
+  recomputes `investment_score` for every currently known investment
+  against the current profile using only already-persisted facts (no
+  source fetch, no validation, no correlation/dedup pass - deliberately
+  narrower than `MonitoringService.scan()`). Activated via
+  `--investment-monitor.mode=rescore`, which (via `@ConditionalOnProperty`)
+  disables `ScanRunner` and enables `RescoreRunner` instead - the two are
+  mutually exclusive on a single `bootRun` invocation. The frontend's
+  `PUT /api/preferences` (saves the profile, then shells out to
+  `./gradlew bootRun --args=--investment-monitor.mode=rescore` via
+  `lib/rescore.ts`, same `child_process` pattern as `/api/scan`) and a
+  standalone `POST /api/rescore` both trigger this, so a user editing
+  `/settings` sees updated scores without waiting for or triggering a full
+  scan.
+- **`/settings` page**: property-type/location-tier toggles, house/plot
+  area and price min-max inputs, and a large-plot-preferred switch,
+  backed by `GET/PUT /api/preferences`. `frontend/lib/types.ts` gained
+  `ScoringProfile` and `DEFAULT_SCORING_PROFILE` (a client-safe mirror of
+  `ReferenceProfiles.POZNAN_HOUSE_SEEKER` - deliberately not in
+  `lib/queries.ts`, which pulls in `node:sqlite` and would break the
+  client bundle if imported from a `"use client"` component).

@@ -8,11 +8,20 @@ import pl.marcin.investmentmonitor.domain.DevelopmentTier
 import pl.marcin.investmentmonitor.domain.LocationProfile
 import pl.marcin.investmentmonitor.domain.PriceRange
 import pl.marcin.investmentmonitor.domain.PropertyType
+import pl.marcin.investmentmonitor.domain.ReferenceInvestmentProfile
+import pl.marcin.investmentmonitor.persistence.UserPreferencesRepository
 import pl.marcin.investmentmonitor.testsupport.testInvestment
+
+private class FakeUserPreferencesRepository(
+    private val scoringProfile: ReferenceInvestmentProfile? = null
+) : UserPreferencesRepository {
+    override fun findScoringProfile(): ReferenceInvestmentProfile? = scoringProfile
+    override fun saveScoringProfile(profile: ReferenceInvestmentProfile) {}
+}
 
 class DefaultInvestmentAnalyzerTest {
 
-    private val analyzer = DefaultInvestmentAnalyzer(DeterministicScorer())
+    private val analyzer = DefaultInvestmentAnalyzer(DeterministicScorer(), FakeUserPreferencesRepository())
 
     @Test
     fun `computes a real deterministic score even without an LLM configured`() {

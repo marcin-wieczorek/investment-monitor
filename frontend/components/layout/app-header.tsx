@@ -19,6 +19,7 @@ const breadcrumbKeys: Record<string, string> = {
   "/coverage": "nav.coverage",
   "/sources": "nav.sources",
   "/history": "nav.history",
+  "/settings": "nav.settings",
 };
 
 export function AppHeader() {

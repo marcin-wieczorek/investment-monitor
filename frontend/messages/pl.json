@@ -8,7 +8,8 @@
     "developers": "Deweloperzy",
     "coverage": "Pokrycie",
     "history": "Historia",
-    "sources": "Źródła"
+    "sources": "Źródła",
+    "settings": "Ustawienia"
   },
   "common": {
     "rawData": "Dane surowe"
@@ -115,7 +116,8 @@
     "propertyTypeMatch": "Zgodność typu nieruchomości",
     "locationTierMatch": "Zgodność poziomu lokalizacji",
     "largePlotBonus": "Bonus za dużą działkę",
-    "plotToHouseRatio": "Stosunek działka/dom"
+    "plotToHouseRatio": "Stosunek działka/dom",
+    "scoreExplanation": "Ważone dopasowanie do konfigurowalnego profilu referencyjnego: typ nieruchomości (25%), poziom lokalizacji (15%), dopasowanie działki (25%), dopasowanie metrażu domu (20%), dopasowanie ceny (15%), plus bonus +10% za działkę większą niż preferowany zakres. Profil można zmienić w Ustawieniach."
   },
   "filters": {
     "advanced": "Filtry zaawansowane",
@@ -236,6 +238,27 @@
       "BLOCKED": "Zablokowane",
       "DISABLED": "Wyłączone"
     }
+  },
+  "settings": {
+    "title": "Ustawienia",
+    "subtitle": "Skonfiguruj profil referencyjny, do którego porównywane są inwestycje",
+    "propertyTypes": "Typy nieruchomości",
+    "locationTiers": "Poziomy lokalizacji",
+    "tierLabel": {
+      "S": "S (najsilniejszy wzrost)",
+      "A": "A",
+      "B": "B"
+    },
+    "houseArea": "Metraż domu (m²)",
+    "plotArea": "Powierzchnia działki (m²)",
+    "price": "Cena (PLN)",
+    "largePlotPreferred": "Duże działki",
+    "largePlotPreferredHint": "Nagradzaj działki większe niż preferowany zakres zamiast je penalizować",
+    "save": "Zapisz",
+    "saving": "Zapisywanie…",
+    "saved": "Zapisano - wyniki przeliczone",
+    "resetToDefault": "Przywróć domyślne",
+    "rescoreNotice": "Zapis natychmiast przelicza wynik dla wszystkich istniejących inwestycji - nie trzeba uruchamiać nowego skanu."
   },
   "enum": {
     "signalType": {

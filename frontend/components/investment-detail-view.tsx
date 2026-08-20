@@ -10,6 +10,7 @@ import {
   Clock,
   ExternalLink,
   Home,
+  Info,
   LandPlot,
   MapPin,
   Star,
@@ -241,7 +242,12 @@ export function InvestmentDetailView({ investment, evidence, correlations, dupli
 
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-medium text-muted-foreground">{t("investments.scoringBreakdown")}</h2>
+              <h2 className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+                {t("investments.scoringBreakdown")}
+                <span title={t("investments.scoreExplanation")}>
+                  <Info className="size-3.5" />
+                </span>
+              </h2>
               <Badge variant="outline" className="gap-1 text-[10px] text-muted-foreground" title={t("investments.dataCompleteness")}>
                 {t("investments.dataCompleteness")}: {Math.round(dataCompleteness(investment) * 6)}/6
               </Badge>

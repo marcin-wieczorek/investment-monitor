@@ -21,6 +21,7 @@ import pl.marcin.investmentmonitor.domain.InvestmentDuplicate
 import pl.marcin.investmentmonitor.domain.InvestmentSignal
 import pl.marcin.investmentmonitor.domain.PriceRange
 import pl.marcin.investmentmonitor.domain.PropertyType
+import pl.marcin.investmentmonitor.domain.ReferenceInvestmentProfile
 import pl.marcin.investmentmonitor.domain.SourceEvidence
 import pl.marcin.investmentmonitor.persistence.CorrelationRepository
 import pl.marcin.investmentmonitor.persistence.DeveloperCandidateRepository
@@ -33,6 +34,7 @@ import pl.marcin.investmentmonitor.persistence.RunStatus
 import pl.marcin.investmentmonitor.persistence.SignalRepository
 import pl.marcin.investmentmonitor.persistence.SourceSnapshot
 import pl.marcin.investmentmonitor.persistence.SourceSnapshotRepository
+import pl.marcin.investmentmonitor.persistence.UserPreferencesRepository
 import pl.marcin.investmentmonitor.source.AggregatorSource
 import pl.marcin.investmentmonitor.source.DiscoverySource
 import pl.marcin.investmentmonitor.source.InvestmentDetailEnricher
@@ -137,6 +139,15 @@ private class InMemoryInvestmentScoreRepository : InvestmentScoreRepository {
     override fun find(investmentCanonicalKey: String): ScoringResult? = saved[investmentCanonicalKey]
 }
 
+private class InMemoryUserPreferencesRepository(
+    private var scoringProfile: ReferenceInvestmentProfile? = null
+) : UserPreferencesRepository {
+    override fun findScoringProfile(): ReferenceInvestmentProfile? = scoringProfile
+    override fun saveScoringProfile(profile: ReferenceInvestmentProfile) {
+        scoringProfile = profile
+    }
+}
+
 private class FakeInvestmentSource(override val id: String, private val investments: List<Investment>) : InvestmentSource {
     override fun fetch(): List<Investment> = investments
 }
@@ -170,7 +181,7 @@ class MonitoringServiceTest {
         sourceValidator = SourceValidator(),
         changeDetector = ChangeDetector(),
         detailEnricher = InvestmentDetailEnricher(emptyList()) { _ -> "" },
-        investmentAnalyzer = DefaultInvestmentAnalyzer(DeterministicScorer()),
+        investmentAnalyzer = DefaultInvestmentAnalyzer(DeterministicScorer(), InMemoryUserPreferencesRepository()),
         investmentRepository = investmentRepository,
         sourceSnapshotRepository = InMemorySourceSnapshotRepository(),
         monitoringRunRepository = InMemoryMonitoringRunRepository(),
@@ -183,7 +194,8 @@ class MonitoringServiceTest {
         rawHtmlArchiver = RawHtmlArchiver(enabled = false, basePath = "unused", retentionDays = 1),
         developerCandidateRepository = developerCandidateRepository,
         scorer = DeterministicScorer(),
-        investmentScoreRepository = investmentScoreRepository
+        investmentScoreRepository = investmentScoreRepository,
+        userPreferencesRepository = InMemoryUserPreferencesRepository()
     )
 
     @Test

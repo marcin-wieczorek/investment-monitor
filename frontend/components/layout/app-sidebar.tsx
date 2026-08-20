@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Building2, LayoutDashboard, History, Radio, Radar, Link2, Users, Map, MapPin } from "lucide-react";
+import { Building2, LayoutDashboard, History, Radio, Radar, Link2, Users, Map, MapPin, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
 import { useSidebar } from "@/lib/sidebar-context";
@@ -18,6 +18,7 @@ const navItems = [
   { href: "/coverage", key: "nav.coverage" as const, icon: Map },
   { href: "/sources", key: "nav.sources" as const, icon: Radio },
   { href: "/history", key: "nav.history" as const, icon: History },
+  { href: "/settings", key: "nav.settings" as const, icon: Settings },
 ];
 
 export function AppSidebar() {

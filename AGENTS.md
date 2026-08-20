@@ -79,15 +79,20 @@ src/main/kotlin/pl/marcin/investmentmonitor/
   archival/        RawHtmlArchiver — raw/<date>/<host>/<hash>.html, retention-based cleanup
   persistence/     One {Name}Repository interface + Jdbc{Name}Repository impl per aggregate:
                    Investment, Signal, SourceSnapshot, MonitoringRun, Evidence,
-                   Correlation, InvestmentDuplicate, LlmAnalysis
+                   Correlation, InvestmentDuplicate, LlmAnalysis, UserPreferences
+                   (generic key-value store, currently just the scoring profile)
   monitoring/      MonitoringService (the orchestrator — read this first for the
-                   full pipeline), ScanRunner (ApplicationRunner, makes bootRun one-shot)
+                   full pipeline), ScanRunner (ApplicationRunner, makes bootRun one-shot),
+                   RescoreService + RescoreRunner (recomputes investment_score for every
+                   known investment against the current scoring profile, no live fetch —
+                   activated via --investment-monitor.mode=rescore, mutually exclusive
+                   with ScanRunner)
   reporting/       ScanReport (data), ScanReportRenderer (plain-text report)
   tools/           SourceVerificationCli, FixtureCaptureCli — plain `main()`, NOT
                    Spring-managed, construct sources manually
 src/main/resources/
   application.yml
-  db/migration/V1..V10__*.sql       Flyway, sequential, never edit an already-applied one
+  db/migration/V1..V11__*.sql       Flyway, sequential, never edit an already-applied one
 src/test/kotlin/...                Mirrors main/ package structure
 src/test/resources/fixtures/<source>/*.html   Real captured HTML, reviewed before commit
   testsupport/  TestInvestments.kt (testInvestment()), TestSignals.kt (testSignal())
@@ -98,16 +103,27 @@ frontend/
     api/                 Route handlers (mutations + scan trigger only — pages
                          read the DB directly via lib/queries.ts, no fetch())
     map/                 /map page — investment location overview
+    settings/            /settings page — configurable scoring reference profile
   components/
     layout/               app-shell.tsx / app-sidebar.tsx / app-header.tsx
     ui/                   shadcn-on-@base-ui/react primitives — don't hand-roll these
     charts/               ApexCharts wrappers (dynamic import, ssr:false)
     map/                   Leaflet map (dynamic import, ssr:false — touches window/document)
+    settings-view.tsx      scoring profile form (property types, tiers, area/price
+                           ranges, large-plot toggle) — saves via PUT /api/preferences,
+                           which also triggers a rescore-all (see lib/rescore.ts)
     <name>-view.tsx        "use client" page content components, one per route
   lib/
     db.ts                 node:sqlite singleton, WAL + busy_timeout
     queries.ts             ALL SQL lives here — pages call these, never inline SQL in a page
-    types.ts               Row interfaces mirroring exact DB columns (snake_case!)
+    rescore.ts              triggerRescore() — shells out to `./gradlew bootRun
+                            --args=--investment-monitor.mode=rescore` (same
+                            child_process pattern as /api/scan), used by
+                            PUT /api/preferences and POST /api/rescore
+    types.ts               Row interfaces mirroring exact DB columns (snake_case!);
+                           also ScoringProfile + DEFAULT_SCORING_PROFILE (client-safe,
+                           mirrors ReferenceProfiles.POZNAN_HOUSE_SEEKER on the Kotlin
+                           side — keep in sync if that default ever changes)
     i18n.tsx                React Context, en/pl, see messages/*.json; useI18n() exposes
                             both t(key) and tEnum(category, value) — use tEnum for any raw
                             backend enum value (status, signal_type, confidence, ...) so it
@@ -207,8 +223,8 @@ regenerate every deploy).
 ## Database
 
 SQLite file `investment-monitor.db` in repo root (gitignored). Flyway
-migrations in `src/main/resources/db/migration/`, currently V1–V10. To add
-a column/table: new `V11__description.sql` — **never edit an already-
+migrations in `src/main/resources/db/migration/`, currently V1–V11. To add
+a column/table: new `V12__description.sql` — **never edit an already-
 applied migration**, Flyway checksums them.
 
 Tables: `investment`, `source_snapshot` (+`source_category`),
@@ -217,7 +233,10 @@ archive), `investment_signal`, `source_evidence`, `correlation`,
 `investment_duplicate`, `llm_analysis`, `location_profile` (unused —
 never populated at runtime, do not build on top of it without checking
 first), `developer_registry`, `developer_candidate`,
-`municipality_registry`, `investment_score`.
+`municipality_registry`, `investment_score`, `user_preferences`
+(generic key-value store, currently just `key="scoring.profile"` - unlike
+`location_profile`, this one actually is read at scan/rescore time, see
+`UserPreferencesRepository`).
 
 ## Conventions
 

@@ -8,7 +8,8 @@
     "developers": "Developers",
     "coverage": "Coverage",
     "history": "History",
-    "sources": "Sources"
+    "sources": "Sources",
+    "settings": "Settings"
   },
   "common": {
     "rawData": "Raw data"
@@ -115,7 +116,8 @@
     "propertyTypeMatch": "Property type match",
     "locationTierMatch": "Location tier match",
     "largePlotBonus": "Large plot bonus",
-    "plotToHouseRatio": "Plot/house ratio"
+    "plotToHouseRatio": "Plot/house ratio",
+    "scoreExplanation": "Weighted match against a configurable reference profile: property type (25%), location tier (15%), plot area fit (25%), house area fit (20%), price fit (15%), plus a +10% bonus for plots larger than the preferred range. Adjust the profile in Settings."
   },
   "filters": {
     "advanced": "Advanced filters",
@@ -236,6 +238,27 @@
       "BLOCKED": "Blocked",
       "DISABLED": "Disabled"
     }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Configure the reference profile investments are scored against",
+    "propertyTypes": "Property types",
+    "locationTiers": "Location tiers",
+    "tierLabel": {
+      "S": "S (strongest growth)",
+      "A": "A",
+      "B": "B"
+    },
+    "houseArea": "House area (m²)",
+    "plotArea": "Plot area (m²)",
+    "price": "Price (PLN)",
+    "largePlotPreferred": "Large plots",
+    "largePlotPreferredHint": "Reward plots larger than the preferred range instead of penalizing them",
+    "save": "Save",
+    "saving": "Saving…",
+    "saved": "Saved - scores recomputed",
+    "resetToDefault": "Reset to default",
+    "rescoreNotice": "Saving recomputes the score for every existing investment immediately - no need to run a new scan."
   },
   "enum": {
     "signalType": {

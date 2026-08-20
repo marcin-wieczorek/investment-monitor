@@ -5,7 +5,6 @@ import org.springframework.stereotype.Service
 import pl.marcin.investmentmonitor.analysis.DeterministicScorer
 import pl.marcin.investmentmonitor.analysis.InvestmentAnalyzer
 import pl.marcin.investmentmonitor.analysis.LocationProfiles
-import pl.marcin.investmentmonitor.analysis.ReferenceProfiles
 import pl.marcin.investmentmonitor.archival.RawHtmlArchiver
 import pl.marcin.investmentmonitor.correlation.CorrelationCandidate
 import pl.marcin.investmentmonitor.correlation.DuplicateCandidate
@@ -38,6 +37,7 @@ import pl.marcin.investmentmonitor.persistence.RunStatus
 import pl.marcin.investmentmonitor.persistence.SignalRepository
 import pl.marcin.investmentmonitor.persistence.SourceSnapshot
 import pl.marcin.investmentmonitor.persistence.SourceSnapshotRepository
+import pl.marcin.investmentmonitor.persistence.UserPreferencesRepository
 import pl.marcin.investmentmonitor.reporting.AnalyzedChange
 import pl.marcin.investmentmonitor.reporting.DiscoverySourceReport
 import pl.marcin.investmentmonitor.reporting.ScanReport
@@ -88,9 +88,10 @@ class MonitoringService(
     private val deduplicator: InvestmentDeduplicator,
     private val rawHtmlArchiver: RawHtmlArchiver,
     private val developerCandidateRepository: DeveloperCandidateRepository,
-    private val scorer: DeterministicScorer,
-    private val investmentScoreRepository: InvestmentScoreRepository,
-    private val clock: Clock = Clock.systemUTC()
+        private val scorer: DeterministicScorer,
+        private val investmentScoreRepository: InvestmentScoreRepository,
+        private val userPreferencesRepository: UserPreferencesRepository,
+        private val clock: Clock = Clock.systemUTC()
 ) {
 
     fun scan(): ScanReport {
@@ -193,7 +194,7 @@ class MonitoringService(
         val enriched = detailEnricher.enrich(current)
         val locationProfile = locationProfileFor(enriched)
 
-        val scoring = scorer.score(enriched, locationProfile, ReferenceProfiles.DEFAULT)
+        val scoring = scorer.score(enriched, locationProfile, userPreferencesRepository.effectiveScoringProfile())
         investmentScoreRepository.save(enriched.canonicalKey, scoring, Instant.now(clock))
 
         val analysis = investmentAnalyzer.analyze(enriched, locationProfile)
@@ -457,7 +458,7 @@ class MonitoringService(
         }
 
         val locationProfile = locationProfileFor(enriched)
-        val scoring = scorer.score(enriched, locationProfile, ReferenceProfiles.DEFAULT)
+        val scoring = scorer.score(enriched, locationProfile, userPreferencesRepository.effectiveScoringProfile())
         investmentScoreRepository.save(enriched.canonicalKey, scoring, seenAt)
     }
 

@@ -34,6 +34,7 @@ npm run start   # http://localhost:3000
 - **Correlations** — deterministic links between discovery signals and investments that likely describe the same project.
 - **History** — timeline of every monitoring run.
 - **Sources** — health status per monitored source, grouped by category (developer/discovery/aggregator).
+- **Settings** — configure the scoring reference profile (property types, location tiers, house/plot area and price ranges, large-plot preference); saving triggers an immediate rescore of every investment (no live-source scan needed).
 
 Triggering a scan from the UI runs `./gradlew bootRun` in the repo root as a
 subprocess and refreshes the page once it completes.
@@ -50,3 +51,9 @@ subprocess and refreshes the page once it completes.
 - Map pin coordinates are a static, curated lookup
   (`lib/location-coordinates.ts`) covering every location name the backend
   knows about — no live geocoding API call.
+- The scoring reference profile is stored in the generic `user_preferences`
+  key-value table (`GET/PUT /api/preferences`), read at scan/rescore time
+  by `UserPreferencesRepository` on the Kotlin side. `POST /api/rescore`
+  (or saving via `/settings`) shells out to `./gradlew bootRun
+  --args=--investment-monitor.mode=rescore`, the same `child_process`
+  pattern as the scan trigger.
