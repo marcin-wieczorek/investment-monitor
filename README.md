@@ -92,7 +92,7 @@ full scope and the extensible location-profile model.
 |---|---|---|---|
 | Developer | 26 developers (Chronos, Greenbud, ATAL, Agrobex, Spravia, Duda, Develia, Jakon, ROBYG, Linea, Murapol, Ataner, Konimpex, Pekabex, EBF, GGW, JaksBud, UWI, Sagaris, Sivanet, Cordia, Ronson, MJ, Area, Inwestycje Wielkopolski, Vastbouw) | Poznań metro area | See `registry/DeveloperRegistry.kt` for the full Tier A/B priority list, verified URLs, and status of every developer investigated |
 | Discovery | Swarzędz, Czerwonak, Tarnowo Podgórne, Suchy Las, Poznań, Śrem, Murowana Goślina BIP registers | 7 municipalities | Zoning-conditions/planning-announcement registers; see `registry/DiscoverySourceRegistry.kt` for full municipal coverage investigation |
-| Aggregator | [RynekPierwotny.pl](https://www.rynekpierwotny.pl) — new houses, Poznań | Poznań metro | Completeness/cross-check only, never primary identity |
+| Aggregator | [RynekPierwotny.pl](https://rynekpierwotny.pl) — new houses, 4+ rooms, Wielkopolskie | Wielkopolskie voivodeship | Completeness/cross-check only, never primary identity |
 
 Developer and municipality registries (`registry/DeveloperRegistry.kt`,
 `registry/MunicipalityRegistry.kt`) track **every** priority developer and

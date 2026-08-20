@@ -50,9 +50,10 @@ source already covers it.
   Kruszewnia). See `docs/DISCOVERY.md` for what else was investigated and
   why it isn't implemented yet.
 - **Aggregator**: `RynekPierwotnySource` + `RynekPierwotnyParser` parse
-  RynekPierwotny's server-rendered "new houses near Poznań" listing,
-  anchored on the site's own `data-testid` attributes (stable across
-  deploys) rather than its content-hashed CSS classes.
+  RynekPierwotny's server-rendered "new houses, 4+ rooms, Wielkopolskie"
+  listing (paginated - fetches every page until one yields no new
+  offers), anchored on the site's own `data-testid` attributes (stable
+  across deploys) rather than its content-hashed CSS classes.
 - **`InvestmentSignal`** (`domain/InvestmentSignal.kt`) models discovery
   evidence: municipality, location, `SignalType`, title, reference,
   detection date, source URL, raw facts. Identity follows the same

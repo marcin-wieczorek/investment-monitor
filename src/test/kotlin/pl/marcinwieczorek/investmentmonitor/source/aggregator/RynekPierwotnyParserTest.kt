@@ -11,7 +11,7 @@ class RynekPierwotnyParserTest {
     private val parser = RynekPierwotnyParser()
 
     private val fixtureHtml: String by lazy {
-        Files.readString(Path.of("src/test/resources/fixtures/rynekpierwotny/nowe-domy-poznan.html"))
+        Files.readString(Path.of("src/test/resources/fixtures/rynekpierwotny/nowe-domy-wielkopolskie-liczba-pokoi-od-4.html"))
     }
 
     @Test
@@ -22,20 +22,20 @@ class RynekPierwotnyParserTest {
 
     @Test
     fun `parses name, developer, location and house area for a suburban offer`() {
-        val offer = parser.parse(fixtureHtml).single { it.name == "Na Wzgórzu 2" }
+        val offer = parser.parse(fixtureHtml).single { it.name == "Kameralny Gruszczyn" }
 
         offer.source shouldBe "rynekpierwotny"
-        offer.developer shouldBe "VIEW DEVELOPMENT 2.0 Sp. z o.o."
-        offer.location shouldBe "Suchy Las"
-        offer.houseArea?.min shouldBe 149.0
-        offer.houseArea?.max shouldBe 158.0
+        offer.developer shouldBe "Budopol-Poznań sp. z o.o."
+        offer.location shouldBe "Gruszczyn"
+        offer.houseArea?.min shouldBe 93.0
+        offer.houseArea?.max shouldBe 93.0
         offer.url.toString() shouldBe
-            "https://www.rynekpierwotny.pl/oferty/view-development-sp-z-oo/na-wzgorzu-2-poznanski-suchy-las-20492/"
+            "https://rynekpierwotny.pl/oferty/budopol-poznan-sp-z-oo/kameralny-gruszczyn-poznanski-gruszczyn-17389/"
     }
 
     @Test
     fun `leaves property type, units and status unset rather than guessing`() {
-        val offer = parser.parse(fixtureHtml).single { it.name == "Na Wzgórzu 2" }
+        val offer = parser.parse(fixtureHtml).single { it.name == "Kameralny Gruszczyn" }
 
         offer.propertyType shouldBe null
         offer.units shouldBe null

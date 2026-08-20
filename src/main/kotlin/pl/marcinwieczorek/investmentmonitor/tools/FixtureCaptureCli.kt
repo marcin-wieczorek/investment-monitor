@@ -99,7 +99,7 @@ fun main() {
         // in this URL will need manual updating once a year.
         "srem-wz" to (URI(SremWzSource.INDEX_URL) to "index.html"),
         "murowana-goslina-obwieszczenia" to (URI(MurowanaGoslinaObwieszczeniaSource.LIST_URL) to "announcements.html"),
-        "rynekpierwotny" to (URI(RynekPierwotnySource.LIST_URL) to "nowe-domy-poznan.html")
+        "rynekpierwotny" to (URI(RynekPierwotnySource.LIST_URL) to "nowe-domy-wielkopolskie-liczba-pokoi-od-4.html")
     )
     val fixturesDir = Path.of("src/test/resources/fixtures")
 
